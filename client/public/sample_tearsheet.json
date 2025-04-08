@@ -1,0 +1,558 @@
+{
+  "strategy_benchmark": {
+    "cards": [
+      {
+        "type": "Card",
+        "category": "StrategyBenchmark",
+        "data": [
+          {
+            "title": "Annual Return",
+            "value": "0.1245",
+            "type": "Percent",
+            "group": 0
+          },
+          {
+            "title": "Cumulative Returns",
+            "value": "0.5678",
+            "type": "Percent",
+            "group": 0
+          },
+          {
+            "title": "Annual Volatility",
+            "value": "0.1523",
+            "type": "Percent",
+            "group": 0
+          }
+        ],
+        "group_size": 3
+      }
+    ],
+    "charts": [
+      {
+        "chartDef": {
+          "id": "cumulative_returns",
+          "title": "Cumulative Returns",
+          "type": "Lines",
+          "category": "StrategyBenchmark",
+          "yAxis": {
+            "type": "linear"
+          },
+          "xAxis": {
+            "type": "datetime"
+          }
+        },
+        "lines": [
+          {
+            "data": [
+              {
+                "x": "1577836800000",
+                "y": "1.0"
+              },
+              {
+                "x": "1580515200000",
+                "y": "1.0231"
+              },
+              {
+                "x": "1583020800000",
+                "y": "1.0103"
+              },
+              {
+                "x": "1585699200000",
+                "y": "0.9520"
+              }
+            ],
+            "name": "Strategy"
+          },
+          {
+            "data": [
+              {
+                "x": "1577836800000",
+                "y": "1.0"
+              },
+              {
+                "x": "1580515200000",
+                "y": "1.0156"
+              },
+              {
+                "x": "1583020800000",
+                "y": "0.9823"
+              },
+              {
+                "x": "1585699200000",
+                "y": "0.8912"
+              }
+            ],
+            "name": "Benchmark"
+          }
+        ],
+        "straightLines": [],
+        "yPlotBands": [],
+        "xPlotBands": [],
+        "stacked": false
+      }
+    ],
+    "tables": [
+      {
+        "type": "DataTable",
+        "category": "StrategyBenchmark",
+        "columns": [
+          {
+            "id": "event",
+            "name": "Event",
+            "type": "String"
+          },
+          {
+            "id": "min",
+            "name": "Min",
+            "type": "Percent"
+          },
+          {
+            "id": "mean",
+            "name": "Mean",
+            "type": "Percent"
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "type": "Percent"
+          }
+        ],
+        "data": [
+          {
+            "event": "Daily",
+            "min": "-0.0323",
+            "mean": "0.0012",
+            "max": "0.0323"
+          },
+          {
+            "event": "Monthly",
+            "min": "-0.0576",
+            "mean": "0.0145",
+            "max": "0.0423"
+          },
+          {
+            "event": "Quarterly",
+            "min": "-0.0876",
+            "mean": "0.0345",
+            "max": "0.0789"
+          }
+        ]
+      }
+    ]
+  },
+  "risk_analysis": {
+    "cards": [],
+    "charts": [
+      {
+        "chartDef": {
+          "id": "drawdown",
+          "title": "Drawdown Periods",
+          "type": "Area",
+          "category": "RiskAnalysis",
+          "yAxis": {
+            "type": "linear"
+          },
+          "xAxis": {
+            "type": "datetime"
+          }
+        },
+        "lines": [
+          {
+            "data": [
+              {
+                "x": "1577836800000",
+                "y": "0.0"
+              },
+              {
+                "x": "1580515200000",
+                "y": "0.0"
+              },
+              {
+                "x": "1583020800000",
+                "y": "-0.0125"
+              },
+              {
+                "x": "1585699200000",
+                "y": "-0.0576"
+              }
+            ],
+            "name": "Drawdown"
+          }
+        ],
+        "straightLines": [],
+        "yPlotBands": [
+          {
+            "from": "-0.06",
+            "to": "-0.03"
+          },
+          {
+            "from": "-0.03",
+            "to": "0"
+          }
+        ],
+        "xPlotBands": [],
+        "stacked": false
+      }
+    ],
+    "tables": [
+      {
+        "type": "DataTable",
+        "category": "RiskAnalysis",
+        "columns": [
+          {
+            "id": "index",
+            "name": "Index",
+            "type": "Integer"
+          },
+          {
+            "id": "netDrawdown",
+            "name": "Net Drawdown",
+            "type": "Percent"
+          },
+          {
+            "id": "peakDate",
+            "name": "Peak Date",
+            "type": "Date"
+          },
+          {
+            "id": "valleyDate",
+            "name": "Valley Date",
+            "type": "Date"
+          },
+          {
+            "id": "recoveryDate",
+            "name": "Recovery Date",
+            "type": "Date"
+          },
+          {
+            "id": "duration",
+            "name": "Duration",
+            "type": "DayDuration"
+          }
+        ],
+        "data": [
+          {
+            "index": "1",
+            "netDrawdown": "-0.0576",
+            "peakDate": "2020-01-01",
+            "valleyDate": "2020-03-31",
+            "recoveryDate": "2020-06-30",
+            "duration": "181"
+          },
+          {
+            "index": "2",
+            "netDrawdown": "-0.0245",
+            "peakDate": "2020-08-31",
+            "valleyDate": "2020-10-31",
+            "recoveryDate": "2020-12-31",
+            "duration": "122"
+          }
+        ]
+      }
+    ]
+  },
+  "returns_distribution": {
+    "cards": [],
+    "charts": [
+      {
+        "chartDef": {
+          "id": "correlation_heatmap",
+          "title": "Correlation Matrix",
+          "type": "HeatMap",
+          "category": "ReturnsDistribution",
+          "yAxis": {
+            "type": "category",
+            "label": "Assets"
+          },
+          "xAxis": {
+            "type": "category",
+            "label": "Assets"
+          }
+        },
+        "points": [
+          {
+            "x": "0",
+            "y": "0",
+            "value": "1.0"
+          },
+          {
+            "x": "0",
+            "y": "1",
+            "value": "0.82"
+          },
+          {
+            "x": "0",
+            "y": "2",
+            "value": "0.56"
+          },
+          {
+            "x": "1",
+            "y": "0",
+            "value": "0.82"
+          },
+          {
+            "x": "1",
+            "y": "1",
+            "value": "1.0"
+          },
+          {
+            "x": "1",
+            "y": "2",
+            "value": "0.67"
+          },
+          {
+            "x": "2",
+            "y": "0",
+            "value": "0.56"
+          },
+          {
+            "x": "2",
+            "y": "1",
+            "value": "0.67"
+          },
+          {
+            "x": "2",
+            "y": "2",
+            "value": "1.0"
+          }
+        ]
+      }
+    ],
+    "tables": []
+  },
+  "positions": {
+    "cards": [],
+    "charts": [
+      {
+        "chartDef": {
+          "id": "positions_exposure",
+          "title": "Positions Exposure",
+          "type": "Lines",
+          "category": "Positions",
+          "yAxis": {
+            "type": "linear"
+          },
+          "xAxis": {
+            "type": "datetime"
+          }
+        },
+        "lines": [
+          {
+            "data": [
+              {
+                "x": "1577836800000",
+                "y": "0.65"
+              },
+              {
+                "x": "1580515200000",
+                "y": "0.72"
+              },
+              {
+                "x": "1583020800000",
+                "y": "0.68"
+              },
+              {
+                "x": "1585699200000",
+                "y": "0.61"
+              }
+            ],
+            "name": "Long Exposure"
+          },
+          {
+            "data": [
+              {
+                "x": "1577836800000",
+                "y": "-0.35"
+              },
+              {
+                "x": "1580515200000",
+                "y": "-0.28"
+              },
+              {
+                "x": "1583020800000",
+                "y": "-0.32"
+              },
+              {
+                "x": "1585699200000",
+                "y": "-0.39"
+              }
+            ],
+            "name": "Short Exposure"
+          }
+        ],
+        "straightLines": [],
+        "yPlotBands": [],
+        "xPlotBands": [],
+        "overlay": {
+          "data": [
+            {
+              "x": "1577836800000",
+              "y": "0.3"
+            },
+            {
+              "x": "1580515200000",
+              "y": "0.44"
+            },
+            {
+              "x": "1583020800000",
+              "y": "0.36"
+            },
+            {
+              "x": "1585699200000",
+              "y": "0.22"
+            }
+          ],
+          "name": "Net Exposure",
+          "lineWidth": 2,
+          "dashStyle": "dash"
+        },
+        "stacked": false
+      }
+    ],
+    "tables": [
+      {
+        "type": "DataTable",
+        "category": "Positions",
+        "columns": [
+          {
+            "id": "max",
+            "name": "Max",
+            "type": "Percent"
+          },
+          {
+            "id": "long",
+            "name": "Long",
+            "type": "Percent"
+          },
+          {
+            "id": "short",
+            "name": "Short",
+            "type": "Percent"
+          },
+          {
+            "id": "abs",
+            "name": "Abs",
+            "type": "Percent"
+          }
+        ],
+        "data": [
+          {
+            "max": "0.72",
+            "long": "0.72",
+            "short": "-0.39",
+            "abs": "1.11"
+          }
+        ]
+      }
+    ]
+  },
+  "transactions": {
+    "cards": [],
+    "charts": [
+      {
+        "chartDef": {
+          "id": "transaction_volume",
+          "title": "Transaction Volume",
+          "type": "Pie",
+          "category": "Transactions",
+          "xAxis": {
+            "type": "category",
+            "label": "Transaction Type"
+          }
+        },
+        "straightLines": []
+      }
+    ],
+    "tables": []
+  },
+  "round_trip": {
+    "cards": [],
+    "charts": [
+      {
+        "chartDef": {
+          "id": "round_trips",
+          "title": "Round Trip Trades",
+          "type": "XRange",
+          "category": "RoundTrip",
+          "yAxis": {
+            "type": "category",
+            "label": "Symbol"
+          },
+          "xAxis": {
+            "type": "datetime",
+            "label": "Date"
+          }
+        },
+        "categories": ["AAPL", "MSFT", "GOOGL"],
+        "points": [
+          {
+            "x": "1577836800000",
+            "x2": "1580515200000",
+            "y": 0,
+            "is_long": true
+          },
+          {
+            "x": "1583020800000",
+            "x2": "1585699200000",
+            "y": 1,
+            "is_long": false
+          },
+          {
+            "x": "1585699200000",
+            "x2": "1588291200000",
+            "y": 2,
+            "is_long": true
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "type": "DataTable",
+        "category": "RoundTrip",
+        "columns": [
+          {
+            "id": "key",
+            "name": "Metric",
+            "type": "String"
+          },
+          {
+            "id": "all_trades",
+            "name": "All Trades",
+            "type": "Decimal"
+          },
+          {
+            "id": "long_trades",
+            "name": "Long Trades",
+            "type": "Decimal"
+          },
+          {
+            "id": "short_trades",
+            "name": "Short Trades",
+            "type": "Decimal"
+          }
+        ],
+        "data": [
+          {
+            "key": "Total Trades",
+            "all_trades": "45",
+            "long_trades": "30",
+            "short_trades": "15"
+          },
+          {
+            "key": "Win Rate (%)",
+            "all_trades": "60.0",
+            "long_trades": "63.3",
+            "short_trades": "53.3"
+          },
+          {
+            "key": "Mean Return (%)",
+            "all_trades": "2.1",
+            "long_trades": "2.3",
+            "short_trades": "1.7"
+          }
+        ]
+      }
+    ]
+  }
+} 

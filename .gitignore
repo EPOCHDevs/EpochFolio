@@ -1,0 +1,8 @@
+# IDE files
+.idea
+build
+
+cmake-build-*
+
+empyrical-reloaded
+pyfolio-reloaded

@@ -1,0 +1,2 @@
+target_sources(epoch_folio PRIVATE tearsheet.cpp)
+

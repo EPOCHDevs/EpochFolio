@@ -1,0 +1,1 @@
+target_sources(epoch_folio_test PRIVATE empyrical_test.cpp)
