@@ -20,6 +20,7 @@ else()
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 endif()
 
+set(PROJECT_VERSION 0.1.0)
 set(CMAKE_TOOLCHAIN_FILE $ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
 set(VCPKG_MANIFEST_MODE ON)
 set(VCPKG_FEATURE_FLAGS "versions")
