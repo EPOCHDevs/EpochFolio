@@ -312,7 +312,7 @@ namespace epoch_folio::returns {
                         StraightLines{kStraightLineAtOne}
                 };
                 for (auto const &row: drawDownTable) {
-                        auto recovery = row.recoveryDate.value_or(m_strategy.index()->at(-1).to_date().date);
+                        auto recovery = row.recoveryDate.value_or(m_strategy.index()->at(-1).to_date().date());
                         drawdowns.xPlotBands.emplace_back(Band{Scalar{row.peakDate}, Scalar{recovery}});
                 }
                 lines.emplace_back(drawdowns);

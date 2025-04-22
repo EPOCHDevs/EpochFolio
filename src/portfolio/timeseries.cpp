@@ -110,15 +110,15 @@ namespace epoch_folio {
             auto [peak, valley, recovery] = underwaterRow;
             DrawDownTableRow row{
                 .index = i,
-                .peakDate = peak.to_date().date,
-                .valleyDate = valley.to_date().date,
+                .peakDate = peak.to_date().date(),
+                .valleyDate = valley.to_date().date(),
                 .recoveryDate = std::nullopt,
                 .netDrawdown = Scalar{},
                 .duration = Scalar{MakeNullScalar(arrow::uint64())}
             };
             if (recovery.is_valid()) {
                 row.duration = Scalar{factory::index::date_range({.start=peak.timestamp(), .end=recovery.timestamp(), .offset=factory::offset::bday(1)})->size()};
-                row.recoveryDate = recovery.to_date().date;
+                row.recoveryDate = recovery.to_date().date();
             }
 
             row.netDrawdown = ((dfCum.loc(peak) - dfCum.loc(valley)) / dfCum.loc(peak)) * 100.0_scalar;
@@ -145,7 +145,7 @@ namespace epoch_folio {
         InterestingDateRangeReturns ranges;
         for (auto const &[name, start, end]: periods) {
             try {
-                Series period = returns.loc({Scalar{DateTime{.date=start, .tz="UTC"}}, Scalar{DateTime{.date=end, .tz="UTC"}}});
+                Series period = returns.loc({Scalar{DateTime{start, {.tz="UTC"}}}, Scalar{DateTime{end, {.tz="UTC"}}}});
                 if (period.empty()) {
                     continue;
                 }

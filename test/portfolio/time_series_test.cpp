@@ -45,13 +45,13 @@ TEST_CASE("Drawdown Test") {
         auto drawdowns = GenerateDrawDownTable(rets, 2);
         REQUIRE(drawdowns.size() == 2);
         REQUIRE(drawdowns[0].netDrawdown == 50.0_scalar);
-        REQUIRE(drawdowns[0].peakDate == "2000-01-08"__date.date);
-        REQUIRE(drawdowns[0].valleyDate == "2000-01-09"__date.date);
-        REQUIRE(drawdowns[0].recoveryDate == "2000-01-13"__date.date);
+        REQUIRE(drawdowns[0].peakDate == "2000-01-08"__date.date());
+        REQUIRE(drawdowns[0].valleyDate == "2000-01-09"__date.date());
+        REQUIRE(drawdowns[0].recoveryDate == "2000-01-13"__date.date());
 
         REQUIRE(drawdowns[1].netDrawdown == 40.0_scalar);
-        REQUIRE(drawdowns[1].peakDate == "2000-01-20"__date.date);
-        REQUIRE(drawdowns[1].valleyDate == "2000-01-22"__date.date);
+        REQUIRE(drawdowns[1].peakDate == "2000-01-20"__date.date());
+        REQUIRE(drawdowns[1].valleyDate == "2000-01-22"__date.date());
         REQUIRE_FALSE(drawdowns[1].recoveryDate.has_value());
     }
 
