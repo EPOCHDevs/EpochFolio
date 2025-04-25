@@ -1,4 +1,7 @@
 {
+    "cmake.configureArgs": [
+        "-DBUILD_TEST=ON"
+    ],
     "files.associations": {
         "optional": "cpp",
         "expected": "cpp",
@@ -85,5 +88,6 @@
         "format": "cpp",
         "stdfloat": "cpp",
         "forward_list": "cpp"
-    }
+    },
+    "testMate.cpp.test.executables": "{build,Build,BUILD,out,Out,OUT}/**/*{test,Test,TEST}*"
 }
