@@ -69,10 +69,12 @@ if(BUILD_SHARED_LIBS)
         VISIBILITY_INLINES_HIDDEN OFF
     )
 endif()
+# TODO: Remove src from public include directory
 
 target_include_directories(epoch_folio
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/src
     PRIVATE
         ${PROJECT_SOURCE_DIR}/src
 )
