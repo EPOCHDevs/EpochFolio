@@ -59,14 +59,14 @@ BarDef TearSheetFactory::MakeTransactionTimeHistogram(
   auto timestamp = m_transactions.index()->tz_convert(timezone);
   auto trade_value = (m_transactions["amount"] * m_transactions["price"]).abs();
 
-  auto current_index = timestamp->map([](Scalar const &s) {
+  auto current_index = timestamp->array().map([](Scalar const &s) {
     const auto dt = s.dt();
     return (dt.hour() * Scalar{60} + dt.minute()).cast_uint64();
   });
   auto new_index = factory::index::from_range(0, 1440, binSize);
 
   auto trade_value_df = trade_value.to_frame("txn_value")
-                            .group_by_agg(current_index->as_chunked_array())
+                            .group_by_agg(current_index.as_chunked_array())
                             .sum()
                             .reindex(new_index);
 
