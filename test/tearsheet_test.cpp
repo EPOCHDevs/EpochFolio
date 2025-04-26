@@ -35,7 +35,9 @@ TEST_CASE("Tearsheet") {
       index->Make(test_factor.index()->array().cast(utc).value()));
 
   auto test_txn = epoch_frame::read_csv_file(test_txn_path).rename({{"", "x"}});
-  test_txn = test_txn.assign("timestamp", test_txn["x"].cast(utc)).drop("x");
+  test_txn = test_txn.assign("timestamp", test_txn["x"].cast(utc))
+                 .drop("x")
+                 .set_index("timestamp");
 
   auto test_pos = epoch_frame::read_csv_file(test_pos_path).set_index("index");
   test_pos = test_pos.set_index(
