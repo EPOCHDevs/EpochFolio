@@ -55,13 +55,13 @@ TEST_CASE("Tearsheet") {
 
   auto round_trip = epoch_frame::read_csv_file(test_round_trip).set_index("");
   round_trip =
-      round_trip.assign("openDateTime", round_trip["open_dt"].cast(utc))
+      round_trip.assign("open_datetime", round_trip["open_dt"].cast(utc))
           .drop("open_dt");
   round_trip =
-      round_trip.assign("closeDateTime", round_trip["close_dt"].cast(utc))
+      round_trip.assign("close_datetime", round_trip["close_dt"].cast(utc))
           .drop("close_dt");
 
-  round_trip = round_trip.rename({{"pnl", "netReturn"}, {"symbol", "asset"}});
+  round_trip = round_trip.rename({{"pnl", "net_return"}, {"symbol", "asset"}});
 
   round_trip =
       round_trip.assign("side", round_trip["long"].map([](auto const &v) {
