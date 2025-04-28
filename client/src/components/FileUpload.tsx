@@ -15,7 +15,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
   const validateTearsheetData = (data: any): data is FullTearsheet => {
     // Clear previous errors
     setError(null);
-    
+
     if (!data || typeof data !== 'object') {
       setError('Invalid JSON: Expected an object');
       return false;
@@ -33,7 +33,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
 
     // Missing categories count (we'll allow some flexibility)
     let missingCategoriesCount = 0;
-    
+
     for (const category of requiredCategories) {
       if (!data[category]) {
         console.warn(`Missing category: ${category}`);
@@ -43,17 +43,17 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
         if (!Array.isArray(data[category].cards)) {
           console.warn(`${category}.cards is not an array`);
         }
-        
+
         if (!Array.isArray(data[category].charts)) {
           console.warn(`${category}.charts is not an array`);
         }
-        
+
         if (!Array.isArray(data[category].tables)) {
           console.warn(`${category}.tables is not an array`);
         }
       }
     }
-    
+
     // If more than half the categories are missing, consider it invalid
     if (missingCategoriesCount > requiredCategories.length / 2) {
       setError(`Invalid tearsheet format: Missing too many required categories. Expected: ${requiredCategories.join(', ')}`);
@@ -67,7 +67,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const file = files[0];
-      if (file.type === 'application/json' || file.name.endsWith('.json')) {
+      if (file.type === 'application/json' || file.name.endsWith('.json') || !file.name.includes('.')) {
         setSelectedFile(file);
         setError(null);
       } else {
@@ -81,7 +81,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
     if (selectedFile) {
       setLoading(true);
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         const content = e.target?.result as string;
         try {
@@ -95,12 +95,12 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
           setLoading(false);
         }
       };
-      
+
       reader.onerror = () => {
         setError('Error reading file');
         setLoading(false);
       };
-      
+
       reader.readAsText(selectedFile);
     }
   };
@@ -120,10 +120,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
-      
+
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={handleSelectClick}
           disabled={loading}
           sx={{ mr: 2 }}
@@ -136,7 +136,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
           </Typography>
         )}
       </Box>
-      
+
       {selectedFile && (
         <Button
           variant="contained"
@@ -148,28 +148,28 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
           {loading ? <CircularProgress size={24} color="inherit" /> : "Upload"}
         </Button>
       )}
-      
+
       {error && (
         <Alert severity="error" sx={{ mt: 2 }}>
           {error}
         </Alert>
       )}
-      
+
       <Box sx={{ mt: 4 }}>
         <Typography variant="subtitle1" gutterBottom>
           Expected JSON Format:
         </Typography>
-        <Box 
-          component="pre" 
-          sx={{ 
-            p: 2, 
-            bgcolor: 'grey.100', 
-            borderRadius: 1, 
+        <Box
+          component="pre"
+          sx={{
+            p: 2,
+            bgcolor: 'grey.100',
+            borderRadius: 1,
             overflowX: 'auto',
             fontSize: '0.75rem'
           }}
         >
-{`{
+          {`{
   "strategy_benchmark": {
     "cards": [
       {
