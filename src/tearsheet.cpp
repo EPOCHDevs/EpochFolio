@@ -8,6 +8,24 @@
 #include "portfolio/txn.h"
 #include <glaze/glaze.hpp>
 
+namespace glz {
+json_t to_json(const epoch_frame::Scalar &array) {
+  if (array.is_null()) {
+    return {};
+  }
+
+  const auto type = array.type()->id();
+  if (is_numeric(type)) {
+    return array.cast_double().as_double();
+  }
+
+  if (type == arrow::Type::BOOL) {
+    return array.as_bool();
+  }
+  return array.repr();
+}
+}; // namespace glz
+
 namespace epoch_folio {
 PortfolioTearSheetFactory::PortfolioTearSheetFactory(
     TearSheetDataOption const &options)
