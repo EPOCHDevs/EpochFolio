@@ -19,6 +19,7 @@ TEST_CASE("Tearsheet") {
   auto utc = arrow::timestamp(arrow::TimeUnit::NANO, "UTC");
   auto test_returns =
       epoch_frame::read_csv_file(test_returns_path, {.has_header = false})
+          .ValueOrDie()
           .set_index("f0")
           .to_series();
   auto index = test_returns.index();
@@ -28,18 +29,22 @@ TEST_CASE("Tearsheet") {
 
   auto test_factor =
       epoch_frame::read_parquet(factor_returns_path)
+          .ValueOrDie()
           .set_index("t")["c"]
           .pct_change()
           .loc({test_returns.index()->at(0), test_returns.index()->at(-1)});
   test_factor = test_factor.set_index(
       index->Make(test_factor.index()->array().cast(utc).value()));
 
-  auto test_txn = epoch_frame::read_csv_file(test_txn_path).rename({{"", "x"}});
+  auto test_txn = epoch_frame::read_csv_file(test_txn_path)
+                      .ValueOrDie()
+                      .rename({{"", "x"}});
   test_txn = test_txn.assign("timestamp", test_txn["x"].cast(utc))
                  .drop("x")
                  .set_index("timestamp");
 
-  auto test_pos = epoch_frame::read_csv_file(test_pos_path).set_index("index");
+  auto test_pos =
+      epoch_frame::read_csv_file(test_pos_path).ValueOrDie().set_index("index");
   test_pos = test_pos.set_index(
       index->Make(test_pos.index()->array().cast(utc).value()));
 
@@ -53,7 +58,8 @@ TEST_CASE("Tearsheet") {
       {"MMM", "Construction"},
   };
 
-  auto round_trip = epoch_frame::read_csv_file(test_round_trip).set_index("");
+  auto round_trip =
+      epoch_frame::read_csv_file(test_round_trip).ValueOrDie().set_index("");
   round_trip =
       round_trip.assign("open_datetime", round_trip["open_dt"].cast(utc))
           .drop("open_dt");
