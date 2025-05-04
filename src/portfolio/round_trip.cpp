@@ -54,10 +54,10 @@ namespace epoch_folio
         fields.reserve(4);
         for (auto const &field : {"all_trades", "long_trades", "short_trades"}) {
             if (is_duration) {
-                fields.emplace_back(int64_field("all_trades"));
+                fields.emplace_back(int64_field(field));
             }
             else {
-                fields.emplace_back(float64_field("all_trades"));
+                fields.emplace_back(float64_field(field));
             }
         }
         return factory::table::make_table(
