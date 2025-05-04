@@ -43,9 +43,9 @@ namespace epoch_folio
                         auto short_agg = _short.agg(AxisType::Row, fn);
 
                         if constexpr (is_duration) {
-                            all_trades[i] = all_agg;
-                            long_trades[i] = long_agg;
-                            short_trades[i] = short_agg;
+                            all_trades[i] = all_agg.cast_int64();
+                            long_trades[i] = long_agg.cast_int64();
+                            short_trades[i] = short_agg.cast_int64();
                         }
                         else {
                             all_trades[i] = all_agg * multiplier;
