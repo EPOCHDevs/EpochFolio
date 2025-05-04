@@ -17,14 +17,14 @@ namespace epoch_folio
 {
     using AggList = std::vector<std::pair<std::string, std::variant<std::function<Scalar(Series const &)>, std::string>>>;
 
+    template<bool is_duration=false>
     arrow::TablePtr AggAllLongShort(epoch_frame::DataFrame const &round_trip, std::string const &col, AggList const &stats_dict, bool is_percentage = false) {
         std::vector<Scalar> index(stats_dict.size());
         std::vector<Scalar> all_trades(stats_dict.size());
         std::vector<Scalar> long_trades(stats_dict.size());
         std::vector<Scalar> short_trades(stats_dict.size());
 
-        const bool is_duration = col == "duration";
-        auto multiplier = is_percentage ? 100.0_scalar : (is_duration ? Scalar{1UL} : 1.0_scalar);
+        auto multiplier = is_percentage ? 100.0_scalar : 1.0_scalar;
         tbb::parallel_for(tbb::blocked_range<size_t>(0, stats_dict.size()), [&](tbb::blocked_range<size_t> const &r)
         {
             for (size_t i = r.begin(); i != r.end(); ++i) {
@@ -38,9 +38,20 @@ namespace epoch_folio
                 std::visit([&]<typename T>(T const& fn) {
 
                     if constexpr (std::is_same_v<T, std::string>) {
-                         all_trades[i] = all.agg(AxisType::Row, fn) * multiplier;
-                         long_trades[i] = _long.agg(AxisType::Row, fn) * multiplier;
-                         short_trades[i] = _short.agg(AxisType::Row, fn) * multiplier;
+                        auto all_agg = all.agg(AxisType::Row, fn);
+                        auto long_agg = _long.agg(AxisType::Row, fn);
+                        auto short_agg = _short.agg(AxisType::Row, fn);
+
+                        if constexpr (is_duration) {
+                            all_trades[i] = all_agg;
+                            long_trades[i] = long_agg;
+                            short_trades[i] = short_agg;
+                        }
+                        else {
+                            all_trades[i] = all_agg * multiplier;
+                           long_trades[i] = long_agg * multiplier;
+                           short_trades[i] = short_agg * multiplier;
+                        }
                     }
                     else {
                         all_trades[i] = fn(all) * multiplier;
@@ -53,7 +64,7 @@ namespace epoch_folio
         arrow::FieldVector fields{string_field("key")};
         fields.reserve(4);
         for (auto const &field : {"all_trades", "long_trades", "short_trades"}) {
-            if (is_duration) {
+            if constexpr (is_duration) {
                 fields.emplace_back(int64_field(field));
             }
             else {
@@ -198,7 +209,7 @@ namespace epoch_folio
 
         auto pnl = AggAllLongShort(round_trip, "pnl", PNL_STATS);
         auto summary = AggAllLongShort(round_trip, "pnl", SUMMARY_STATS);
-        auto duration = AggAllLongShort(round_trip, "duration", DURATION_STATS);
+        auto duration = AggAllLongShort<true>(round_trip, "duration", DURATION_STATS);
         auto returns = AggAllLongShort(round_trip, "returns", RETURNS_STATS, true);
 
         ColumnDefs symbols_columns;
