@@ -119,15 +119,12 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
 
 HistogramDef TearSheetFactory::MakeHoldingTimeChart(
     epoch_frame::DataFrame const &trades) const {
-  HistogramDef holding_time_chart{
-      .chartDef = ChartDef{"holding_time", "Holding time in days",
-                           EpochFolioDashboardWidget::Histogram,
-                           EpochFolioCategory::RoundTrip},
-      .data = (trades["duration"] / (86400_scalar * 1e9_scalar))
-                  .floor()
-                  .cast(arrow::int64())
-                  .contiguous_array()};
-  return holding_time_chart;
+    HistogramDef holding_time_chart{
+        .chartDef = ChartDef{"holding_time", "Holding time in days",
+                             EpochFolioDashboardWidget::Histogram,
+                             EpochFolioCategory::RoundTrip},
+        .data = trades["duration"].cast(arrow::timestamp(arrow::TimeUnit::NANO)).dt().floor(arrow::compute::RoundTemporalOptions{}).cast(arrow::int64())};
+    return holding_time_chart;
 }
 
 HistogramDef TearSheetFactory::MakePnlPerRoundTripDollarsChart(
