@@ -187,11 +187,6 @@ void TearSheetFactory::Make(uint32_t k, FullTearSheet &output) const {
   auto positions = epoch_frame::concat(
       {.frames = {m_positionsNoCash, m_cash.to_frame("cash")},
        .axis = epoch_frame::AxisType::Column});
-  auto normalized_index = positions.index()->normalize();
-  if (normalized_index->has_duplicates()) {
-    positions =
-        positions.group_by_agg(normalized_index->as_chunked_array()).last();
-  }
 
   auto positionsAlloc = GetPercentAlloc(positions);
   auto topPositions = GetTopLongShortAbs(positionsAlloc);

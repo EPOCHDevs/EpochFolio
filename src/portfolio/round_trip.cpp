@@ -23,7 +23,8 @@ namespace epoch_folio
         std::vector<Scalar> long_trades(stats_dict.size());
         std::vector<Scalar> short_trades(stats_dict.size());
 
-        auto multiplier = is_percentage ? 100.0_scalar : 1.0_scalar;
+        const bool is_duration = col == "duration";
+        auto multiplier = is_percentage ? 100.0_scalar : (is_duration ? Scalar{1UL} : 1.0_scalar);
         tbb::parallel_for(tbb::blocked_range<size_t>(0, stats_dict.size()), [&](tbb::blocked_range<size_t> const &r)
         {
             for (size_t i = r.begin(); i != r.end(); ++i) {
@@ -51,10 +52,14 @@ namespace epoch_folio
 
         arrow::FieldVector fields{string_field("key")};
         fields.reserve(4);
-        fields.emplace_back(float64_field("all_trades"));
-        fields.emplace_back(float64_field("long_trades"));
-        fields.emplace_back(float64_field("short_trades"));
-
+        for (auto const &field : {"all_trades", "long_trades", "short_trades"}) {
+            if (is_duration) {
+                fields.emplace_back(int64_field("all_trades"));
+            }
+            else {
+                fields.emplace_back(float64_field("all_trades"));
+            }
+        }
         return factory::table::make_table(
             std::vector{index, all_trades, long_trades, short_trades}, fields
             );
