@@ -99,8 +99,12 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
 
   const auto alpha = profitable.sum().cast_double().as_double();
   const auto beta = (!profitable).sum().cast_double().as_double();
-  // Jeffreys prior (adds 0.5)
-  const boost::math::beta_distribution dist(alpha + 0.5, beta + 0.5);
+    if (alpha == 0.0 || beta == 0.0) {
+        SPDLOG_WARN("No profitable trades found, skipping prob profit chart");
+        return prob_profit_chart;
+    }
+
+  const boost::math::beta_distribution dist(alpha, beta);
 
   std::vector<double> y(x.size());
   std::transform(x.begin(), x.end(), y.begin(),
