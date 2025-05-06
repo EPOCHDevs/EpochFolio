@@ -97,9 +97,10 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
   auto x = linspace(0.0, 1.0, kMaxPoints);
   auto profitable = trades["pnl"] > 0_scalar;
 
-  auto alpha = profitable.sum().cast_double().as_double();
-  auto beta = (!profitable).sum().cast_double().as_double();
-  const boost::math::beta_distribution dist(alpha, beta);
+  const auto alpha = profitable.sum().cast_double().as_double();
+  const auto beta = (!profitable).sum().cast_double().as_double();
+  // Jeffreys prior (adds 0.5)
+  const boost::math::beta_distribution dist(alpha + 0.5, beta + 0.5);
 
   std::vector<double> y(x.size());
   std::transform(x.begin(), x.end(), y.begin(),
