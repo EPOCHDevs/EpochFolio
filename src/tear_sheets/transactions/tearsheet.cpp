@@ -35,23 +35,29 @@ TearSheetFactory::MakeTurnoverOverTimeChart(Series const &turnover) const {
 
 LinesDef TearSheetFactory::MakeDailyVolumeChart() const {
   auto dailyTransactions = GetTransactionVolume(m_transactions)["txn_shares"];
-  return LinesDef{
-      .chartDef = ChartDef{"dailyVolume", "Daily transaction volume",
-                           EpochFolioDashboardWidget::Lines,
-                           EpochFolioCategory::Transactions,
-                           AxisDef{kLinearAxisType, "Amount of shares traded"}},
-      .lines = {MakeSeriesLine(dailyTransactions, "dailyVolume")}};
+  return LinesDef{.chartDef =
+                      ChartDef{"dailyVolume", "Daily transaction volume",
+                               EpochFolioDashboardWidget::Lines,
+                               EpochFolioCategory::Transactions,
+                               std::nullopt, // Default y-axis
+                               MakeLinearAxis("Amount of shares traded")},
+                  .lines = {MakeSeriesLine(dailyTransactions, "dailyVolume")}};
 }
 
 HistogramDef
 TearSheetFactory::MakeDailyTurnoverHistogram(Series const &turnover) const {
+  // Convert turnover to percentage for display
+  auto turnoverPct = turnover * 100_scalar;
+
   return HistogramDef{
-      .chartDef = ChartDef{"dailyTurnoverHistogram", "Daily turnover histogram",
-                           EpochFolioDashboardWidget::Histogram,
-                           EpochFolioCategory::Transactions,
-                           AxisDef{kLinearAxisType, "Proportion"},
-                           AxisDef{kLinearAxisType}},
-      .data = turnover.contiguous_array()};
+      .chartDef =
+          ChartDef{"dailyTurnoverHistogram", "Daily turnover histogram",
+                   EpochFolioDashboardWidget::Histogram,
+                   EpochFolioCategory::Transactions,
+                   MakeLinearAxis("Frequency"), // Y-axis: frequency/count
+                   MakePercentageAxis(
+                       "Daily Turnover")}, // X-axis: turnover percentage
+      .data = turnoverPct.contiguous_array()};
 }
 
 BarDef TearSheetFactory::MakeTransactionTimeHistogram(
@@ -88,10 +94,13 @@ BarDef TearSheetFactory::MakeTransactionTimeHistogram(
           ChartDef{"transactionTimeHistogram", "Transaction time distribution",
                    EpochFolioDashboardWidget::Column,
                    EpochFolioCategory::Transactions,
-                   AxisDef{kLinearAxisType, "Proportion"},
-                   AxisDef{kLinearAxisType, "Proportion",
-                           trade_value.index()->to_vector<std::string>()}},
-      .data = trade_value.contiguous_array(),
+                   MakePercentageAxis("Proportion"),
+                   AxisDef{.type = kCategoryAxisType,
+                           .label = "Time",
+                           .categories =
+                               trade_value.index()->to_vector<std::string>()}},
+      .data =
+          trade_value.contiguous_array() * 100_scalar, // Convert to percentage
       .barWidth = binSize};
 }
 

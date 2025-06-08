@@ -85,11 +85,18 @@ std::vector<Chart> TearSheetFactory::MakeReturnsLineCharts(
   const auto cumFactorReturns = df[kBenchmarkColumnName];
 
   std::vector<Chart> result;
-  result.emplace_back(LinesDef{{"cumReturns", "Cumulative returns",
-                                epoch_core::EpochFolioDashboardWidget::Lines,
-                                EpochFolioCategory::StrategyBenchmark},
-                               MakeSeriesLines(df),
-                               StraightLines{kStraightLineAtOne}});
+
+  // Compute axis bounds for cumulative returns
+  auto cumReturnsBounds =
+      ComputeAxisBounds({m_strategyCumReturns, m_benchmarkCumReturns});
+
+  result.emplace_back(
+      LinesDef{{"cumReturns", "Cumulative returns",
+                epoch_core::EpochFolioDashboardWidget::Lines,
+                EpochFolioCategory::StrategyBenchmark,
+                MakeAxisFromBounds(cumReturnsBounds, "Cumulative Returns")},
+               MakeSeriesLines(df),
+               StraightLines{kStraightLineAtOne}});
 
   result.emplace_back(
       LinesDef{{"cumReturnsVolMatched",
@@ -104,14 +111,17 @@ std::vector<Chart> TearSheetFactory::MakeReturnsLineCharts(
       LinesDef{{"cumReturnsLogScale", "Cumulative returns on log scale",
                 epoch_core::EpochFolioDashboardWidget::Lines,
                 epoch_core::EpochFolioCategory::StrategyBenchmark,
-                AxisDef{kLogAxisType}},
+                AxisDef{.type = kLogAxisType,
+                        .min = epoch_frame::Scalar{0.1},
+                        .tickInterval = epoch_frame::Scalar{0.1}}},
                MakeSeriesLines(df),
                StraightLines{kStraightLineAtOne}});
 
   result.emplace_back(LinesDef{
       {"returns", "Returns", epoch_core::EpochFolioDashboardWidget::Lines,
-       epoch_core::EpochFolioCategory::StrategyBenchmark},
-      {MakeSeriesLine(m_strategy, kStrategyColumnName)},
+       epoch_core::EpochFolioCategory::StrategyBenchmark,
+       MakePercentageAxis("Returns (%)")},
+      {MakeSeriesLine(m_strategy * 100_scalar, kStrategyColumnName)},
       StraightLines{kStraightLineAtZero}});
   return result;
 }
@@ -130,10 +140,16 @@ void TearSheetFactory::MakeRollingBetaCharts(std::vector<Chart> &lines) const {
                                       rolling12MonthBeta.to_frame("12-mo")},
                            .axis = AxisType::Column});
 
+  // Compute axis bounds for beta with custom tick interval
+  auto betaBounds =
+      ComputeAxisBounds({rolling6MonthBeta, rolling12MonthBeta}, 0.1);
+  betaBounds.tickInterval = betaBounds.tickInterval > 2.0 ? 0.5 : 0.25;
+
   lines.emplace_back(
       LinesDef{{"rolling_beta", "Rolling portfolio beta",
                 epoch_core::EpochFolioDashboardWidget::Lines,
-                epoch_core::EpochFolioCategory::StrategyBenchmark},
+                epoch_core::EpochFolioCategory::StrategyBenchmark,
+                MakeAxisFromBounds(betaBounds, "Beta")},
                MakeSeriesLines(rollingBeta),
                StraightLines{
                    kStraightLineAtOne,
@@ -146,10 +162,16 @@ void TearSheetFactory::MakeRollingSharpeCharts(
       RollingSharpe(m_strategy, 6 * ep::APPROX_BDAYS_PER_MONTH);
   const auto benchmarkSharpe =
       RollingSharpe(m_benchmark, 6 * ep::APPROX_BDAYS_PER_MONTH);
+
+  // Compute axis bounds for Sharpe ratio with custom tick interval
+  auto sharpeBounds = ComputeAxisBounds({strategySharpe, benchmarkSharpe}, 0.1);
+  sharpeBounds.tickInterval = sharpeBounds.tickInterval > 2.0 ? 0.5 : 0.25;
+
   const LinesDef rollingSharpe{
       {"rollingSharpe", "Rolling Sharpe ratio (6 Months)",
        epoch_core::EpochFolioDashboardWidget::Lines,
-       epoch_core::EpochFolioCategory::RiskAnalysis},
+       epoch_core::EpochFolioCategory::RiskAnalysis,
+       MakeAxisFromBounds(sharpeBounds, "Sharpe Ratio")},
       MakeSeriesLines(strategySharpe, benchmarkSharpe, "Sharpe",
                       "Benchmark Sharpe"),
       StraightLines{
@@ -164,9 +186,16 @@ void TearSheetFactory::MakeRollingVolatilityCharts(
       RollingVolatility(m_strategy, 6 * ep::APPROX_BDAYS_PER_MONTH);
   auto benchmarkVol =
       RollingVolatility(m_benchmark, 6 * ep::APPROX_BDAYS_PER_MONTH);
+
+  // Compute axis bounds for volatility with custom tick interval
+  auto volBounds = ComputeAxisBounds({strategyVol, benchmarkVol}, 0.1);
+  volBounds.min = std::max(0.0, volBounds.min); // Volatility can't be negative
+  volBounds.tickInterval = (volBounds.max - volBounds.min) > 0.5 ? 0.1 : 0.05;
+
   LinesDef rollingVol{{"rollingVol", "Rolling volatility (6 Months)",
                        epoch_core::EpochFolioDashboardWidget::Lines,
-                       epoch_core::EpochFolioCategory::RiskAnalysis},
+                       epoch_core::EpochFolioCategory::RiskAnalysis,
+                       MakeAxisFromBounds(volBounds, "Volatility")},
                       MakeSeriesLines(strategyVol, benchmarkVol, "Volatility",
                                       "Benchmark Volatility"),
                       StraightLines{StraightLineDef{"Average Volatility",
@@ -370,12 +399,19 @@ void TearSheetFactory::MakeRollingMaxDrawdownCharts(
 }
 
 void TearSheetFactory::MakeUnderwaterCharts(std::vector<Chart> &lines) const {
+  auto underwaterData = epoch_frame::Scalar{100} *
+                        GetUnderwaterFromCumReturns(m_strategyCumReturns);
+
+  // Underwater plot is always negative or zero, so max is 0
+  auto underwaterBounds = ComputePercentageAxisBounds(underwaterData, 0.05);
+  underwaterBounds.max = 0.0; // Underwater plot max is always 0
+
   LinesDef underwater{
       {"underwater", "Underwater plot",
        epoch_core::EpochFolioDashboardWidget::Area,
-       epoch_core::EpochFolioCategory::RiskAnalysis},
-      {MakeSeriesLine(epoch_frame::Scalar{100} *
-                      GetUnderwaterFromCumReturns(m_strategyCumReturns))}};
+       epoch_core::EpochFolioCategory::RiskAnalysis,
+       MakeAxisFromBounds(underwaterBounds, "Drawdown", "{value}%")},
+      {MakeSeriesLine(underwaterData)}};
   lines.emplace_back(underwater);
 }
 
@@ -406,8 +442,8 @@ HeatMapDef TearSheetFactory::BuildMonthlyReturnsHeatMap() const {
       .chartDef = {"monthlyReturns", "Monthly returns",
                    epoch_core::EpochFolioDashboardWidget::HeatMap,
                    epoch_core::EpochFolioCategory::ReturnsDistribution,
-                   AxisDef{kCategoryAxisType, "Year"},
-                   AxisDef{kCategoryAxisType, "Month"}}};
+                   AxisDef{.type = kCategoryAxisType, .label = "Year"},
+                   AxisDef{.type = kCategoryAxisType, .label = "Month"}}};
 
   heatMap.points.reserve(monthlyReturns.size());
   auto index = monthlyReturns.index();
@@ -461,8 +497,10 @@ BarDef TearSheetFactory::BuildAnnualReturnsBar() const {
   return {.chartDef = {"annualReturns", "Annual returns",
                        EpochFolioDashboardWidget::Bar,
                        EpochFolioCategory::ReturnsDistribution,
-                       AxisDef{kLinearAxisType, "Year", categories},
-                       AxisDef{kLinearAxisType, "Returns"}},
+                       AxisDef{.type = kLinearAxisType,
+                               .label = "Year",
+                               .categories = categories},
+                       MakePercentageAxis("Returns")},
           .data = data,
           .straightLines = {StraightLineDef{"Mean", mean, false}}};
 }
@@ -476,7 +514,8 @@ HistogramDef TearSheetFactory::BuildMonthlyReturnsHistogram() const {
   return {.chartDef = {"monthlyReturns", "Distribution of monthly returns",
                        EpochFolioDashboardWidget::Histogram,
                        EpochFolioCategory::ReturnsDistribution,
-                       AxisDef{kLinearAxisType, "Number of Months"}},
+                       MakeLinearAxis("Number of Months"),
+                       MakePercentageAxis("Monthly Returns")},
           .data = data,
           .straightLines = {StraightLineDef{"Mean", mean, false}},
           .binsCount = 12};
@@ -497,10 +536,10 @@ BoxPlotDef TearSheetFactory::BuildReturnQuantiles() const {
   return {.chartDef = {"returnQuantiles", "Return quantiles",
                        EpochFolioDashboardWidget::BoxPlot,
                        EpochFolioCategory::ReturnsDistribution,
-                       AxisDef{kLinearAxisType},
-                       AxisDef{kCategoryAxisType,
-                               "",
-                               {"Daily", "Weekly", "Monthly"}}},
+                       MakePercentageAxis("Returns"),
+                       AxisDef{.type = kCategoryAxisType,
+                               .label = "",
+                               .categories = {"Daily", "Weekly", "Monthly"}}},
           .data = data};
 }
 

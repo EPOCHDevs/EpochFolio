@@ -4,7 +4,9 @@
 
 #pragma once
 #include "table_def.h"
+#include <cmath>
 #include <epoch_frame/frame_or_series.h>
+#include <limits>
 
 namespace epoch_folio {
 constexpr const char *kLinearAxisType{"linear"};
@@ -13,8 +15,15 @@ constexpr const char *kDateTimeAxisType{"datetime"};
 constexpr const char *kCategoryAxisType{"category"};
 struct AxisDef {
   std::optional<std::string> type{};
-  std::optional<std::string> label{};
+  std::optional<std::string> label{}; // Axis title
   std::vector<std::string> categories{};
+
+  // Chart rendering optimization fields
+  std::optional<epoch_frame::Scalar> min{};          // Minimum value for axis
+  std::optional<epoch_frame::Scalar> max{};          // Maximum value for axis
+  std::optional<epoch_frame::Scalar> tickInterval{}; // Interval between ticks
+  std::optional<std::string>
+      labelFormat{}; // Format string for axis labels (e.g., "{value}%")
 };
 
 struct ChartDef {
@@ -22,8 +31,8 @@ struct ChartDef {
   std::string title;
   epoch_core::EpochFolioDashboardWidget type;
   epoch_core::EpochFolioCategory category;
-  std::optional<AxisDef> yAxis{AxisDef{kLinearAxisType}};
-  std::optional<AxisDef> xAxis{AxisDef{kDateTimeAxisType}};
+  std::optional<AxisDef> yAxis{AxisDef{.type = kLinearAxisType}};
+  std::optional<AxisDef> xAxis{AxisDef{.type = kDateTimeAxisType}};
 };
 
 struct StraightLineDef {
@@ -159,4 +168,116 @@ MakeSeriesLines(const epoch_frame::Series &seriesA,
                 const epoch_frame::Series &seriesB,
                 std::optional<std::string> const &nameA = std::nullopt,
                 std::optional<std::string> const &nameB = std::nullopt);
+
+// Helper functions to create common axis configurations
+inline AxisDef
+MakeLinearAxis(std::optional<std::string> label = std::nullopt,
+               std::optional<double> min = std::nullopt,
+               std::optional<double> max = std::nullopt,
+               std::optional<double> tickInterval = std::nullopt,
+               std::optional<std::string> labelFormat = std::nullopt) {
+  return AxisDef{
+      .type = kLinearAxisType,
+      .label = label,
+      .categories = {},
+      .min = min.has_value() ? std::optional<epoch_frame::Scalar>{*min}
+                             : std::nullopt,
+      .max = max.has_value() ? std::optional<epoch_frame::Scalar>{*max}
+                             : std::nullopt,
+      .tickInterval = tickInterval.has_value()
+                          ? std::optional<epoch_frame::Scalar>{*tickInterval}
+                          : std::nullopt,
+      .labelFormat = labelFormat};
+}
+
+inline AxisDef
+MakeDateTimeAxis(std::optional<std::string> label = std::nullopt,
+                 std::optional<int64_t> minTimestamp = std::nullopt,
+                 std::optional<int64_t> maxTimestamp = std::nullopt,
+                 std::optional<int64_t> tickIntervalMs = std::nullopt,
+                 std::optional<std::string> labelFormat = std::nullopt) {
+  return AxisDef{.type = kDateTimeAxisType,
+                 .label = label,
+                 .categories = {},
+                 .min = minTimestamp.has_value()
+                            ? std::optional<epoch_frame::Scalar>{*minTimestamp}
+                            : std::nullopt,
+                 .max = maxTimestamp.has_value()
+                            ? std::optional<epoch_frame::Scalar>{*maxTimestamp}
+                            : std::nullopt,
+                 .tickInterval =
+                     tickIntervalMs.has_value()
+                         ? std::optional<epoch_frame::Scalar>{*tickIntervalMs}
+                         : std::nullopt,
+                 .labelFormat = labelFormat};
+}
+
+inline AxisDef
+MakePercentageAxis(std::optional<std::string> label = std::nullopt,
+                   std::optional<double> min = std::nullopt,
+                   std::optional<double> max = std::nullopt,
+                   std::optional<double> tickInterval = std::nullopt) {
+  return MakeLinearAxis(label, min, max, tickInterval, "{value}%");
+}
+
+// Helper functions to compute axis bounds from data
+struct AxisBounds {
+  double min;
+  double max;
+  double tickInterval;
+};
+
+inline AxisBounds ComputeAxisBounds(const epoch_frame::Series &series,
+                                    double paddingRatio = 0.05) {
+  double dataMin = series.min().cast_double().as_double();
+  double dataMax = series.max().cast_double().as_double();
+  double range = dataMax - dataMin;
+  double padding = range * paddingRatio;
+
+  // Calculate nice tick interval based on range
+  double tickInterval = std::pow(10, std::floor(std::log10(range))) / 2.0;
+
+  return {dataMin - padding, dataMax + padding, tickInterval};
+}
+
+inline AxisBounds
+ComputeAxisBounds(const std::vector<epoch_frame::Series> &seriesList,
+                  double paddingRatio = 0.05) {
+  double dataMin = std::numeric_limits<double>::max();
+  double dataMax = std::numeric_limits<double>::lowest();
+
+  for (const auto &series : seriesList) {
+    dataMin = std::min(dataMin, series.min().cast_double().as_double());
+    dataMax = std::max(dataMax, series.max().cast_double().as_double());
+  }
+
+  double range = dataMax - dataMin;
+  double padding = range * paddingRatio;
+
+  // Calculate nice tick interval based on range
+  double tickInterval = std::pow(10, std::floor(std::log10(range))) / 2.0;
+
+  return {dataMin - padding, dataMax + padding, tickInterval};
+}
+
+inline AxisBounds ComputePercentageAxisBounds(const epoch_frame::Series &series,
+                                              double paddingRatio = 0.05) {
+  double dataMin = series.min().cast_double().as_double();
+  double dataMax = series.max().cast_double().as_double();
+  double range = dataMax - dataMin;
+  double padding = range * paddingRatio;
+
+  // Nice tick interval for percentages
+  double tickInterval = std::abs(range) > 50 ? 10.0 : 5.0;
+
+  return {dataMin - padding, dataMax + padding, tickInterval};
+}
+
+inline AxisDef
+MakeAxisFromBounds(const AxisBounds &bounds,
+                   std::optional<std::string> label = std::nullopt,
+                   std::optional<std::string> labelFormat = std::nullopt) {
+  return MakeLinearAxis(label, bounds.min, bounds.max, bounds.tickInterval,
+                        labelFormat);
+}
 } // namespace epoch_folio

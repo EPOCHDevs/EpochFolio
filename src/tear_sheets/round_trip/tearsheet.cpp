@@ -57,9 +57,13 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
   // round_trip_lifetimes
   auto symbol_series = trades["symbol"];
   XRangeDef xrange;
-  xrange.chartDef = ChartDef{
-      "xrange", "Round trip lifetimes", EpochFolioDashboardWidget::XRange,
-      EpochFolioCategory::RoundTrip, AxisDef{"Asset", "Asset"}};
+  xrange.chartDef =
+      ChartDef{"xrange",
+               "Round trip lifetimes",
+               EpochFolioDashboardWidget::XRange,
+               EpochFolioCategory::RoundTrip,
+               std::nullopt, // Default x-axis (datetime)
+               AxisDef{.type = kCategoryAxisType, .label = "Asset"}};
   xrange.categories = Array{symbol_series.unique()}.to_vector<std::string>();
   xrange.points.resize(trades.num_rows());
 
@@ -91,7 +95,8 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
       .chartDef = ChartDef{
           "prob_profit_trade", "Probability of making a profitable decision",
           EpochFolioDashboardWidget::Lines, EpochFolioCategory::RoundTrip,
-          AxisDef{kLinearAxisType, "Belief"}, AxisDef{kLinearAxisType, ""}}};
+          MakeLinearAxis("Probability Density"),
+          MakeLinearAxis("Belief", 0.0, 1.0, 0.1)}};
 
   constexpr double kMaxPoints = 500;
   auto x = linspace(0.0, 1.0, kMaxPoints);
@@ -99,10 +104,10 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
 
   const auto alpha = profitable.sum().cast_double().as_double();
   const auto beta = (!profitable).sum().cast_double().as_double();
-    if (alpha == 0.0 || beta == 0.0) {
-        SPDLOG_WARN("No profitable trades found, skipping prob profit chart");
-        return prob_profit_chart;
-    }
+  if (alpha == 0.0 || beta == 0.0) {
+    SPDLOG_WARN("No profitable trades found, skipping prob profit chart");
+    return prob_profit_chart;
+  }
 
   const boost::math::beta_distribution dist(alpha, beta);
 
@@ -124,12 +129,16 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
 
 HistogramDef TearSheetFactory::MakeHoldingTimeChart(
     epoch_frame::DataFrame const &trades) const {
-    HistogramDef holding_time_chart{
-        .chartDef = ChartDef{"holding_time", "Holding time in days",
-                             EpochFolioDashboardWidget::Histogram,
-                             EpochFolioCategory::RoundTrip},
-        .data = trades["duration"].cast(arrow::timestamp(arrow::TimeUnit::NANO)).dt().floor(arrow::compute::RoundTemporalOptions{}).cast(arrow::int64())};
-    return holding_time_chart;
+  HistogramDef holding_time_chart{
+      .chartDef = ChartDef{"holding_time", "Holding time in days",
+                           EpochFolioDashboardWidget::Histogram,
+                           EpochFolioCategory::RoundTrip},
+      .data = trades["duration"]
+                  .cast(arrow::timestamp(arrow::TimeUnit::NANO))
+                  .dt()
+                  .floor(arrow::compute::RoundTemporalOptions{})
+                  .cast(arrow::int64())};
+  return holding_time_chart;
 }
 
 HistogramDef TearSheetFactory::MakePnlPerRoundTripDollarsChart(
