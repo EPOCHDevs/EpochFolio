@@ -31,7 +31,7 @@ const TableRenderer: React.FC<TableRendererProps> = ({ tableData }) => {
     console.log('Processing DataTable format');
     // Use type assertion to access properties safely
     // @ts-ignore - Safely access properties that might not be defined on the type
-    tableTitle = tableData.category || 'Data Table';
+    tableTitle = tableData.title || tableData.category || 'Data Table';
     // @ts-ignore
     tableColumns = tableData.columns || [];
     // @ts-ignore
@@ -61,8 +61,8 @@ const TableRenderer: React.FC<TableRendererProps> = ({ tableData }) => {
             <TableHead>
               <TableRow>
                 {tableColumns.map((column: any, index: number) => (
-                  <TableCell 
-                    key={index} 
+                  <TableCell
+                    key={index}
                     align={index === 0 ? 'left' : 'right'}
                     sx={{ fontWeight: 'bold' }}
                   >
@@ -80,8 +80,8 @@ const TableRenderer: React.FC<TableRendererProps> = ({ tableData }) => {
                       // Get column type if available
                       const columnType = tableColumns[cellIndex]?.type;
                       return (
-                        <TableCell 
-                          key={cellIndex} 
+                        <TableCell
+                          key={cellIndex}
                           align={cellIndex === 0 ? 'left' : 'right'}
                           sx={cellIndex === 0 ? { fontWeight: 'medium' } : {}}
                         >
@@ -94,8 +94,8 @@ const TableRenderer: React.FC<TableRendererProps> = ({ tableData }) => {
                     tableColumns.map((column: any, cellIndex: number) => {
                       const value = row[column.id];
                       return (
-                        <TableCell 
-                          key={cellIndex} 
+                        <TableCell
+                          key={cellIndex}
                           align={cellIndex === 0 ? 'left' : 'right'}
                           sx={cellIndex === 0 ? { fontWeight: 'medium' } : {}}
                         >

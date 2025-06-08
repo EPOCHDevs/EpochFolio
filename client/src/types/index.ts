@@ -200,6 +200,7 @@ export type ColumnDefs = ColumnDef[];
 export interface Table {
   type: EpochFolioDashboardWidget
   category: EpochFolioCategory;
+  title: string;
   columns: ColumnDefs;
   data: Record<string, Scalar>[];
 }

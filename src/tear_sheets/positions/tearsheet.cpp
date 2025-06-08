@@ -38,6 +38,7 @@ Table MakeTopPositionsTable(std::string const &id, std::string const &name,
       rows, {string_field(id), float64_field("max")});
   return {EpochFolioDashboardWidget::DataTable,
           EpochFolioCategory::Positions,
+          name,
           {ColumnDef{id, name, EpochFolioType::String},
            ColumnDef{"max", "Max", EpochFolioType::Percent}},
           data};
