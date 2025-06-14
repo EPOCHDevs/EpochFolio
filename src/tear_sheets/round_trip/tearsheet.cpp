@@ -164,10 +164,10 @@ HistogramDef TearSheetFactory::MakeReturnsPerRoundTripDollarsChart(
 void TearSheetFactory::Make(FullTearSheet &output) const {
   auto trades = ExtractRoundTrips();
 
-  if (trades.num_rows() < 5) {
-    SPDLOG_WARN("Fewer than 5 trades found, skipping round trip tear sheet");
-    return;
-  }
+  // if (trades.num_rows() < 5) {
+  //   SPDLOG_WARN("Fewer than 5 trades found, skipping round trip tear sheet");
+  //   return;
+  // }
 
   std::vector<Table> tables = GetRoundTripStats(trades);
   auto pie_chart = MakeProfitabilityPieChart(trades);
