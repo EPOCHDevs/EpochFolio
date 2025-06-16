@@ -80,54 +80,57 @@ arrow::TablePtr AggAllLongShort(epoch_frame::DataFrame const &round_trip,
 
 Table GetSymbolsTable(epoch_frame::DataFrame const &round_trip,
                       AggList const &stats_dict) {
-  auto apply_symbol = [&](std::string const &symbol,
-                          epoch_frame::Series const &returns) {
-    std::vector<std::string> index(stats_dict.size());
-    std::vector<Scalar> all_trades(stats_dict.size());
+    auto apply_symbol = [&](std::string const &symbol,
+                            epoch_frame::Series const &returns) {
+        std::vector<std::string> index(stats_dict.size());
+        std::vector<Scalar> all_trades(stats_dict.size());
 
-    std::transform(stats_dict.begin(), stats_dict.end(), index.begin(),
-                   all_trades.begin(), [&](auto const &stat, std::string &row) {
-                     row = stat.first;
-                     return std::visit(
-                         [&]<typename T>(T const &fn) {
-                           if constexpr (std::is_same_v<T, std::string>) {
-                             return returns.agg(AxisType::Row, fn) * 100_scalar;
-                           } else {
-                             return fn(returns) * 100_scalar;
-                           }
-                         },
-                         stat.second);
-                   });
+        std::transform(stats_dict.begin(), stats_dict.end(), index.begin(),
+                       all_trades.begin(), [&](auto const &stat, std::string &row) {
+                         row = stat.first;
+                         return std::visit(
+                             [&]<typename T>(T const &fn) {
+                               if constexpr (std::is_same_v<T, std::string>) {
+                                 return returns.agg(AxisType::Row, fn) * 100_scalar;
+                               } else {
+                                 return fn(returns) * 100_scalar;
+                               }
+                             },
+                             stat.second);
+                       });
 
-    return make_dataframe(factory::index::make_object_index(index),
-                          {all_trades},
-                          {arrow::field(symbol, arrow::float64())});
-  };
+        return make_dataframe(factory::index::make_object_index(index),
+                              {all_trades},
+                              {arrow::field(symbol, arrow::float64())});
+    };
 
-  auto groups = round_trip[std::vector<std::string>{"returns", "symbol"}]
-                    .group_by_apply("symbol")
-                    .groups();
-  std::vector<FrameOrSeries> frames;
-  ColumnDefs column_defs{{"key", "Stats", epoch_core::EpochFolioType::String}};
+    auto groups = round_trip[std::vector<std::string>{"returns", "symbol"}]
+                      .group_by_apply("symbol")
+                      .groups();
+    std::vector<FrameOrSeries> frames;
+    ColumnDefs column_defs{{"key", "Stats", epoch_core::EpochFolioType::String}};
 
-  frames.reserve(groups.size());
-  column_defs.reserve(groups.size() + 1);
+    frames.reserve(groups.size());
+    column_defs.reserve(groups.size() + 1);
 
-  auto returns = round_trip["returns"];
-  for (auto const &[symbol, indexes] : groups) {
-    auto symbol_name = symbol.repr();
-    frames.emplace_back(
-        apply_symbol(symbol_name, returns.iloc(Array{indexes})));
-    column_defs.emplace_back(symbol_name, symbol_name,
-                             epoch_core::EpochFolioType::Percent);
-  }
-
-  auto table = concat({.frames = frames, .axis = AxisType::Column})
+    auto returns = round_trip["returns"];
+    for (auto const &[symbol, indexes] : groups) {
+        auto symbol_name = symbol.repr();
+        frames.emplace_back(
+            apply_symbol(symbol_name, returns.iloc(Array{indexes})));
+        column_defs.emplace_back(symbol_name, symbol_name,
+                                 epoch_core::EpochFolioType::Percent);
+    }
+    arrow::TablePtr table;
+    if (!frames.empty()) {
+        table = concat({.frames = frames, .axis = AxisType::Column})
                    .reset_index("key")
                    .table();
-  return Table{epoch_core::EpochFolioDashboardWidget::DataTable,
-               epoch_core::EpochFolioCategory::RoundTrip, "Returns by Symbol",
-               column_defs, table};
+    }
+
+    return Table{epoch_core::EpochFolioDashboardWidget::DataTable,
+                 epoch_core::EpochFolioCategory::RoundTrip, "Returns by Symbol",
+                 column_defs, table};
 }
 
 std::vector<Table> GetRoundTripStats(epoch_frame::DataFrame const &round_trip) {
