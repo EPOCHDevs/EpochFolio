@@ -95,8 +95,7 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
       .chartDef = ChartDef{
           "prob_profit_trade", "Probability of making a profitable decision",
           EpochFolioDashboardWidget::Lines, EpochFolioCategory::RoundTrip,
-          MakeLinearAxis("Probability Density"),
-          MakeLinearAxis("Belief", 0.0, 1.0, 0.1)}};
+          MakeLinearAxis("Probability Density")}};
 
   constexpr double kMaxPoints = 500;
   auto x = linspace(0.0, 1.0, kMaxPoints);
