@@ -112,8 +112,8 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
   const boost::math::beta_distribution dist(alpha, beta);
 
   std::vector<double> y(x.size());
-  std::transform(x.begin(), x.end(), y.begin(), x.begin(),
-                 [&](double x_, double& x_out) { x_out *= 100.0; return pdf(dist, x_); });
+  std::transform(x.begin(), x.end(), x.begin(), y.begin() ,
+                 [&](double x_, double& x_out) { auto y_ = pdf(dist, x_); x_out *= 100.0; return y_; });
 
   prob_profit_chart.lines.emplace_back(MakeSeriesLine(x, y));
 
