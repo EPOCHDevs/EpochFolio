@@ -95,7 +95,8 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
       .chartDef = ChartDef{
           "prob_profit_trade", "Probability of making a profitable decision",
           EpochFolioDashboardWidget::Lines, EpochFolioCategory::RoundTrip,
-          MakeLinearAxis("Probability Density")}};
+          MakeLinearAxis("Belief"),
+            MakeLinearAxis("Probability")}};
 
   constexpr double kMaxPoints = 500;
   auto x = linspace(0.0, 1.0, kMaxPoints);
@@ -111,17 +112,15 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
   const boost::math::beta_distribution dist(alpha, beta);
 
   std::vector<double> y(x.size());
-  std::transform(x.begin(), x.end(), y.begin(),
-                 [&](double x_) { return pdf(dist, x_); });
+  std::transform(x.begin(), x.end(), y.begin(), x.begin(),
+                 [&](double x_, double& x_out) { x_out *= 100.0; return pdf(dist, x_); });
 
-  auto points =
-      std::views::iota(0, kMaxPoints) | epoch_core::ranges::to_vector_v;
-  prob_profit_chart.lines.emplace_back(MakeSeriesLine(points, y));
+  prob_profit_chart.lines.emplace_back(MakeSeriesLine(x, y));
 
   prob_profit_chart.straightLines.emplace_back(
-      "2.5%", Scalar{quantile(dist, 0.025)}, true);
+      "2.5%", Scalar{quantile(dist, 0.025)*100.0}, true);
   prob_profit_chart.straightLines.emplace_back(
-      "97.5%", Scalar{quantile(dist, 0.975)}, true);
+      "97.5%", Scalar{quantile(dist, 0.975)*100.0}, true);
 
   return prob_profit_chart;
 }
