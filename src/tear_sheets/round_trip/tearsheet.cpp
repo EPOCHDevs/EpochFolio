@@ -95,8 +95,7 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
       .chartDef = ChartDef{
           "prob_profit_trade", "Probability of making a profitable decision",
           EpochFolioDashboardWidget::Lines, EpochFolioCategory::RoundTrip,
-          MakeLinearAxis("Belief"),
-            MakeLinearAxis("Probability")}};
+          MakeLinearAxis("Belief"), MakeLinearAxis("Probability")}};
 
   constexpr double kMaxPoints = 500;
   auto x = linspace(0.0, 1.0, kMaxPoints);
@@ -112,15 +111,19 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
   const boost::math::beta_distribution dist(alpha, beta);
 
   std::vector<double> y(x.size());
-  std::transform(x.begin(), x.end(), x.begin(), y.begin() ,
-                 [&](double x_, double& x_out) { auto y_ = pdf(dist, x_); x_out *= 100.0; return y_; });
+  std::transform(x.begin(), x.end(), x.begin(), y.begin(),
+                 [&](double x_, double &x_out) {
+                   auto y_ = pdf(dist, x_);
+                   x_out *= 100.0;
+                   return y_;
+                 });
 
   prob_profit_chart.lines.emplace_back(MakeSeriesLine(x, y));
 
   prob_profit_chart.straightLines.emplace_back(
-      "2.5%", Scalar{quantile(dist, 0.025)*100.0}, true);
+      "2.5%", Scalar{quantile(dist, 0.025) * 100.0}, true);
   prob_profit_chart.straightLines.emplace_back(
-      "97.5%", Scalar{quantile(dist, 0.975)*100.0}, true);
+      "97.5%", Scalar{quantile(dist, 0.975) * 100.0}, true);
 
   return prob_profit_chart;
 }
@@ -160,28 +163,66 @@ HistogramDef TearSheetFactory::MakeReturnsPerRoundTripDollarsChart(
 }
 
 void TearSheetFactory::Make(FullTearSheet &output) const {
-  auto trades = ExtractRoundTrips();
+  try {
+    auto trades = ExtractRoundTrips();
 
-  if (trades.num_rows() == 0) {
-    SPDLOG_WARN("No trades found, skipping round trip tear sheet");
-    return;
+    if (trades.num_rows() == 0) {
+      SPDLOG_WARN("No trades found, skipping round trip tear sheet");
+      return;
+    }
+
+    std::vector<Table> tables;
+    try {
+      tables = GetRoundTripStats(trades);
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to get round trip stats: {}", e.what());
+    }
+
+    std::vector<Chart> charts;
+
+    try {
+      charts.emplace_back(MakeProfitabilityPieChart(trades));
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create profitability pie chart: {}", e.what());
+    }
+
+    try {
+      charts.emplace_back(MakeXRangeDef(trades));
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create x-range chart: {}", e.what());
+    }
+
+    try {
+      charts.emplace_back(MakeProbProfitChart(trades));
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create probability profit chart: {}", e.what());
+    }
+
+    try {
+      charts.emplace_back(MakeHoldingTimeChart(trades));
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create holding time chart: {}", e.what());
+    }
+
+    try {
+      charts.emplace_back(MakePnlPerRoundTripDollarsChart(trades));
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create PnL per round trip chart: {}", e.what());
+    }
+
+    try {
+      charts.emplace_back(MakeReturnsPerRoundTripDollarsChart(trades));
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create returns per round trip chart: {}",
+                   e.what());
+    }
+
+    output.round_trip =
+        TearSheet{.cards = {}, .charts = charts, .tables = tables};
+  } catch (std::exception const &e) {
+    SPDLOG_ERROR("Failed to create round trip tearsheet: {}", e.what());
+    output.round_trip = TearSheet{.cards = {}, .charts = {}, .tables = {}};
   }
-
-  std::vector<Table> tables = GetRoundTripStats(trades);
-  auto pie_chart = MakeProfitabilityPieChart(trades);
-  auto xrange = MakeXRangeDef(trades);
-  auto prob_profit_trade = MakeProbProfitChart(trades);
-  auto holding_time = MakeHoldingTimeChart(trades);
-  auto pnl_per_round_trip_dollars = MakePnlPerRoundTripDollarsChart(trades);
-  auto returns_per_round_trip_dollars =
-      MakeReturnsPerRoundTripDollarsChart(trades);
-
-  output.round_trip = TearSheet{
-      .cards = {},
-      .charts = std::vector<Chart>{pie_chart, xrange, prob_profit_trade,
-                                   holding_time, pnl_per_round_trip_dollars,
-                                   returns_per_round_trip_dollars},
-      .tables = tables};
 }
 
 DataFrame TearSheetFactory::ExtractRoundTrips() const {

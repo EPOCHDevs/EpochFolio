@@ -46,13 +46,34 @@ PortfolioTearSheetFactory::PortfolioTearSheetFactory(
 FullTearSheet
 PortfolioTearSheetFactory::MakeTearSheet(TearSheetOption const &options) const {
   FullTearSheet tearSheet;
-  m_returnsFactory.Make(options.turnoverDenominator, options.topKDrawDowns,
-                        tearSheet);
-  m_positionsFactory.Make(options.topKPositions, tearSheet);
-  m_transactionsFactory.Make(options.turnoverDenominator,
-                             options.transactionBinMinutes,
-                             options.transactionTimezone, tearSheet);
-  m_roundTripFactory.Make(tearSheet);
+
+  try {
+    m_returnsFactory.Make(options.turnoverDenominator, options.topKDrawDowns,
+                          tearSheet);
+  } catch (std::exception const &e) {
+    SPDLOG_ERROR("Failed to create returns tearsheet: {}", e.what());
+  }
+
+  try {
+    m_positionsFactory.Make(options.topKPositions, tearSheet);
+  } catch (std::exception const &e) {
+    SPDLOG_ERROR("Failed to create positions tearsheet: {}", e.what());
+  }
+
+  try {
+    m_transactionsFactory.Make(options.turnoverDenominator,
+                               options.transactionBinMinutes,
+                               options.transactionTimezone, tearSheet);
+  } catch (std::exception const &e) {
+    SPDLOG_ERROR("Failed to create transactions tearsheet: {}", e.what());
+  }
+
+  try {
+    m_roundTripFactory.Make(tearSheet);
+  } catch (std::exception const &e) {
+    SPDLOG_ERROR("Failed to create round trip tearsheet: {}", e.what());
+  }
+
   return tearSheet;
 }
 

@@ -107,13 +107,40 @@ BarDef TearSheetFactory::MakeTransactionTimeHistogram(
 void TearSheetFactory::Make(epoch_core::TurnoverDenominator turnoverDenominator,
                             size_t binSize, std::string const &timezone,
                             FullTearSheet &output) const {
-  auto df_turnover =
-      GetTurnover(m_positions, m_transactions, turnoverDenominator);
+  try {
+    auto df_turnover =
+        GetTurnover(m_positions, m_transactions, turnoverDenominator);
 
-  output.transactions = TearSheet{
-      .charts = std::vector<Chart>{
-          MakeTurnoverOverTimeChart(df_turnover), MakeDailyVolumeChart(),
-          MakeDailyTurnoverHistogram(df_turnover),
-          MakeTransactionTimeHistogram(binSize, timezone)}};
+    std::vector<Chart> charts;
+
+    try {
+      charts.emplace_back(MakeTurnoverOverTimeChart(df_turnover));
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create turnover over time chart: {}", e.what());
+    }
+
+    try {
+      charts.emplace_back(MakeDailyVolumeChart());
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create daily volume chart: {}", e.what());
+    }
+
+    try {
+      charts.emplace_back(MakeDailyTurnoverHistogram(df_turnover));
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create daily turnover histogram: {}", e.what());
+    }
+
+    try {
+      charts.emplace_back(MakeTransactionTimeHistogram(binSize, timezone));
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create transaction time histogram: {}", e.what());
+    }
+
+    output.transactions = TearSheet{.charts = charts};
+  } catch (std::exception const &e) {
+    SPDLOG_ERROR("Failed to create transactions tearsheet: {}", e.what());
+    output.transactions = TearSheet{.charts = {}};
+  }
 }
 } // namespace epoch_folio::txn

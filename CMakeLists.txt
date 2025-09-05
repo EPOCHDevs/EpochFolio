@@ -51,7 +51,8 @@ else ()
 endif ()
 
 # Include the EpochCore dependency
-include(${PROJECT_SOURCE_DIR}/cmake/EpochFrame.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/EpochMetadata.cmake)
+
 
 add_library(epoch_folio "")
 add_library(epoch::folio ALIAS epoch_folio)
@@ -80,7 +81,7 @@ target_include_directories(epoch_folio
 )
 
 target_compile_options(epoch_folio PRIVATE -Wall -Wextra -Werror)
-target_link_libraries(epoch_folio PUBLIC epoch_frame)
+target_link_libraries(epoch_folio PUBLIC epoch::metadata)
 add_subdirectory(src)
 
 if (BUILD_TEST)

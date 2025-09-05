@@ -5,6 +5,7 @@
     "catch2",
     "glaze",
     "trompeloeil",
+    "yaml-cpp",
     "tabulate",
     "tbb",
     "spdlog",
@@ -12,7 +13,7 @@
       "name": "arrow",
       "features": [
         "acero",
-        "dataset",
+        "compute",
         "csv",
         "json",
         "parquet",
