@@ -3,8 +3,8 @@
 # This is a helper file to include EpochCore
 include(FetchContent)
     
-set(EPOCH_METADATA_REPOSITORY "https://github.com/EPOCHDevs/EpochMetadata.git" CACHE STRING "EpochFrame repository URL")
-set(EPOCH_METADATA_TAG "master" CACHE STRING "EpochFrame Git tag to use")
+set(EPOCH_METADATA_REPOSITORY "https://github.com/EPOCHDevs/EpochMetadata.git" CACHE STRING "EpochMetadata repository URL")
+set(EPOCH_METADATA_TAG "main" CACHE STRING "EpochMetadata Git tag to use")
 
 FetchContent_Declare(
     EpochMetadata
