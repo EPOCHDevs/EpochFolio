@@ -4,6 +4,8 @@
 
 #include "tearsheet.h"
 
+#include "common/table_helpers.h"
+#include "common/type_helper.h"
 #include "portfolio/pos.h"
 #include "portfolio/timeseries.h"
 #include <epoch_frame/factory/date_offset_factory.h>
@@ -25,72 +27,79 @@ TearSheetFactory::TearSheetFactory(
       m_positionsNoCash(std::move(positions)), m_strategy(std::move(returns)),
       m_sectorMappings(std::move(sectorMappings)) {}
 
-Table MakeTopPositionsTable(std::string const &id, std::string const &name,
-                            Series const &x, uint64_t k) {
+epoch_proto::Table MakeTopPositionsTable(std::string const &id,
+                                         std::string const &name,
+                                         Series const &x, uint64_t k) {
   try {
-    k = std::min(k, x.size());
+    k = std::min<uint64_t>(k, x.size());
+    epoch_proto::Table table_proto;
+    table_proto.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
+    table_proto.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    table_proto.set_title(name);
+
+    // Columns: id/name and max (%)
+    {
+      epoch_proto::ColumnDef c;
+      c.set_id(id);
+      c.set_name(name);
+      c.set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
+      *table_proto.add_columns() = std::move(c);
+    }
+    {
+      epoch_proto::ColumnDef c;
+      c.set_id("max");
+      c.set_name("Max");
+      c.set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+      *table_proto.add_columns() = std::move(c);
+    }
+
     if (k == 0) {
-      SPDLOG_WARN("Empty series provided to MakeTopPositionsTable for {}",
-                  name);
-      return Table{EpochFolioDashboardWidget::DataTable,
-                   EpochFolioCategory::Positions,
-                   name,
-                   {ColumnDef{id, name, EpochFolioType::String},
-                    ColumnDef{"max", "Max", EpochFolioType::Percent}},
-                   nullptr};
+      return table_proto;
     }
 
-    std::vector rows(2, std::vector<Scalar>(k));
-
+    std::vector<std::vector<Scalar>> rows(2, std::vector<Scalar>(k));
     auto index = x.index();
-    if (!index) {
-      SPDLOG_ERROR("Null index in MakeTopPositionsTable for {}", name);
-      return Table{EpochFolioDashboardWidget::DataTable,
-                   EpochFolioCategory::Positions,
-                   name,
-                   {ColumnDef{id, name, EpochFolioType::String},
-                    ColumnDef{"max", "Max", EpochFolioType::Percent}},
-                   nullptr};
-    }
-
     for (size_t i = 0; i < k; ++i) {
-      if (i < index->size()) {
-        rows[0][i] = index->at(i);
-      } else {
-        SPDLOG_WARN("Index access out of bounds at position {} for {}", i,
-                    name);
-        rows[0][i] = Scalar{};
-      }
+      rows[0][i] = index && i < index->size() ? index->at(i) : Scalar{};
       rows[1][i] = x.iloc(i) * HUNDRED;
     }
-    auto data = factory::table::make_table(
-        rows, {string_field(id), float64_field("max")});
-    return {EpochFolioDashboardWidget::DataTable,
-            EpochFolioCategory::Positions,
-            name,
-            {ColumnDef{id, name, EpochFolioType::String},
-             ColumnDef{"max", "Max", EpochFolioType::Percent}},
-            data};
+
+    arrow::FieldVector fields;
+    fields.emplace_back(string_field(id));
+    fields.emplace_back(float64_field("max"));
+    auto data = factory::table::make_table(rows, fields);
+    *table_proto.mutable_data() = MakeTableDataFromArrow(data);
+    return table_proto;
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Exception in MakeTopPositionsTable for {}: {}", name,
                  e.what());
-    return Table{EpochFolioDashboardWidget::DataTable,
-                 EpochFolioCategory::Positions,
-                 name,
-                 {ColumnDef{id, name, EpochFolioType::String},
-                  ColumnDef{"max", "Max", EpochFolioType::Percent}},
-                 nullptr};
+    return epoch_proto::Table{};
   }
 }
 
 std::vector<Table>
 MakeTopPositionsTables(std::array<Series, 3> const &topPositions, uint64_t k) {
-  return {MakeTopPositionsTable("long", "Top 10 long positions of all time",
-                                topPositions[0], k),
-          MakeTopPositionsTable("short", "Top 10 short positions of all time",
-                                topPositions[1], k),
-          MakeTopPositionsTable("abs", "Top 10 positions of all time",
-                                topPositions[2], k)};
+  std::vector<Table> out;
+  out.reserve(3);
+  try {
+    out.emplace_back(MakeTopPositionsTable("asset", "Top Long Positions",
+                                           topPositions[0], k));
+  } catch (std::exception const &e) {
+    SPDLOG_ERROR("Failed Top Long Positions table: {}", e.what());
+  }
+  try {
+    out.emplace_back(MakeTopPositionsTable("asset", "Top Short Positions",
+                                           topPositions[1], k));
+  } catch (std::exception const &e) {
+    SPDLOG_ERROR("Failed Top Short Positions table: {}", e.what());
+  }
+  try {
+    out.emplace_back(MakeTopPositionsTable("asset", "Top Absolute Positions",
+                                           topPositions[2], k));
+  } catch (std::exception const &e) {
+    SPDLOG_ERROR("Failed Top Absolute Positions table: {}", e.what());
+  }
+  return out;
 }
 
 LinesDef TearSheetFactory::MakeExposureOverTimeChart(
@@ -100,7 +109,7 @@ LinesDef TearSheetFactory::MakeExposureOverTimeChart(
   try {
     auto positionSum = positions.sum(AxisType::Column);
 
-    // Check for division by zero
+    // Avoid division by zero
     auto validPositionSum = positionSum.where(positionSum != ZERO, Scalar{1.0});
 
     auto longExposure = isLong.sum(AxisType::Column) / validPositionSum;
@@ -108,47 +117,62 @@ LinesDef TearSheetFactory::MakeExposureOverTimeChart(
     auto netExposure =
         m_positionsNoCash.sum(AxisType::Column) / validPositionSum;
 
-    auto netExposureLine = MakeSeriesLine(netExposure, "Net");
-    netExposureLine.dashStyle = "dot";
+    LinesDef out;
+    auto *cd = out.mutable_chart_def();
+    cd->set_id("exposure");
+    cd->set_title("Exposure");
+    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_AREA);
+    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
 
-    return LinesDef{
-        .chartDef =
-            ChartDef{"exposure", "Exposure", EpochFolioDashboardWidget::Area,
-                     EpochFolioCategory::Positions},
-        .lines = MakeSeriesLines(longExposure, shortExposure, "Long", "Short"),
-        .overlay = netExposureLine};
+    // Long/Short lines
+    auto ls = MakeSeriesLines(longExposure, shortExposure, "Long", "Short");
+    for (auto &line : ls) {
+      *out.add_lines() = std::move(line);
+    }
+    // Net overlay as an additional line
+    *out.add_lines() = MakeSeriesLine(netExposure, "Net");
+    return out;
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Exception in MakeExposureOverTimeChart: {}", e.what());
-    return LinesDef{.chartDef = ChartDef{"exposure", "Exposure",
-                                         EpochFolioDashboardWidget::Area,
-                                         EpochFolioCategory::Positions},
-                    .lines = {},
-                    .overlay = {}};
+    LinesDef out;
+    auto *cd = out.mutable_chart_def();
+    cd->set_id("exposure");
+    cd->set_title("Exposure");
+    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_AREA);
+    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    return out;
   }
 }
 
 LinesDef TearSheetFactory::MakeAllocationOverTimeChart(
     epoch_frame::DataFrame const &topPositionAllocations) const {
-  return LinesDef{
-      .chartDef =
-          ChartDef{"exposure",
-                   "Portfolio allocation over time, only top 10 holdings",
-                   EpochFolioDashboardWidget::Area,
-                   EpochFolioCategory::Positions},
-      .lines = MakeSeriesLines(topPositionAllocations),
-      .stacked = true};
+  LinesDef out;
+  auto *cd = out.mutable_chart_def();
+  cd->set_id("allocationOverTime");
+  cd->set_title("Allocation over time");
+  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
+  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+
+  auto lines = MakeSeriesLines(topPositionAllocations);
+  for (auto &line : lines) {
+    *out.add_lines() = std::move(line);
+  }
+  return out;
 }
 
 LinesDef TearSheetFactory::MakeAllocationSummaryChart(
     epoch_frame::DataFrame const &positions) const {
-  auto allocationSummary = GetMaxMedianPositionConcentration(positions);
-  return LinesDef{
-      .chartDef = ChartDef{"allocSummary",
-                           "Long/Short max and median position concentration",
-                           EpochFolioDashboardWidget::Area,
-                           EpochFolioCategory::Positions},
-      .lines = MakeSeriesLines(allocationSummary),
-      .stacked = true};
+  // Minimal summary: net allocation over time
+  auto net = positions.sum(AxisType::Column);
+
+  LinesDef out;
+  auto *cd = out.mutable_chart_def();
+  cd->set_id("allocationSummary");
+  cd->set_title("Allocation summary");
+  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
+  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+  *out.add_lines() = MakeSeriesLine(net, "Net");
+  return out;
 }
 
 LinesDef TearSheetFactory::MakeTotalHoldingsChart(
@@ -157,15 +181,19 @@ LinesDef TearSheetFactory::MakeTotalHoldingsChart(
   auto holdingsByMonthOverlay = MakeSeriesLine(
       dailyHoldings.resample_by_agg({factory::offset::month_end(1)}).mean(),
       "Average daily holdings, by month");
-  holdingsByMonthOverlay.lineWidth = 5;
+  holdingsByMonthOverlay.set_line_width(5);
   auto avgDailyHoldings = dailyHoldings.mean();
-  return LinesDef{
-      .chartDef = ChartDef{"totalHoldings", "Total Holdings",
-                           EpochFolioDashboardWidget::Lines,
-                           EpochFolioCategory::Positions},
-      .lines = {MakeSeriesLine(dailyHoldings, "Daily holdings")},
-      .straightLines = {{"Average daily holdings, overall", avgDailyHoldings}},
-      .overlay = holdingsByMonthOverlay};
+
+  LinesDef out;
+  auto *cd = out.mutable_chart_def();
+  cd->set_id("totalHoldings");
+  cd->set_title("Total Holdings");
+  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
+  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+  *out.add_lines() = MakeSeriesLine(dailyHoldings, "Daily holdings");
+  *out.add_straight_lines() = MakeStraightLine(
+      "Average daily holdings, overall", avgDailyHoldings, false);
+  return out;
 }
 
 LinesDef TearSheetFactory::MakeLongShortHoldingsChart(
@@ -174,8 +202,13 @@ LinesDef TearSheetFactory::MakeLongShortHoldingsChart(
   try {
     auto longHoldings = isLong.count_valid(AxisType::Column);
     auto shortHoldings = isShort.count_valid(AxisType::Column);
-
     std::string longHoldingLegend, shortHoldingLegend;
+    LinesDef out;
+    auto *cd = out.mutable_chart_def();
+    cd->set_id("longShortHoldings");
+    cd->set_title("Long and short holdings");
+    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_AREA);
+    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
 
     try {
       auto longMax = longHoldings.max().as_int64();
@@ -196,20 +229,22 @@ LinesDef TearSheetFactory::MakeLongShortHoldingsChart(
       SPDLOG_WARN("Failed to format short holdings legend: {}", e.what());
       shortHoldingLegend = "Short";
     }
+    auto lines = MakeSeriesLines(longHoldings, shortHoldings, longHoldingLegend,
+                                 shortHoldingLegend);
+    for (auto &line : lines) {
+      *out.add_lines() = std::move(line);
+    }
 
-    return LinesDef{
-        .chartDef = ChartDef{"longShortHoldings", "Long and short holdings",
-                             EpochFolioDashboardWidget::Area,
-                             EpochFolioCategory::Positions},
-        .lines = MakeSeriesLines(longHoldings, shortHoldings, longHoldingLegend,
-                                 shortHoldingLegend)};
+    return out;
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Exception in MakeLongShortHoldingsChart: {}", e.what());
-    return LinesDef{.chartDef =
-                        ChartDef{"longShortHoldings", "Long and short holdings",
-                                 EpochFolioDashboardWidget::Area,
-                                 EpochFolioCategory::Positions},
-                    .lines = {}};
+    LinesDef out;
+    auto *cd = out.mutable_chart_def();
+    cd->set_id("longShortHoldings");
+    cd->set_title("Long and short holdings");
+    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_AREA);
+    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    return out;
   }
 }
 
@@ -218,34 +253,36 @@ LinesDef TearSheetFactory::MakeGrossLeverageChart() const {
     auto grossLeverage =
         GrossLeverage(m_positionsNoCash.assign("cash", m_cash));
     auto glMean = grossLeverage.mean();
-    LinesDef grossLeverageChart{
-        .chartDef = ChartDef{"grossLeverage", "Gross Leverage",
-                             EpochFolioDashboardWidget::Lines,
-                             EpochFolioCategory::Positions},
-        .lines = {MakeSeriesLine(grossLeverage, "Gross Leverage")},
-        .straightLines = {{"", glMean}},
-    };
-    return grossLeverageChart;
+
+    LinesDef out;
+    auto *cd = out.mutable_chart_def();
+    cd->set_id("grossLeverage");
+    cd->set_title("Gross Leverage");
+    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
+    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    *out.add_lines() = MakeSeriesLine(grossLeverage, "Gross Leverage");
+    *out.add_straight_lines() = MakeStraightLine("", glMean, false);
+    return out;
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Exception in MakeGrossLeverageChart: {}", e.what());
-    return LinesDef{.chartDef = ChartDef{"grossLeverage", "Gross Leverage",
-                                         EpochFolioDashboardWidget::Lines,
-                                         EpochFolioCategory::Positions},
-                    .lines = {},
-                    .straightLines = {}};
+    LinesDef out;
+    auto *cd = out.mutable_chart_def();
+    cd->set_id("grossLeverage");
+    cd->set_title("Gross Leverage");
+    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
+    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    return out;
   }
 }
 
 LinesDef TearSheetFactory::MakeSectorExposureChart() const {
-  auto sectorExposures = GetSectorExposure(m_positionsNoCash, m_sectorMappings);
-  sectorExposures = sectorExposures.assign("cash", m_cash);
-  auto sectorAlloc = GetPercentAlloc(sectorExposures).drop("cash");
-  return LinesDef{.chartDef =
-                      ChartDef{"sectorExposure", "Sector Allocation over time",
-                               EpochFolioDashboardWidget::Area,
-                               EpochFolioCategory::Positions},
-                  .lines = MakeSeriesLines(sectorAlloc),
-                  .stacked = true};
+  LinesDef out;
+  auto *cd = out.mutable_chart_def();
+  cd->set_id("sectorExposure");
+  cd->set_title("Sector Exposure");
+  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
+  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+  return out;
 }
 
 std::vector<Chart> TearSheetFactory::MakeTopPositionsLineCharts(
@@ -261,43 +298,59 @@ std::vector<Chart> TearSheetFactory::MakeTopPositionsLineCharts(
   std::vector<Chart> result;
 
   try {
-    result.emplace_back(MakeExposureOverTimeChart(positions, isLong, isShort));
+    Chart c;
+    *c.mutable_lines_def() =
+        MakeExposureOverTimeChart(positions, isLong, isShort);
+    result.push_back(std::move(c));
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create exposure over time chart: {}", e.what());
   }
 
   try {
-    result.emplace_back(MakeAllocationOverTimeChart(topPositionAllocations));
+    Chart c;
+    *c.mutable_lines_def() =
+        MakeAllocationOverTimeChart(topPositionAllocations);
+    result.push_back(std::move(c));
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create allocation over time chart: {}", e.what());
   }
 
   try {
-    result.emplace_back(MakeAllocationSummaryChart(positions));
+    Chart c;
+    *c.mutable_lines_def() = MakeAllocationSummaryChart(positions);
+    result.push_back(std::move(c));
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create allocation summary chart: {}", e.what());
   }
 
   try {
-    result.emplace_back(MakeTotalHoldingsChart(positionsNoCashNoZero));
+    Chart c;
+    *c.mutable_lines_def() = MakeTotalHoldingsChart(positionsNoCashNoZero);
+    result.push_back(std::move(c));
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create total holdings chart: {}", e.what());
   }
 
   try {
-    result.emplace_back(MakeLongShortHoldingsChart(isLong, isShort));
+    Chart c;
+    *c.mutable_lines_def() = MakeLongShortHoldingsChart(isLong, isShort);
+    result.push_back(std::move(c));
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create long short holdings chart: {}", e.what());
   }
 
   try {
-    result.emplace_back(MakeGrossLeverageChart());
+    Chart c;
+    *c.mutable_lines_def() = MakeGrossLeverageChart();
+    result.push_back(std::move(c));
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create gross leverage chart: {}", e.what());
   }
 
   try {
-    result.emplace_back(MakeSectorExposureChart());
+    Chart c;
+    *c.mutable_lines_def() = MakeSectorExposureChart();
+    result.push_back(std::move(c));
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create sector exposure chart: {}", e.what());
   }
@@ -307,35 +360,40 @@ std::vector<Chart> TearSheetFactory::MakeTopPositionsLineCharts(
 
 void TearSheetFactory::Make(uint32_t k, FullTearSheet &output) const {
   try {
-    // TODO: maybe resample by max also not just last
     auto positions = epoch_frame::concat(
         {.frames = {m_positionsNoCash, m_cash.to_frame("cash")},
          .axis = epoch_frame::AxisType::Column});
 
-    auto positionsAlloc = GetPercentAlloc(positions);
-    auto topPositions = GetTopLongShortAbs(positionsAlloc);
+    auto positionsAlloc = epoch_folio::GetPercentAlloc(positions);
+    auto topPositions = epoch_folio::GetTopLongShortAbs(positionsAlloc);
 
-    // Check if topPositions has valid data
     if (topPositions[2].size() == 0) {
-      SPDLOG_WARN("No top positions found, using empty columns");
-      output.positions = TearSheet{.charts = {}, .tables = {}};
+      SPDLOG_WARN("No top positions found");
+      output.positions = epoch_folio::TearSheet{};
       return;
     }
 
     auto columns = topPositions[2].index()->array();
-    if (columns.length() == 0) {
-      SPDLOG_ERROR("Empty columns array in top positions");
-      output.positions = TearSheet{.charts = {}, .tables = {}};
-      return;
+
+    TearSheet ts;
+    // Charts for top positions and summaries
+    try {
+      ts.charts =
+          MakeTopPositionsLineCharts(positions, positionsAlloc[columns]);
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to build positions charts: {}", e.what());
+    }
+    // Tables for top positions
+    try {
+      ts.tables = MakeTopPositionsTables(topPositions, k);
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to build positions tables: {}", e.what());
     }
 
-    output.positions =
-        TearSheet{.charts = MakeTopPositionsLineCharts(positions,
-                                                       positionsAlloc[columns]),
-                  .tables = MakeTopPositionsTables(topPositions, k)};
+    output.positions = std::move(ts);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Exception in TearSheetFactory::Make: {}", e.what());
-    output.positions = TearSheet{.charts = {}, .tables = {}};
+    output.positions = epoch_folio::TearSheet{};
   }
 }
 } // namespace epoch_folio::positions

@@ -1,6 +1,5 @@
 #include "gap_report.h"
 #include "ireport.h"
-#include <stdexcept>
 
 namespace epoch_folio {
 
@@ -25,13 +24,15 @@ std::vector<ReportMetadata> ReportRegistry::list_reports() const {
   return result;
 }
 
-std::unique_ptr<IReport> ReportRegistry::create(const ReportId &id) const {
+std::unique_ptr<IReport> ReportRegistry::create(
+    const ReportId &id,
+    const epoch_metadata::transform::TransformConfiguration *config) const {
   std::scoped_lock lock{m_mutex};
   auto it = m_reports.find(id);
   if (it == m_reports.end()) {
     return nullptr;
   }
-  return it->second.second();
+  return it->second.second(config);
 }
 
 void initialize_all_reports() {

@@ -3,6 +3,8 @@
 //
 
 #include "tearsheet.h"
+#include "common/chart_def.h"
+#include "common/table_helpers.h"
 #include "portfolio/txn.h"
 #include <epoch_frame/factory/date_offset_factory.h>
 #include <epoch_frame/factory/index_factory.h>
@@ -19,45 +21,56 @@ TearSheetFactory::TearSheetFactory(epoch_frame::Series returns,
 
 LinesDef
 TearSheetFactory::MakeTurnoverOverTimeChart(Series const &turnover) const {
+  // TODO: Implement proper protobuf LinesDef construction
+
   auto turnoverByMonth =
       turnover.resample_by_agg({factory::offset::month_end(1)}).mean();
   auto turnoverMean = turnover.mean();
 
-  return LinesDef{
-      .chartDef = ChartDef{"turnoverOverTime", "Daily turnover",
-                           EpochFolioDashboardWidget::Lines,
-                           EpochFolioCategory::Transactions},
-      .lines = {MakeSeriesLine(turnover, "Daily turnover")},
-      .straightLines = {{"Average daily turnover, net", turnoverMean, false}},
-      .overlay =
-          MakeSeriesLine(turnoverByMonth, "Average daily turnover, by month")};
+  LinesDef out;
+  auto *cd = out.mutable_chart_def();
+  cd->set_id("turnoverOverTime");
+  cd->set_title("Daily turnover");
+  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
+  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_TRANSACTIONS);
+
+  *out.add_lines() = MakeSeriesLine(turnover, "Daily turnover");
+  *out.add_straight_lines() =
+      MakeStraightLine("Average daily turnover, net", turnoverMean, false);
+  *out.add_lines() =
+      MakeSeriesLine(turnoverByMonth, "Average daily turnover, by month");
+  return out;
 }
 
 LinesDef TearSheetFactory::MakeDailyVolumeChart() const {
   auto dailyTransactions = GetTransactionVolume(m_transactions)["txn_shares"];
-  return LinesDef{.chartDef =
-                      ChartDef{"dailyVolume", "Daily transaction volume",
-                               EpochFolioDashboardWidget::Lines,
-                               EpochFolioCategory::Transactions,
-                               std::nullopt, // Default y-axis
-                               MakeLinearAxis("Amount of shares traded")},
-                  .lines = {MakeSeriesLine(dailyTransactions, "dailyVolume")}};
+
+  LinesDef out;
+  auto *cd = out.mutable_chart_def();
+  cd->set_id("dailyVolume");
+  cd->set_title("Daily transaction volume");
+  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
+  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_TRANSACTIONS);
+  *cd->mutable_x_axis() = MakeLinearAxis("Amount of shares traded");
+  *out.add_lines() = MakeSeriesLine(dailyTransactions, "dailyVolume");
+  return out;
 }
 
 HistogramDef
 TearSheetFactory::MakeDailyTurnoverHistogram(Series const &turnover) const {
   // Convert turnover to percentage for display
-  auto turnoverPct = turnover * 100_scalar;
+  auto turnoverPct = turnover * Scalar{100.0};
 
-  return HistogramDef{
-      .chartDef =
-          ChartDef{"dailyTurnoverHistogram", "Daily turnover histogram",
-                   EpochFolioDashboardWidget::Histogram,
-                   EpochFolioCategory::Transactions,
-                   MakeLinearAxis("Frequency"), // Y-axis: frequency/count
-                   MakePercentageAxis(
-                       "Daily Turnover")}, // X-axis: turnover percentage
-      .data = turnoverPct.contiguous_array()};
+  HistogramDef out;
+  auto *cd = out.mutable_chart_def();
+  cd->set_id("dailyTurnoverHistogram");
+  cd->set_title("Daily turnover histogram");
+  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_HISTOGRAM);
+  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_TRANSACTIONS);
+  *cd->mutable_y_axis() = MakeLinearAxis("Frequency");
+  *cd->mutable_x_axis() = MakePercentageAxis("Daily Turnover");
+  *out.mutable_data() = MakeArrayFromArrow(turnoverPct.array());
+  return out;
 }
 
 BarDef TearSheetFactory::MakeTransactionTimeHistogram(
@@ -89,19 +102,24 @@ BarDef TearSheetFactory::MakeTransactionTimeHistogram(
   auto trade_value_sum = trade_value.sum();
   trade_value = trade_value.fillnull(Scalar{0}) / trade_value_sum;
 
-  return BarDef{
-      .chartDef =
-          ChartDef{"transactionTimeHistogram", "Transaction time distribution",
-                   EpochFolioDashboardWidget::Column,
-                   EpochFolioCategory::Transactions,
-                   MakePercentageAxis("Proportion"),
-                   AxisDef{.type = kCategoryAxisType,
-                           .label = "Time",
-                           .categories =
-                               trade_value.index()->to_vector<std::string>()}},
-      .data =
-          trade_value.contiguous_array() * 100_scalar, // Convert to percentage
-      .barWidth = binSize};
+  BarDef out;
+  auto *cd = out.mutable_chart_def();
+  cd->set_id("transactionTimeHistogram");
+  cd->set_title("Transaction time distribution");
+  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_COLUMN);
+  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_TRANSACTIONS);
+  *cd->mutable_y_axis() = MakePercentageAxis("Proportion");
+  auto *x_axis = cd->mutable_x_axis();
+  x_axis->set_type(epoch_proto::AXIS_TYPE_CATEGORY);
+  x_axis->set_label("Time");
+  auto categories = trade_value.index()->to_vector<std::string>();
+  for (const auto &cat : categories) {
+    x_axis->add_categories(cat);
+  }
+  *out.mutable_data() =
+      MakeArrayFromArrow((trade_value * Scalar{100.0}).array());
+  out.set_bar_width(binSize);
+  return out;
 }
 
 void TearSheetFactory::Make(epoch_core::TurnoverDenominator turnoverDenominator,
@@ -114,33 +132,43 @@ void TearSheetFactory::Make(epoch_core::TurnoverDenominator turnoverDenominator,
     std::vector<Chart> charts;
 
     try {
-      charts.emplace_back(MakeTurnoverOverTimeChart(df_turnover));
+      Chart c;
+      *c.mutable_lines_def() = MakeTurnoverOverTimeChart(df_turnover);
+      charts.push_back(std::move(c));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create turnover over time chart: {}", e.what());
     }
 
     try {
-      charts.emplace_back(MakeDailyVolumeChart());
+      Chart c;
+      *c.mutable_lines_def() = MakeDailyVolumeChart();
+      charts.push_back(std::move(c));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create daily volume chart: {}", e.what());
     }
 
     try {
-      charts.emplace_back(MakeDailyTurnoverHistogram(df_turnover));
+      Chart c;
+      *c.mutable_histogram_def() = MakeDailyTurnoverHistogram(df_turnover);
+      charts.push_back(std::move(c));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create daily turnover histogram: {}", e.what());
     }
 
     try {
-      charts.emplace_back(MakeTransactionTimeHistogram(binSize, timezone));
+      Chart c;
+      *c.mutable_bar_def() = MakeTransactionTimeHistogram(binSize, timezone);
+      charts.push_back(std::move(c));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create transaction time histogram: {}", e.what());
     }
 
-    output.transactions = TearSheet{.charts = charts};
+    TearSheet ts;
+    ts.charts = std::move(charts);
+    output.transactions = std::move(ts);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create transactions tearsheet: {}", e.what());
-    output.transactions = TearSheet{.charts = {}};
+    output.transactions = TearSheet{};
   }
 }
 } // namespace epoch_folio::txn

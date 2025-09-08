@@ -3,10 +3,11 @@
 #include <epoch_frame/factory/dataframe_factory.h>
 #include <epoch_frame/factory/index_factory.h>
 #include <epoch_frame/factory/series_factory.h>
+#include <epoch_protos/table_def.pb.h>
 #include <glaze/glaze.hpp>
 
 #include "portfolio/model.h" // For MakeDataFrame
-#include "reports/gap_report.h"
+#include "reports/ireport.h"
 
 using namespace epoch_folio;
 using namespace epoch_frame;
@@ -22,13 +23,13 @@ TEST_CASE("GapReport registration and metadata", "[reports][gap]") {
   REQUIRE(gap_report_it != reports.end());
   CHECK(gap_report_it->displayName == "Price Gap Analysis");
   CHECK(gap_report_it->category ==
-        epoch_core::EpochFolioCategory::RiskAnalysis);
+        epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
   CHECK(gap_report_it->requiredColumns.size() == 13);
 }
 
 TEST_CASE("GapReport basic generation", "[reports][gap]") {
   auto &registry = ReportRegistry::instance();
-  auto report = registry.create("gap_report");
+  auto report = registry.create("gap_report", nullptr);
   REQUIRE(report != nullptr);
 
   // Create sample gap data using DataFrame factory
@@ -112,12 +113,8 @@ TEST_CASE("GapReport basic generation", "[reports][gap]") {
   auto df = MakeDataFrame(series_list, column_names);
 
   // Test with default options
-  GapReportOptions options;
-  auto options_json = glz::write_json(options);
-  REQUIRE(options_json);
-
-  auto tearsheet = report->generate(
-      df, glz::read_json<glz::json_t>(options_json.value()).value());
+  // Use default options from empty configuration
+  auto tearsheet = report->generate(df);
 
   // Verify output structure
   CHECK(!tearsheet.cards.empty());
@@ -133,13 +130,13 @@ TEST_CASE("GapReport basic generation", "[reports][gap]") {
     std::visit(
         [&](const auto &c) {
           using T = std::decay_t<decltype(c)>;
-          if constexpr (std::is_same_v<T, BarDef>) {
+          if constexpr (std::is_same_v<T, epoch_proto::BarDef>) {
             if (c.chartDef.title == "Gap Fill Analysis") {
               has_fill_rate_chart = true;
             }
-          } else if constexpr (std::is_same_v<T, HistogramDef>) {
+          } else if constexpr (std::is_same_v<T, epoch_proto::HistogramDef>) {
             has_histogram = true;
-          } else if constexpr (std::is_same_v<T, PieDef>) {
+          } else if constexpr (std::is_same_v<T, epoch_proto::PieDef>) {
             has_pie_chart = true;
           }
         },
@@ -152,7 +149,8 @@ TEST_CASE("GapReport basic generation", "[reports][gap]") {
 
   // Check cards
   auto total_gaps_card = std::find_if(
-      tearsheet.cards.begin(), tearsheet.cards.end(), [](const CardDef &card) {
+      tearsheet.cards.begin(), tearsheet.cards.end(),
+      [](const epoch_proto::CardDef &card) {
         return !card.data.empty() && card.data[0].title == "Total Gaps";
       });
   REQUIRE(total_gaps_card != tearsheet.cards.end());
@@ -161,7 +159,7 @@ TEST_CASE("GapReport basic generation", "[reports][gap]") {
 
 TEST_CASE("GapReport per-asset generation", "[reports][gap]") {
   auto &registry = ReportRegistry::instance();
-  auto report = registry.create("gap_report");
+  auto report = registry.create("gap_report", nullptr);
   REQUIRE(report != nullptr);
 
   // Create sample data for two assets using DataFrame factory
@@ -237,22 +235,11 @@ TEST_CASE("GapReport per-asset generation", "[reports][gap]") {
     asset_data[symbol] = MakeDataFrame(series_list, column_names);
   }
 
-  // Generate per-asset tearsheets
-  GapReportOptions options;
-  auto options_json = glz::write_json(options);
-  REQUIRE(options_json);
-
-  auto tearsheets = report->generate_per_asset(
-      asset_data, glz::read_json<glz::json_t>(options_json.value()).value());
-
-  CHECK(tearsheets.size() == 2);
-  CHECK(tearsheets.find("SPY") != tearsheets.end());
-  CHECK(tearsheets.find("QQQ") != tearsheets.end());
-
-  // Verify each tearsheet has content
-  for (const auto &[symbol, tearsheet] : tearsheets) {
-    CHECK(!tearsheet.cards.empty());
-    CHECK(!tearsheet.charts.empty());
-    CHECK(!tearsheet.tables.empty());
+  // Single interface only: call generate for each asset
+  for (const auto &[symbol, df] : asset_data) {
+    auto ts = report->generate(df);
+    CHECK(!ts.cards.empty());
+    CHECK(!ts.charts.empty());
+    CHECK(!ts.tables.empty());
   }
 }

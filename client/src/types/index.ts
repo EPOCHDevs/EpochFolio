@@ -24,13 +24,13 @@ export enum EpochFolioType {
   DAY_DURATION = 'DayDuration'
 }
 
-export enum EpochFolioCategory {
+export enum epoch_proto::EpochFolioCategory {
   STRATEGY_BENCHMARK = 'StrategyBenchmark',
-  RISK_ANALYSIS = 'RiskAnalysis',
-  RETURNS_DISTRIBUTION = 'ReturnsDistribution',
-  POSITIONS = 'Positions',
-  TRANSACTIONS = 'Transactions',
-  ROUND_TRIP = 'RoundTrip'
+    RISK_ANALYSIS = 'RiskAnalysis',
+    RETURNS_DISTRIBUTION = 'ReturnsDistribution',
+    POSITIONS = 'Positions',
+    TRANSACTIONS = 'Transactions',
+    ROUND_TRIP = 'RoundTrip'
 }
 
 
@@ -52,7 +52,7 @@ export interface ChartDef {
   id: string;
   title: string;
   type: EpochFolioDashboardWidget;
-  category: EpochFolioCategory;
+  category: epoch_proto:: EpochFolioCategory;
   yAxis?: AxisDef;
   xAxis?: AxisDef;
 }
@@ -199,7 +199,7 @@ export type ColumnDefs = ColumnDef[];
 
 export interface Table {
   type: EpochFolioDashboardWidget
-  category: EpochFolioCategory;
+  category: epoch_proto:: EpochFolioCategory;
   title: string;
   columns: ColumnDefs;
   data: Record<string, Scalar>[];
@@ -215,7 +215,7 @@ export interface CardData {
 
 export interface Card {
   title: EpochFolioDashboardWidget;
-  category: EpochFolioCategory;
+  category: epoch_proto:: EpochFolioCategory;
   data: CardData[];
   group_size?: number;
 }

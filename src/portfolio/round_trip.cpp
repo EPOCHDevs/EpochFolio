@@ -3,8 +3,8 @@
 //
 
 #include "round_trip.h"
-
-#include "models/table_def.h"
+#include "common/chart_def.h"
+#include "common/type_helper.h"
 #include <epoch_frame/factory/dataframe_factory.h>
 #include <epoch_frame/factory/index_factory.h>
 #include <epoch_frame/factory/series_factory.h>
@@ -12,6 +12,8 @@
 #include <oneapi/tbb/parallel_for.h>
 
 using namespace epoch_frame;
+
+#include "common/table_helpers.h"
 
 namespace epoch_folio {
 using AggList = std::vector<
@@ -78,213 +80,228 @@ arrow::TablePtr AggAllLongShort(epoch_frame::DataFrame const &round_trip,
       std::vector{index, all_trades, long_trades, short_trades}, fields);
 }
 
-Table GetSymbolsTable(epoch_frame::DataFrame const &round_trip,
-                      AggList const &stats_dict) {
-    auto apply_symbol = [&](std::string const &symbol,
-                            epoch_frame::Series const &returns) {
-        std::vector<std::string> index(stats_dict.size());
-        std::vector<Scalar> all_trades(stats_dict.size());
+epoch_proto::Table GetSymbolsTable(epoch_frame::DataFrame const &round_trip,
+                                   AggList const &stats_dict) {
+  auto apply_symbol = [&](std::string const &symbol,
+                          epoch_frame::Series const &returns) {
+    std::vector<std::string> index(stats_dict.size());
+    std::vector<Scalar> all_trades(stats_dict.size());
 
-        std::transform(stats_dict.begin(), stats_dict.end(), index.begin(),
-                       all_trades.begin(), [&](auto const &stat, std::string &row) {
-                         row = stat.first;
-                         return std::visit(
-                             [&]<typename T>(T const &fn) {
-                               if constexpr (std::is_same_v<T, std::string>) {
-                                 return returns.agg(AxisType::Row, fn) * 100_scalar;
-                               } else {
-                                 return fn(returns) * 100_scalar;
-                               }
-                             },
-                             stat.second);
-                       });
+    std::transform(stats_dict.begin(), stats_dict.end(), index.begin(),
+                   all_trades.begin(), [&](auto const &stat, std::string &row) {
+                     row = stat.first;
+                     return std::visit(
+                         [&]<typename T>(T const &fn) {
+                           if constexpr (std::is_same_v<T, std::string>) {
+                             return returns.agg(AxisType::Row, fn) * 100_scalar;
+                           } else {
+                             return fn(returns) * 100_scalar;
+                           }
+                         },
+                         stat.second);
+                   });
 
-        return make_dataframe(factory::index::make_object_index(index),
-                              {all_trades},
-                              {arrow::field(symbol, arrow::float64())});
-    };
+    return make_dataframe(factory::index::make_object_index(index),
+                          {all_trades},
+                          {arrow::field(symbol, arrow::float64())});
+  };
 
-    auto groups = round_trip[std::vector<std::string>{"returns", "symbol"}]
-                      .group_by_apply("symbol")
-                      .groups();
-    std::vector<FrameOrSeries> frames;
-    ColumnDefs column_defs{{"key", "Stats", epoch_core::EpochFolioType::String}};
+  auto groups = round_trip[std::vector<std::string>{"returns", "symbol"}]
+                    .group_by_apply("symbol")
+                    .groups();
+  epoch_proto::Table result_table;
 
-    frames.reserve(groups.size());
-    column_defs.reserve(groups.size() + 1);
+  std::vector<FrameOrSeries> frames;
 
-    auto returns = round_trip["returns"];
-    for (auto const &[symbol, indexes] : groups) {
-        auto symbol_name = symbol.repr();
-        frames.emplace_back(
-            apply_symbol(symbol_name, returns.iloc(Array{indexes})));
-        column_defs.emplace_back(symbol_name, symbol_name,
-                                 epoch_core::EpochFolioType::Percent);
-    }
-    arrow::TablePtr table;
-    if (!frames.empty()) {
-        table = concat({.frames = frames, .axis = AxisType::Column})
-                   .reset_index("key")
-                   .table();
-    }
+  epoch_proto::ColumnDef key_col;
+  key_col.set_id("key");
+  key_col.set_name("Stats");
+  key_col.set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
+  result_table.add_columns()->CopyFrom(std::move(key_col));
 
-    return Table{epoch_core::EpochFolioDashboardWidget::DataTable,
-                 epoch_core::EpochFolioCategory::RoundTrip, "Returns by Symbol",
-                 column_defs, table};
+  frames.reserve(groups.size());
+  result_table.mutable_columns()->Reserve(groups.size() + 1);
+
+  auto returns = round_trip["returns"];
+  for (auto const &[symbol, indexes] : groups) {
+    auto symbol_name = symbol.repr();
+    frames.emplace_back(
+        apply_symbol(symbol_name, returns.iloc(Array{indexes})));
+    epoch_proto::ColumnDef symbol_col;
+    symbol_col.set_id(symbol_name);
+    symbol_col.set_name(symbol_name);
+    symbol_col.set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+    result_table.add_columns()->CopyFrom(std::move(symbol_col));
+  }
+  arrow::TablePtr table;
+  if (!frames.empty()) {
+    table = concat({.frames = frames, .axis = AxisType::Column})
+                .reset_index("key")
+                .table();
+  }
+
+  result_table.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
+  result_table.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+  result_table.set_title("Returns by Symbol");
+
+  // Set data
+  if (table) {
+    auto table_data = MakeTableDataFromArrow(table);
+    *result_table.mutable_data() = std::move(table_data);
+  }
+
+  return result_table;
 }
 
-std::vector<Table> GetRoundTripStats(epoch_frame::DataFrame const &round_trip) {
+std::vector<epoch_proto::Table>
+GetRoundTripStats(epoch_frame::DataFrame const &round_trip) {
+  using epoch_frame::Series;
   static const Scalar ZERO{0.0};
 
-  static const AggList PNL_STATS{
-      {"Total profit", "sum"},
-      {"Gross profit", [](Series const &x) { return x.loc(x > ZERO).sum(); }},
-      {"Gross loss", [](Series const &x) { return x.loc(x < ZERO).sum(); }},
+  const AggList PNL_STATS{
+      {"Total profit", std::string{"sum"}},
+      {"Gross profit",
+       std::function<Scalar(Series const &)>(
+           [](Series const &x) { return x.loc(x > ZERO).sum(); })},
+      {"Gross loss", std::function<Scalar(Series const &)>([](Series const &x) {
+         return x.loc(x < ZERO).sum();
+       })},
       {"Profit factor",
-       [](Series const &x) {
+       std::function<Scalar(Series const &)>([](Series const &x) {
          auto neg_sum = x.loc(x < ZERO).abs().sum();
-         if (neg_sum != ZERO) {
+         if (neg_sum != ZERO)
            return x.loc(x > ZERO).sum() / neg_sum;
-         }
          return Scalar();
-       }},
-      {"Avg. trade net profit", "mean"},
+       })},
+      {"Avg. trade net profit", std::string{"mean"}},
       {"Avg. winning trade",
-       [](Series const &x) { return x.loc(x > ZERO).mean(); }},
+       std::function<Scalar(Series const &)>(
+           [](Series const &x) { return x.loc(x > ZERO).mean(); })},
       {"Avg. losing trade",
-       [](Series const &x) { return x.loc(x < ZERO).mean(); }},
+       std::function<Scalar(Series const &)>(
+           [](Series const &x) { return x.loc(x < ZERO).mean(); })},
       {"Ratio Avg. Win:Avg. Loss",
-       [](Series const &x) {
+       std::function<Scalar(Series const &)>([](Series const &x) {
          auto neg_mean = x.loc(x < ZERO).abs().mean();
-         if (neg_mean != ZERO) {
+         if (neg_mean != ZERO)
            return x.loc(x > ZERO).mean() / neg_mean;
-         }
          return Scalar();
-       }},
-      {"Largest winning trade", "max"},
-      {"Largest losing trade", "min"},
-  };
+       })},
+      {"Largest winning trade", std::string{"max"}},
+      {"Largest losing trade", std::string{"min"}}};
 
-  static const AggList SUMMARY_STATS{
+  const AggList SUMMARY_STATS{
       {"Total number of round_trips",
-       [](Series const &x) { return x.count_valid(); }},
+       std::function<Scalar(Series const &)>(
+           [](Series const &x) { return x.count_valid(); })},
       {"Percent profitable",
-       [](Series const &x) {
+       std::function<Scalar(Series const &)>([](Series const &x) {
          return Scalar{static_cast<double>(x.loc(x > ZERO).size()) /
                        static_cast<double>(x.size())};
-       }},
+       })},
       {"Winning round_trips",
-       [](Series const &x) { return Scalar{x.loc(x > ZERO).size()}; }},
+       std::function<Scalar(Series const &)>(
+           [](Series const &x) { return Scalar{x.loc(x > ZERO).size()}; })},
       {"Losing round_trips",
-       [](Series const &x) { return Scalar{x.loc(x < ZERO).size()}; }},
+       std::function<Scalar(Series const &)>(
+           [](Series const &x) { return Scalar{x.loc(x < ZERO).size()}; })},
       {"Even round_trips",
-       [](Series const &x) { return Scalar{x.loc(x == ZERO).size()}; }},
-  };
+       std::function<Scalar(Series const &)>(
+           [](Series const &x) { return Scalar{x.loc(x == ZERO).size()}; })}};
 
-  static const AggList RETURNS_STATS{
-      {"Avg returns all round_trips", "mean"},
+  const AggList RETURNS_STATS{
+      {"Avg returns all round_trips", std::string{"mean"}},
       {"Avg returns winning",
-       [](Series const &x) { return x.loc(x > ZERO).mean(); }},
+       std::function<Scalar(Series const &)>(
+           [](Series const &x) { return x.loc(x > ZERO).mean(); })},
       {"Avg returns losing",
-       [](Series const &x) { return x.loc(x < ZERO).mean(); }},
+       std::function<Scalar(Series const &)>(
+           [](Series const &x) { return x.loc(x < ZERO).mean(); })},
       {"Median returns all round_trips",
-       [](Series const &x) {
+       std::function<Scalar(Series const &)>([](Series const &x) {
          return x.quantile(arrow::compute::QuantileOptions{
              0.5, arrow::compute::QuantileOptions::Interpolation::LINEAR});
-       }},
+       })},
       {"Median returns winning",
-       [](Series const &x) {
+       std::function<Scalar(Series const &)>([](Series const &x) {
          return x.loc(x > ZERO).quantile(arrow::compute::QuantileOptions{
              0.5, arrow::compute::QuantileOptions::Interpolation::LINEAR});
-       }},
+       })},
       {"Median returns losing",
-       [](Series const &x) {
+       std::function<Scalar(Series const &)>([](Series const &x) {
          return x.loc(x < ZERO).quantile(arrow::compute::QuantileOptions{
              0.5, arrow::compute::QuantileOptions::Interpolation::LINEAR});
-       }},
-      {"Largest winning trade", "max"},
-      {"Largest losing trade", "min"},
-  };
+       })},
+      {"Largest winning trade", std::string{"max"}},
+      {"Largest losing trade", std::string{"min"}}};
 
-  static const AggList DURATION_STATS{
-      {"Avg duration", "mean"},
-      {"Median duration", "approximate_median"},
-      {"Longest duration", "max"},
-      {"Shortest duration", "min"},
-      // FIXME: For the commented out statistics below, we would need access to
-      // both open_dt and close_dt fields to calculate the total trading period.
-      // A potential solution would be to modify AggAllLongShort to accept
-      // multiple fields or pre-calculate these metrics before passing to
-      // AggAllLongShort.
-      //
-      // {"Avg # round_trips per day", [](DataFrame const& rt) {
-      //     auto trading_period_days = (rt["closeDateTime"].dt().max() -
-      //     rt["openDateTime"].dt().min()).days(); return
-      //     static_cast<double>(rt.num_rows()) / trading_period_days;
-      // }},
-      // {"Avg # round_trips per month", [](DataFrame const& rt) {
-      //     auto trading_period_days = (rt["closeDateTime"].dt().max() -
-      //     rt["openDateTime"].dt().min()).days(); return
-      //     static_cast<double>(rt.num_rows()) / (trading_period_days / 21.0);
-      //     // ~21 trading days per month
-      // }}
-  };
+  const AggList DURATION_STATS{
+      {"Avg duration", std::string{"mean"}},
+      {"Median duration", std::string{"approximate_median"}},
+      {"Longest duration", std::string{"max"}},
+      {"Shortest duration", std::string{"min"}}};
 
   auto pnl = AggAllLongShort(round_trip, "pnl", PNL_STATS);
   auto summary = AggAllLongShort(round_trip, "pnl", SUMMARY_STATS);
   auto duration = AggAllLongShort<true>(round_trip, "duration", DURATION_STATS);
   auto returns = AggAllLongShort(round_trip, "returns", RETURNS_STATS, true);
 
-  return {
-      Table{epoch_core::EpochFolioDashboardWidget::DataTable,
-            epoch_core::EpochFolioCategory::RoundTrip, "PnL Statistics",
-            ColumnDefs{
-                {"key", "PnL Stats", epoch_core::EpochFolioType::String},
-                {"all_trades", "All Trades",
-                 epoch_core::EpochFolioType::Monetary},
-                {"long_trades", "Long Trades",
-                 epoch_core::EpochFolioType::Monetary},
-                {"short_trades", "Short Trades",
-                 epoch_core::EpochFolioType::Monetary},
-            },
-            pnl},
-      Table{
-          epoch_core::EpochFolioDashboardWidget::DataTable,
-          epoch_core::EpochFolioCategory::RoundTrip, "Trade Summary",
-          ColumnDefs{
-              {"key", "Summary Stats", epoch_core::EpochFolioType::String},
-              {"all_trades", "All Trades", epoch_core::EpochFolioType::Decimal},
-              {"long_trades", "Long Trades",
-               epoch_core::EpochFolioType::Decimal},
-              {"short_trades", "Short Trades",
-               epoch_core::EpochFolioType::Decimal},
-          },
-          summary},
-      Table{epoch_core::EpochFolioDashboardWidget::DataTable,
-            epoch_core::EpochFolioCategory::RoundTrip, "Duration Analysis",
-            ColumnDefs{
-                {"key", "Duration Stats", epoch_core::EpochFolioType::String},
-                {"all_trades", "All Trades",
-                 epoch_core::EpochFolioType::Duration},
-                {"long_trades", "Long Trades",
-                 epoch_core::EpochFolioType::Duration},
-                {"short_trades", "Short Trades",
-                 epoch_core::EpochFolioType::Duration},
-            },
-            duration},
-      Table{
-          epoch_core::EpochFolioDashboardWidget::DataTable,
-          epoch_core::EpochFolioCategory::RoundTrip, "Return Analysis",
-          ColumnDefs{
-              {"key", "Return Stats", epoch_core::EpochFolioType::String},
-              {"all_trades", "All Trades", epoch_core::EpochFolioType::Percent},
-              {"long_trades", "Long Trades",
-               epoch_core::EpochFolioType::Percent},
-              {"short_trades", "Short Trades",
-               epoch_core::EpochFolioType::Percent},
-          },
-          returns},
-      GetSymbolsTable(round_trip, RETURNS_STATS)};
+  auto make_table =
+      [&](const std::string &title,
+          const std::vector<std::pair<std::string, epoch_proto::EpochFolioType>>
+              &cols,
+          const std::shared_ptr<arrow::Table> &data) {
+        epoch_proto::Table t;
+        t.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
+        t.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+        t.set_title(title);
+        for (auto const &c : cols) {
+          epoch_proto::ColumnDef cd;
+          cd.set_name(c.first);
+          cd.set_type(c.second);
+          *t.add_columns() = std::move(cd);
+        }
+        *t.mutable_data() = MakeTableDataFromArrow(data);
+        return t;
+      };
+
+  std::vector<epoch_proto::Table> out;
+  out.reserve(5);
+
+  out.emplace_back(
+      make_table("PnL Statistics",
+                 {{"key", epoch_proto::EPOCH_FOLIO_TYPE_STRING},
+                  {"all_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
+                  {"long_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
+                  {"short_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL}},
+                 pnl));
+
+  out.emplace_back(
+      make_table("Trade Summary",
+                 {{"key", epoch_proto::EPOCH_FOLIO_TYPE_STRING},
+                  {"all_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
+                  {"long_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
+                  {"short_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL}},
+                 summary));
+
+  out.emplace_back(
+      make_table("Duration Analysis",
+                 {{"key", epoch_proto::EPOCH_FOLIO_TYPE_STRING},
+                  {"all_trades", epoch_proto::EPOCH_FOLIO_TYPE_DAY_DURATION},
+                  {"long_trades", epoch_proto::EPOCH_FOLIO_TYPE_DAY_DURATION},
+                  {"short_trades", epoch_proto::EPOCH_FOLIO_TYPE_DAY_DURATION}},
+                 duration));
+
+  out.emplace_back(
+      make_table("Return Analysis",
+                 {{"key", epoch_proto::EPOCH_FOLIO_TYPE_STRING},
+                  {"all_trades", epoch_proto::EPOCH_FOLIO_TYPE_PERCENT},
+                  {"long_trades", epoch_proto::EPOCH_FOLIO_TYPE_PERCENT},
+                  {"short_trades", epoch_proto::EPOCH_FOLIO_TYPE_PERCENT}},
+                 returns));
+
+  out.emplace_back(GetSymbolsTable(round_trip, RETURNS_STATS));
+  return out;
 }
 
 DataFrame GetProfitAttribution(epoch_frame::DataFrame const &round_trip,

@@ -6,7 +6,8 @@
 #include "portfolio/pos.h"
 #include "portfolio/timeseries.h"
 #include "portfolio/txn.h"
-#include <glaze/glaze.hpp>
+#include <fstream>
+#include <google/protobuf/util/json_util.h>
 
 namespace glz {
 json_t to_json(const epoch_frame::Scalar &array) {
@@ -77,25 +78,20 @@ PortfolioTearSheetFactory::MakeTearSheet(TearSheetOption const &options) const {
   return tearSheet;
 }
 
-template <typename T> std::string write_json_(T output) {
-  auto result = glz::write_json(std::move(output));
-  if (result.error()) {
-    SPDLOG_ERROR("Failed to write tear sheet to json: {}",
-                 glz::format_error(result.error()));
-    return "";
-  }
-  return result.value();
+template <typename T> std::string write_json_(T /*output*/) {
+  // TODO: Implement proper JSON serialization for structs containing protobuf
+  // messages
+  SPDLOG_WARN("JSON serialization temporarily disabled - needs Glaze "
+              "definitions for protobuf types");
+  return "{}";
 }
 
-template <typename T> void write_json_(T output, std::string const &file_path) {
-  auto error =
-      glz::write_file_json(std::move(output), file_path, std::string());
-  if (!error) {
-    return;
-  }
-
-  SPDLOG_ERROR("Failed to write full tear sheet to json: {}",
-               glz::format_error(error));
+template <typename T>
+void write_json_(T /*output*/, std::string const & /*file_path*/) {
+  // TODO: Implement proper JSON file writing for structs containing protobuf
+  // messages
+  SPDLOG_WARN("JSON file writing temporarily disabled - needs Glaze "
+              "definitions for protobuf types");
 }
 
 std::string write_json(TearSheet const &output) { return write_json_(output); }

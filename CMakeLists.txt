@@ -25,6 +25,23 @@ set(CMAKE_TOOLCHAIN_FILE $ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE
 set(VCPKG_MANIFEST_MODE ON)
 set(VCPKG_FEATURE_FLAGS "versions")
 
+# Ensure try_compile checks inherit the configured toolchain and compilers
+set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
+    CMAKE_C_COMPILER
+    CMAKE_CXX_COMPILER
+    CMAKE_C_FLAGS
+    CMAKE_CXX_FLAGS
+    CMAKE_TOOLCHAIN_FILE
+    VCPKG_CHAINLOAD_TOOLCHAIN_FILE
+    VCPKG_TARGET_TRIPLET
+    VCPKG_HOST_TRIPLET
+)
+
+# Prefer NEW behavior where try_compile preserves toolchain settings (CMake >= 3.27)
+if(POLICY CMP0137)
+  cmake_policy(SET CMP0137 NEW)
+endif()
+
 option(BUILD_TEST OFF)
 option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 option(BUILD_EXAMPLES "Build the examples" OFF)
@@ -43,6 +60,7 @@ if (BUILD_TEST)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
   enable_testing()
 endif()
+find_package(EpochProtos CONFIG REQUIRED)
 
 if (GIT_TOKEN)
     SET(REPO_URL "https://${GIT_TOKEN}:@github.com")
@@ -81,7 +99,7 @@ target_include_directories(epoch_folio
 )
 
 target_compile_options(epoch_folio PRIVATE -Wall -Wextra -Werror)
-target_link_libraries(epoch_folio PUBLIC epoch::metadata)
+target_link_libraries(epoch_folio PUBLIC epoch::metadata epoch::protos)
 add_subdirectory(src)
 
 if (BUILD_TEST)
