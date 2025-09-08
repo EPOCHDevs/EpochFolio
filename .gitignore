@@ -7,3 +7,5 @@ cmake-build-*
 empyrical-reloaded
 pyfolio-reloaded
 .cache
+
+test/python_benchmark_test/*venv*
