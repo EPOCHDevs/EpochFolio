@@ -2,15 +2,17 @@
   "name": "epoch-folio",
   "version": "0.1.0",
   "dependencies": [
+    "armadillo",
+    "mlpack",
     "catch2",
-    "epoch-protos",
+    "dataframe",
     "glaze",
     "trompeloeil",
     "yaml-cpp",
     "tabulate",
     "tbb",
-    "spdlog",
     "protobuf",
+    "spdlog",
     {
       "name": "arrow",
       "features": [

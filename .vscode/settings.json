@@ -97,7 +97,7 @@
     },
     "cmake.sourceDirectory": "${workspaceFolder}",
     "cmake.buildDirectory": "${workspaceFolder}/cmake-build-debug",
-    "testMate.cpp.test.executables": "/home/adesola/EpochLab/EpochFolio/cmake-build-debug/bin/epoch_folio_*_test",
+    "testMate.cpp.test.executables": "{cmake-build-debug/bin/epoch_folio_test,cmake-build-debug/bin/*test*}",
     "testMate.cpp.log.logpanel": true,
     "testMate.cpp.debug.breakOnFailure": true,
     "testMate.cpp.log.logfile": "/home/adesola/EpochLab/EpochFolio/cmake-build-debug/testmate.log",

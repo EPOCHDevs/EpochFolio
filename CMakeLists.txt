@@ -60,8 +60,7 @@ if (BUILD_TEST)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
   enable_testing()
 endif()
-find_package(EpochProtos CONFIG REQUIRED)
-find_package(protobuf CONFIG REQUIRED)
+# EpochProtos is now included via add_subdirectory(thirdparty/epoch_protos) below
 
 if (GIT_TOKEN)
     SET(REPO_URL "https://${GIT_TOKEN}:@github.com")
@@ -95,13 +94,19 @@ target_include_directories(epoch_folio
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/thirdparty/epoch_protos/include
     PRIVATE
         ${PROJECT_SOURCE_DIR}/src
 )
 
 target_compile_options(epoch_folio PRIVATE -Wall -Wextra -Werror)
-target_link_libraries(epoch_folio PUBLIC epoch::metadata epoch::protos protobuf::libprotobuf)
+
+# Add subdirectories before linking
+add_subdirectory(thirdparty/epoch_protos)
 add_subdirectory(src)
+
+find_package(Protobuf REQUIRED)
+target_link_libraries(epoch_folio PUBLIC epoch::metadata ${PROJECT_SOURCE_DIR}/thirdparty/epoch_protos/lib/libepoch_protos_cpp.a protobuf::libprotobuf)
 
 if (BUILD_TEST)
   add_subdirectory(test)
