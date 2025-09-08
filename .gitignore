@@ -9,3 +9,4 @@ pyfolio-reloaded
 .cache
 
 test/python_benchmark_test/*venv*
+test/python_benchmark_test/__pycache__
