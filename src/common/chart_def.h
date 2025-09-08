@@ -99,6 +99,11 @@ inline epoch_proto::Scalar ToProtoScalarValue(std::string_view v) {
   s.set_string_value(std::string(v));
   return s;
 }
+inline epoch_proto::Scalar ToProtoScalarValue(std::nullptr_t) {
+  epoch_proto::Scalar s;
+  s.set_null_value(google::protobuf::NULL_VALUE);
+  return s;
+}
 
 inline StraightLineDef MakeStraightLine(const std::string &title,
                                         const epoch_frame::Scalar &value,

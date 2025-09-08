@@ -3,11 +3,11 @@
 //
 
 #include "epoch_folio/tearsheet.h"
-#include "portfolio/pos.h"
-#include "portfolio/timeseries.h"
-#include "portfolio/txn.h"
+#include <epoch_protos/tearsheet.pb.h>
 #include <fstream>
+#include <google/protobuf/message.h>
 #include <google/protobuf/util/json_util.h>
+#include <spdlog/spdlog.h>
 
 namespace glz {
 json_t to_json(const epoch_frame::Scalar &array) {
@@ -44,9 +44,9 @@ PortfolioTearSheetFactory::PortfolioTearSheetFactory(
       m_roundTripFactory(options.roundTrip, m_returns, m_positions,
                          options.sectorMapping) {}
 
-FullTearSheet
+epoch_proto::FullTearSheet
 PortfolioTearSheetFactory::MakeTearSheet(TearSheetOption const &options) const {
-  FullTearSheet tearSheet;
+  epoch_proto::FullTearSheet tearSheet;
 
   try {
     m_returnsFactory.Make(options.turnoverDenominator, options.topKDrawDowns,
@@ -78,33 +78,49 @@ PortfolioTearSheetFactory::MakeTearSheet(TearSheetOption const &options) const {
   return tearSheet;
 }
 
-template <typename T> std::string write_json_(T /*output*/) {
-  // TODO: Implement proper JSON serialization for structs containing protobuf
-  // messages
-  SPDLOG_WARN("JSON serialization temporarily disabled - needs Glaze "
-              "definitions for protobuf types");
-  return "{}";
+template <typename T> std::string write_protobuf_(const T &output) {
+  std::string binary_data;
+  if (!output.SerializeToString(&binary_data)) {
+    SPDLOG_ERROR("Failed to serialize protobuf message to binary");
+    return "";
+  }
+  return binary_data;
 }
 
 template <typename T>
-void write_json_(T /*output*/, std::string const & /*file_path*/) {
-  // TODO: Implement proper JSON file writing for structs containing protobuf
-  // messages
-  SPDLOG_WARN("JSON file writing temporarily disabled - needs Glaze "
-              "definitions for protobuf types");
+void write_protobuf_(const T &output, std::string const &file_path) {
+  std::string binary_data;
+  if (!output.SerializeToString(&binary_data)) {
+    SPDLOG_ERROR("Failed to serialize protobuf message to binary");
+    return;
+  }
+
+  std::ofstream file(file_path, std::ios::binary);
+  if (!file.is_open()) {
+    SPDLOG_ERROR("Failed to open file for writing: {}", file_path);
+    return;
+  }
+
+  file.write(binary_data.data(), binary_data.size());
+  file.close();
+  SPDLOG_INFO("Successfully wrote protobuf data to: {}", file_path);
 }
 
-std::string write_json(TearSheet const &output) { return write_json_(output); }
-
-void write_json(TearSheet const &output, std::string const &file_path) {
-  write_json_(output, file_path);
+std::string write_protobuf(epoch_proto::TearSheet const &output) {
+  return write_protobuf_(output);
 }
 
-std::string write_json(FullTearSheet const &output) {
-  return write_json_(output);
+void write_protobuf(epoch_proto::TearSheet const &output,
+                    std::string const &file_path) {
+  write_protobuf_(output, file_path);
 }
 
-void write_json(FullTearSheet const &output, std::string const &file_path) {
-  write_json_(output, file_path);
+std::string write_protobuf(epoch_proto::FullTearSheet const &output) {
+  return write_protobuf_(output);
+}
+
+void write_protobuf(epoch_proto::FullTearSheet const &output,
+                    std::string const &file_path) {
+  write_protobuf_(output, file_path);
 }
 } // namespace epoch_folio

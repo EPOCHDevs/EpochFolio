@@ -6,6 +6,7 @@
 #include "common/chart_def.h"
 #include "epoch_frame/dataframe.h"
 #include "portfolio/model.h"
+#include <epoch_protos/tearsheet.pb.h>
 
 namespace epoch_folio::txn {
 class TearSheetFactory {
@@ -16,7 +17,8 @@ public:
                    epoch_frame::DataFrame transactions);
 
   void Make(epoch_core::TurnoverDenominator turnoverDenominator, size_t binSize,
-            std::string const &timezone, FullTearSheet &output) const;
+            std::string const &timezone,
+            epoch_proto::FullTearSheet &output) const;
 
 private:
   epoch_frame::Series m_returns;

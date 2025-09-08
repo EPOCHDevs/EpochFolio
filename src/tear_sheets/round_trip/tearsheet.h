@@ -6,6 +6,7 @@
 #include "common/chart_def.h"
 #include "epoch_frame/dataframe.h"
 #include "portfolio/model.h"
+#include <epoch_protos/tearsheet.pb.h>
 
 namespace epoch_folio::round_trip {
 class TearSheetFactory {
@@ -15,7 +16,7 @@ public:
                    epoch_frame::DataFrame positions,
                    SectorMapping sector_mapping);
 
-  void Make(FullTearSheet &output) const;
+  void Make(epoch_proto::FullTearSheet &output) const;
 
 private:
   epoch_frame::DataFrame m_round_trip;

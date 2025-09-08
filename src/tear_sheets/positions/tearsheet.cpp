@@ -211,20 +211,32 @@ LinesDef TearSheetFactory::MakeLongShortHoldingsChart(
     cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
 
     try {
-      auto longMax = longHoldings.max().as_int64();
-      auto longMin = longHoldings.min().as_int64();
-      longHoldingLegend =
-          std::format("Long (max: {}, min: {})", longMax, longMin);
+      auto longMaxScalar = longHoldings.max();
+      auto longMinScalar = longHoldings.min();
+      if (!longMaxScalar.is_null() && !longMinScalar.is_null()) {
+        auto longMax = longMaxScalar.as_int64();
+        auto longMin = longMinScalar.as_int64();
+        longHoldingLegend =
+            std::format("Long (max: {}, min: {})", longMax, longMin);
+      } else {
+        longHoldingLegend = "Long";
+      }
     } catch (std::exception const &e) {
       SPDLOG_WARN("Failed to format long holdings legend: {}", e.what());
       longHoldingLegend = "Long";
     }
 
     try {
-      auto shortMax = shortHoldings.max().as_int64();
-      auto shortMin = shortHoldings.min().as_int64();
-      shortHoldingLegend =
-          std::format("Short (max: {}, min: {})", shortMax, shortMin);
+      auto shortMaxScalar = shortHoldings.max();
+      auto shortMinScalar = shortHoldings.min();
+      if (!shortMaxScalar.is_null() && !shortMinScalar.is_null()) {
+        auto shortMax = shortMaxScalar.as_int64();
+        auto shortMin = shortMinScalar.as_int64();
+        shortHoldingLegend =
+            std::format("Short (max: {}, min: {})", shortMax, shortMin);
+      } else {
+        shortHoldingLegend = "Short";
+      }
     } catch (std::exception const &e) {
       SPDLOG_WARN("Failed to format short holdings legend: {}", e.what());
       shortHoldingLegend = "Short";
@@ -358,7 +370,8 @@ std::vector<Chart> TearSheetFactory::MakeTopPositionsLineCharts(
   return result;
 }
 
-void TearSheetFactory::Make(uint32_t k, FullTearSheet &output) const {
+void TearSheetFactory::Make(uint32_t k,
+                            epoch_proto::FullTearSheet &output) const {
   try {
     auto positions = epoch_frame::concat(
         {.frames = {m_positionsNoCash, m_cash.to_frame("cash")},
@@ -369,31 +382,37 @@ void TearSheetFactory::Make(uint32_t k, FullTearSheet &output) const {
 
     if (topPositions[2].size() == 0) {
       SPDLOG_WARN("No top positions found");
-      output.positions = epoch_folio::TearSheet{};
+      output.mutable_positions()->Clear();
       return;
     }
 
     auto columns = topPositions[2].index()->array();
 
-    TearSheet ts;
+    epoch_proto::TearSheet ts;
     // Charts for top positions and summaries
     try {
-      ts.charts =
+      auto charts =
           MakeTopPositionsLineCharts(positions, positionsAlloc[columns]);
+      for (auto &chart : charts) {
+        *ts.add_charts() = std::move(chart);
+      }
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to build positions charts: {}", e.what());
     }
     // Tables for top positions
     try {
-      ts.tables = MakeTopPositionsTables(topPositions, k);
+      auto tables = MakeTopPositionsTables(topPositions, k);
+      for (auto &table : tables) {
+        *ts.add_tables() = std::move(table);
+      }
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to build positions tables: {}", e.what());
     }
 
-    output.positions = std::move(ts);
+    *output.mutable_positions() = std::move(ts);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Exception in TearSheetFactory::Make: {}", e.what());
-    output.positions = epoch_folio::TearSheet{};
+    output.mutable_positions()->Clear();
   }
 }
 } // namespace epoch_folio::positions

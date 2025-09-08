@@ -6,6 +6,7 @@
 #include "common/chart_def.h"
 #include "epoch_frame/dataframe.h"
 #include "portfolio/model.h"
+#include <epoch_protos/tearsheet.pb.h>
 
 namespace epoch_folio::positions {
 class TearSheetFactory {
@@ -14,7 +15,7 @@ public:
                    epoch_frame::Series returns,
                    std::unordered_map<std::string, std::string> sectorMappings);
 
-  void Make(uint32_t k, FullTearSheet &) const;
+  void Make(uint32_t k, epoch_proto::FullTearSheet &) const;
 
 protected:
   TearSheetFactory() = default;

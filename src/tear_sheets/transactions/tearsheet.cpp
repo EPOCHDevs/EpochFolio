@@ -124,7 +124,7 @@ BarDef TearSheetFactory::MakeTransactionTimeHistogram(
 
 void TearSheetFactory::Make(epoch_core::TurnoverDenominator turnoverDenominator,
                             size_t binSize, std::string const &timezone,
-                            FullTearSheet &output) const {
+                            epoch_proto::FullTearSheet &output) const {
   try {
     auto df_turnover =
         GetTurnover(m_positions, m_transactions, turnoverDenominator);
@@ -163,12 +163,14 @@ void TearSheetFactory::Make(epoch_core::TurnoverDenominator turnoverDenominator,
       SPDLOG_ERROR("Failed to create transaction time histogram: {}", e.what());
     }
 
-    TearSheet ts;
-    ts.charts = std::move(charts);
-    output.transactions = std::move(ts);
+    epoch_proto::TearSheet ts;
+    for (auto &chart : charts) {
+      *ts.add_charts() = std::move(chart);
+    }
+    *output.mutable_transactions() = std::move(ts);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create transactions tearsheet: {}", e.what());
-    output.transactions = TearSheet{};
+    output.mutable_transactions()->Clear();
   }
 }
 } // namespace epoch_folio::txn

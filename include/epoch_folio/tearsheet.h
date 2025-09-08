@@ -6,7 +6,7 @@
 #include <string>
 
 #include "portfolio/model.h"
-#include <unordered_map>
+#include <epoch_protos/tearsheet.pb.h>
 
 #include "tear_sheets/positions/tearsheet.h"
 #include "tear_sheets/returns/tearsheet.h"
@@ -20,7 +20,7 @@ class PortfolioTearSheetFactory {
 public:
   explicit PortfolioTearSheetFactory(TearSheetDataOption const &options);
 
-  FullTearSheet MakeTearSheet(TearSheetOption const &) const;
+  epoch_proto::FullTearSheet MakeTearSheet(TearSheetOption const &) const;
 
 private:
   epoch_frame::Series m_returns;
@@ -31,10 +31,12 @@ private:
   round_trip::TearSheetFactory m_roundTripFactory;
 };
 
-std::string write_json(FullTearSheet const &output);
-void write_json(FullTearSheet const &output, std::string const &file_path);
-std::string write_json(TearSheet const &output);
-void write_json(TearSheet const &output, std::string const &file_path);
+std::string write_protobuf(epoch_proto::FullTearSheet const &output);
+void write_protobuf(epoch_proto::FullTearSheet const &output,
+                    std::string const &file_path);
+std::string write_protobuf(epoch_proto::TearSheet const &output);
+void write_protobuf(epoch_proto::TearSheet const &output,
+                    std::string const &file_path);
 } // namespace epoch_folio
 
 namespace glz {

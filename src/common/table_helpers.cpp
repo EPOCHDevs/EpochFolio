@@ -6,56 +6,18 @@
 
 #include <arrow/array.h>
 #include <arrow/chunked_array.h>
+#include <arrow/table.h>
 #include <arrow/type.h>
 
 #include "chart_def.h"
 
 namespace epoch_folio {
 
-static epoch_proto::EpochFolioType
-MapArrowTypeToFolioType(const std::shared_ptr<arrow::DataType> &type) {
-  switch (type->id()) {
-  case arrow::Type::STRING:
-  case arrow::Type::LARGE_STRING:
-    return epoch_proto::EPOCH_FOLIO_TYPE_STRING;
-  case arrow::Type::INT32:
-  case arrow::Type::INT64:
-  case arrow::Type::UINT32:
-  case arrow::Type::UINT64:
-    return epoch_proto::EPOCH_FOLIO_TYPE_INTEGER;
-  case arrow::Type::DOUBLE:
-  case arrow::Type::FLOAT:
-    return epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL;
-  case arrow::Type::BOOL:
-    return epoch_proto::EPOCH_FOLIO_TYPE_BOOLEAN;
-  default:
-    return epoch_proto::EPOCH_FOLIO_TYPE_STRING;
-  }
-}
-
-template <typename T> epoch_proto::Scalar ToProtoScalarValue(T const &scalar) {
-  epoch_proto::Scalar s;
-
-  if constexpr (std::is_integral_v<T>) {
-    s.set_int64_value(scalar);
-  } else if constexpr (std::is_floating_point_v<T>) {
-    s.set_double_value(scalar);
-  } else if constexpr (std::is_same_v<T, bool>) {
-    s.set_bool_value(scalar);
-  } else {
-    s.set_string_value(scalar);
-  }
-
-  return s;
-}
-
 static epoch_proto::Scalar
-MakeScalarFromArrow(const std::shared_ptr<arrow::ChunkedArray> &array,
-                    int64_t row) {
-  // Handle nulls
-  if (!array || row < 0 || row >= array->length()) {
-    epoch_proto::Scalar s;
-    return s;
+MakeScalarFromArrow(const std::shared_ptr<arrow::Array> &array, int64_t row) {
+  // Check for null values first
+  if (array->IsNull(row)) {
+    return ToProtoScalarValue(nullptr);
   }
 
   switch (array->type()->id()) {
@@ -103,14 +65,16 @@ MakeScalarFromArrow(const std::shared_ptr<arrow::ChunkedArray> &array,
 }
 
 epoch_proto::Array
-MakeArrayFromArrow(const std::shared_ptr<arrow::ChunkedArray> &array) {
+MakeArrayFromArrow(const std::shared_ptr<arrow::ChunkedArray> &chunked_array) {
   epoch_proto::Array out;
-  if (!array) {
+  if (!chunked_array) {
     return out;
   }
 
-  auto n = array->length();
+  auto n = chunked_array->length();
   out.mutable_values()->Reserve(n);
+
+  auto array = arrow::Concatenate(chunked_array->chunks()).MoveValueUnsafe();
   for (int64_t i = 0; i < n; ++i) {
     *out.add_values() = MakeScalarFromArrow(array, i);
   }
@@ -123,7 +87,7 @@ MakeTableDataFromArrow(const std::shared_ptr<arrow::Table> &table) {
   if (!table) {
     return out;
   }
-
+  auto rb = table->CombineChunks().MoveValueUnsafe();
   auto cols = table->columns();
 
   const int64_t nrows = table->num_rows();
@@ -131,7 +95,7 @@ MakeTableDataFromArrow(const std::shared_ptr<arrow::Table> &table) {
     auto *row = out.add_rows();
     for (int c = 0; c < static_cast<int>(cols.size()); ++c) {
       auto *cell = row->add_values();
-      *cell = MakeScalarFromArrow(cols[c], r);
+      *cell = MakeScalarFromArrow(rb->column(c)->chunk(0), r);
     }
   }
 

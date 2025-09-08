@@ -10,6 +10,7 @@
     "tabulate",
     "tbb",
     "spdlog",
+    "protobuf",
     {
       "name": "arrow",
       "features": [

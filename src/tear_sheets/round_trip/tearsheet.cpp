@@ -221,13 +221,13 @@ HistogramDef TearSheetFactory::MakeReturnsPerRoundTripDollarsChart(
   return histogram_def;
 }
 
-void TearSheetFactory::Make(FullTearSheet &output) const {
+void TearSheetFactory::Make(epoch_proto::FullTearSheet &output) const {
   try {
     auto trades = ExtractRoundTrips();
 
     if (trades.num_rows() == 0) {
       SPDLOG_WARN("No trades found, skipping round trip tear sheet");
-      output.round_trip = TearSheet{};
+      output.mutable_round_trip()->Clear();
       return;
     }
 
@@ -290,17 +290,17 @@ void TearSheetFactory::Make(FullTearSheet &output) const {
                    e.what());
     }
 
-    TearSheet tear_sheet;
+    epoch_proto::TearSheet tear_sheet;
     for (auto &chart : charts) {
-      tear_sheet.charts.push_back(std::move(chart));
+      *tear_sheet.add_charts() = std::move(chart);
     }
     for (auto &table : tables) {
-      tear_sheet.tables.push_back(std::move(table));
+      *tear_sheet.add_tables() = std::move(table);
     }
-    output.round_trip = std::move(tear_sheet);
+    *output.mutable_round_trip() = std::move(tear_sheet);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create round trip tearsheet: {}", e.what());
-    output.round_trip = TearSheet{};
+    output.mutable_round_trip()->Clear();
   }
 }
 

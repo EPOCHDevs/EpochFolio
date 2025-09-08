@@ -5,6 +5,7 @@
 #include "epoch_folio/tearsheet.h"
 #include <catch.hpp>
 #include <epoch_frame/serialization.h>
+#include <filesystem>
 
 TEST_CASE("Tearsheet") {
   using namespace epoch_folio;
@@ -80,13 +81,21 @@ TEST_CASE("Tearsheet") {
           test_returns, test_factor, cash, test_pos, test_txn, round_trip,
           sector, false}}.MakeTearSheet(TearSheetOption{});
 
-  write_json(test_result, "full_test_result.json");
-  write_json(test_result.positions, "positions_test_result.json");
-  write_json(test_result.strategy_benchmark,
-             "strategy_benchmark_test_result.json");
-  write_json(test_result.transactions, "transactions_test_result.json");
-  write_json(test_result.round_trip, "round_trip_test_result.json");
-  write_json(test_result.risk_analysis, "risk_analysis_test_result.json");
-  write_json(test_result.returns_distribution,
-             "returns_distribution_test_result.json");
+  // Create output directory if it doesn't exist
+  std::string output_dir = "test_output";
+  std::filesystem::create_directories(output_dir);
+
+  write_protobuf(test_result, output_dir + "/full_test_result.pb");
+  write_protobuf(test_result.positions(),
+                 output_dir + "/positions_test_result.pb");
+  write_protobuf(test_result.strategy_benchmark(),
+                 output_dir + "/strategy_benchmark_test_result.pb");
+  write_protobuf(test_result.transactions(),
+                 output_dir + "/transactions_test_result.pb");
+  write_protobuf(test_result.round_trip(),
+                 output_dir + "/round_trip_test_result.pb");
+  write_protobuf(test_result.risk_analysis(),
+                 output_dir + "/risk_analysis_test_result.pb");
+  write_protobuf(test_result.returns_distribution(),
+                 output_dir + "/returns_distribution_test_result.pb");
 }

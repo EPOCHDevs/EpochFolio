@@ -6,6 +6,7 @@
 #include "common/chart_def.h"
 #include "epoch_frame/dataframe.h"
 #include "portfolio/model.h"
+#include <epoch_protos/tearsheet.pb.h>
 
 namespace epoch_folio::returns {
 class TearSheetFactory {
@@ -16,7 +17,7 @@ public:
                    epoch_frame::Series benchmark);
 
   void Make(epoch_core::TurnoverDenominator turnoverDenominator,
-            int64_t topKDrawDowns, FullTearSheet &output) const;
+            int64_t topKDrawDowns, epoch_proto::FullTearSheet &output) const;
 
   epoch_frame::DataFrame GetStrategyAndBenchmark() const;
 
@@ -48,12 +49,12 @@ protected:
   epoch_proto::Table MakeWorstDrawdownTable(int64_t top,
                                             DrawDownTable &data) const;
 
-  TearSheet MakeStrategyBenchmark(
+  epoch_proto::TearSheet MakeStrategyBenchmark(
       epoch_core::TurnoverDenominator turnoverDenominator) const;
 
-  TearSheet MakeRiskAnalysis(int64_t topKDrawDowns) const;
+  epoch_proto::TearSheet MakeRiskAnalysis(int64_t topKDrawDowns) const;
 
-  TearSheet MakeReturnsDistribution() const;
+  epoch_proto::TearSheet MakeReturnsDistribution() const;
 
 private:
   epoch_frame::Series m_cash;

@@ -319,51 +319,75 @@ CardDef TearSheetFactory::MakePerformanceStats(
     data_months->set_group(kGroup0);
 
     for (auto const &[stat, func] : ep::get_simple_stats()) {
-      auto scalar = func(m_strategy);
-      auto type = epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL;
-      if (pct_fns.contains(ep::get_stat_name(stat))) {
-        scalar *= 100;
-        type = epoch_proto::EPOCH_FOLIO_TYPE_PERCENT;
-      }
+      try {
+        auto scalar = func(m_strategy);
+        auto type = epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL;
+        if (pct_fns.contains(ep::get_stat_name(stat))) {
+          scalar *= 100;
+          type = epoch_proto::EPOCH_FOLIO_TYPE_PERCENT;
+        }
 
-      auto *data_stat = card.add_data();
-      data_stat->set_title(ep::get_stat_name(stat));
-      *data_stat->mutable_value() = ToProtoScalar(Scalar{std::move(scalar)});
-      data_stat->set_type(type);
-      data_stat->set_group(kGroup1);
+        auto *data_stat = card.add_data();
+        data_stat->set_title(ep::get_stat_name(stat));
+        *data_stat->mutable_value() = ToProtoScalar(Scalar{std::move(scalar)});
+        data_stat->set_type(type);
+        data_stat->set_group(kGroup1);
+      } catch (const std::exception &e) {
+        // Skip this stat if it fails
+        SPDLOG_WARN("Failed to compute stat {}: {}", ep::get_stat_name(stat),
+                    e.what());
+      }
     }
   }
 
   if (!positions.empty()) {
-    auto *data_leverage = card.add_data();
-    data_leverage->set_title("Gross Leverage");
-    *data_leverage->mutable_value() =
-        ToProtoScalar(GrossLeverage(positions).mean());
-    data_leverage->set_type(epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL);
-    data_leverage->set_group(kGroup2);
+    try {
+      auto *data_leverage = card.add_data();
+      data_leverage->set_title("Gross Leverage");
+      *data_leverage->mutable_value() =
+          ToProtoScalar(GrossLeverage(positions).mean());
+      data_leverage->set_type(epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL);
+      data_leverage->set_group(kGroup2);
+    } catch (const std::exception &e) {
+      SPDLOG_WARN("Failed to compute gross leverage: {}", e.what());
+    }
 
     if (!m_transactions.empty()) {
-      auto *data_turnover = card.add_data();
-      data_turnover->set_title("Daily Turnover");
-      *data_turnover->mutable_value() = ToProtoScalar(
-          GetTurnover(positions, m_transactions, turnoverDenominator).mean() *
-          100.0_scalar);
-      data_turnover->set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
-      data_turnover->set_group(kGroup2);
+      try {
+        auto *data_turnover = card.add_data();
+        data_turnover->set_title("Daily Turnover");
+        *data_turnover->mutable_value() = ToProtoScalar(
+            GetTurnover(positions, m_transactions, turnoverDenominator).mean() *
+            100.0_scalar);
+        data_turnover->set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+        data_turnover->set_group(kGroup2);
+      } catch (const std::exception &e) {
+        SPDLOG_WARN("Failed to compute daily turnover: {}", e.what());
+      }
     }
   }
 
   if (!m_benchmark.empty()) {
-    auto merged_returns = epoch_frame::make_dataframe(
-        m_strategy.index(), {m_strategy.array(), m_benchmark.array()},
-        {kStrategyColumnName, kBenchmarkColumnName});
-    for (auto const &[stat, func] : ep::get_factor_stats()) {
-      auto *data_factor = card.add_data();
-      data_factor->set_title(ep::get_stat_name(stat));
-      *data_factor->mutable_value() =
-          ToProtoScalar(epoch_frame::Scalar{func(merged_returns)});
-      data_factor->set_type(epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL);
-      data_factor->set_group(kGroup3);
+    try {
+      auto merged_returns = epoch_frame::make_dataframe(
+          m_strategy.index(), {m_strategy.array(), m_benchmark.array()},
+          {kStrategyColumnName, kBenchmarkColumnName});
+      for (auto const &[stat, func] : ep::get_factor_stats()) {
+        try {
+          auto *data_factor = card.add_data();
+          data_factor->set_title(ep::get_stat_name(stat));
+          *data_factor->mutable_value() =
+              ToProtoScalar(epoch_frame::Scalar{func(merged_returns)});
+          data_factor->set_type(epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL);
+          data_factor->set_group(kGroup3);
+        } catch (const std::exception &e) {
+          SPDLOG_WARN("Failed to compute factor stat {}: {}",
+                      ep::get_stat_name(stat), e.what());
+        }
+      }
+    } catch (const std::exception &e) {
+      SPDLOG_WARN("Failed to create merged returns for benchmark stats: {}",
+                  e.what());
     }
   }
 
@@ -476,26 +500,29 @@ Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
   return out;
 }
 
-TearSheet TearSheetFactory::MakeStrategyBenchmark(
+epoch_proto::TearSheet TearSheetFactory::MakeStrategyBenchmark(
     TurnoverDenominator turnoverDenominator) const {
-  TearSheet ts;
+  epoch_proto::TearSheet ts;
 
   try {
     auto card = MakePerformanceStats(turnoverDenominator);
-    ts.cards.push_back(std::move(card));
+    *ts.add_cards() = std::move(card);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create performance stats: {}", e.what());
   }
 
   try {
-    ts.charts = MakeStrategyBenchmarkLineCharts();
+    auto charts = MakeStrategyBenchmarkLineCharts();
+    for (auto &chart : charts) {
+      *ts.add_charts() = std::move(chart);
+    }
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create strategy benchmark charts: {}", e.what());
   }
 
   try {
     auto table = MakeStressEventTable();
-    ts.tables.push_back(std::move(table));
+    *ts.add_tables() = std::move(table);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create stress event table: {}", e.what());
   }
@@ -546,19 +573,22 @@ void TearSheetFactory::MakeUnderwaterCharts(std::vector<Chart> &lines) const {
   lines.push_back(std::move(c));
 }
 
-TearSheet TearSheetFactory::MakeRiskAnalysis(int64_t topKDrawDowns) const {
+epoch_proto::TearSheet
+TearSheetFactory::MakeRiskAnalysis(int64_t topKDrawDowns) const {
   DrawDownTable drawDownTable;
   auto table = MakeWorstDrawdownTable(topKDrawDowns, drawDownTable);
 
-  std::vector<Chart> lines;
+  std::vector<epoch_proto::Chart> lines;
   MakeRollingVolatilityCharts(lines);
   MakeRollingSharpeCharts(lines);
   MakeRollingMaxDrawdownCharts(lines, drawDownTable, topKDrawDowns);
   MakeUnderwaterCharts(lines);
 
-  TearSheet ts;
-  ts.charts = std::move(lines);
-  ts.tables = {std::move(table)};
+  epoch_proto::TearSheet ts;
+  for (auto &chart : lines) {
+    *ts.add_charts() = std::move(chart);
+  }
+  *ts.add_tables() = std::move(table);
   return ts;
 }
 
@@ -726,51 +756,52 @@ BoxPlotDef TearSheetFactory::BuildReturnQuantiles() const {
   return out;
 }
 
-TearSheet TearSheetFactory::MakeReturnsDistribution() const {
-  TearSheet ts;
+epoch_proto::TearSheet TearSheetFactory::MakeReturnsDistribution() const {
+  epoch_proto::TearSheet ts;
 
-  Chart heatmap_chart;
+  epoch_proto::Chart heatmap_chart;
   *heatmap_chart.mutable_heat_map_def() = BuildMonthlyReturnsHeatMap();
-  ts.charts.push_back(std::move(heatmap_chart));
+  *ts.add_charts() = std::move(heatmap_chart);
 
-  Chart bar_chart;
+  epoch_proto::Chart bar_chart;
   *bar_chart.mutable_bar_def() = BuildAnnualReturnsBar();
-  ts.charts.push_back(std::move(bar_chart));
+  *ts.add_charts() = std::move(bar_chart);
 
-  Chart histogram_chart;
+  epoch_proto::Chart histogram_chart;
   *histogram_chart.mutable_histogram_def() = BuildMonthlyReturnsHistogram();
-  ts.charts.push_back(std::move(histogram_chart));
+  *ts.add_charts() = std::move(histogram_chart);
 
-  Chart boxplot_chart;
+  epoch_proto::Chart boxplot_chart;
   *boxplot_chart.mutable_box_plot_def() = BuildReturnQuantiles();
-  ts.charts.push_back(std::move(boxplot_chart));
+  *ts.add_charts() = std::move(boxplot_chart);
 
   return ts;
 }
 
 void TearSheetFactory::Make(TurnoverDenominator turnoverDenominator,
                             int64_t topKDrawDowns,
-                            FullTearSheet &output) const {
+                            epoch_proto::FullTearSheet &output) const {
   try {
-    output.strategy_benchmark = MakeStrategyBenchmark(turnoverDenominator);
+    *output.mutable_strategy_benchmark() =
+        MakeStrategyBenchmark(turnoverDenominator);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create strategy benchmark tearsheet: {}", e.what());
-    output.strategy_benchmark = TearSheet{};
+    output.mutable_strategy_benchmark()->Clear();
   }
 
   try {
-    output.risk_analysis = MakeRiskAnalysis(topKDrawDowns);
+    *output.mutable_risk_analysis() = MakeRiskAnalysis(topKDrawDowns);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create risk analysis tearsheet: {}", e.what());
-    output.risk_analysis = TearSheet{};
+    output.mutable_risk_analysis()->Clear();
   }
 
   try {
-    output.returns_distribution = MakeReturnsDistribution();
+    *output.mutable_returns_distribution() = MakeReturnsDistribution();
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create returns distribution tearsheet: {}",
                  e.what());
-    output.returns_distribution = TearSheet{};
+    output.mutable_returns_distribution()->Clear();
   }
 }
 } // namespace epoch_folio::returns

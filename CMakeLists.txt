@@ -61,6 +61,7 @@ if (BUILD_TEST)
   enable_testing()
 endif()
 find_package(EpochProtos CONFIG REQUIRED)
+find_package(protobuf CONFIG REQUIRED)
 
 if (GIT_TOKEN)
     SET(REPO_URL "https://${GIT_TOKEN}:@github.com")
@@ -99,7 +100,7 @@ target_include_directories(epoch_folio
 )
 
 target_compile_options(epoch_folio PRIVATE -Wall -Wextra -Werror)
-target_link_libraries(epoch_folio PUBLIC epoch::metadata epoch::protos)
+target_link_libraries(epoch_folio PUBLIC epoch::metadata epoch::protos protobuf::libprotobuf)
 add_subdirectory(src)
 
 if (BUILD_TEST)
