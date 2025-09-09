@@ -1,4 +1,6 @@
 #include "chart_def.h"
+#include <arrow/scalar.h>
+#include <memory>
 #include <tbb/tbb.h>
 namespace epoch_folio {
 constexpr size_t kParallelThreshold = 10;
@@ -15,48 +17,43 @@ epoch_proto::Scalar ToProtoScalar(const epoch_frame::Scalar &s) {
   try {
     auto t = s.type();
     // Order by most common usage first
-    if (t->id() == arrow::Type::DOUBLE) {
+    switch (t->id()) {
+    case arrow::Type::DOUBLE:
       out.set_double_value(s.as_double());
       return out;
-    }
-    if (t->id() == arrow::Type::FLOAT) {
+    case arrow::Type::FLOAT:
       out.set_double_value(static_cast<double>(s.cast_float().as_double()));
       return out;
-    }
-    if (t->id() == arrow::Type::INT64) {
+    case arrow::Type::INT64:
       out.set_int64_value(s.as_int64());
       return out;
-    }
-    if (t->id() == arrow::Type::INT32) {
+    case arrow::Type::INT32:
       out.set_int64_value(static_cast<int64_t>(s.cast_int32().as_int32()));
       return out;
-    }
-    if (t->id() == arrow::Type::UINT64) {
+    case arrow::Type::UINT64:
       out.set_uint64_value(static_cast<uint64_t>(s.cast_uint64().as_int64()));
       return out;
-    }
-    if (t->id() == arrow::Type::UINT32) {
+    case arrow::Type::UINT32:
       out.set_uint64_value(static_cast<uint64_t>(s.cast_uint32().as_int32()));
       return out;
-    }
-    if (t->id() == arrow::Type::STRING || t->id() == arrow::Type::BINARY ||
-        t->id() == arrow::Type::LARGE_STRING) {
+    case arrow::Type::STRING:
+    case arrow::Type::BINARY:
+    case arrow::Type::LARGE_STRING:
+      out.set_string_value(s.repr());
+      return out;
+    case arrow::Type::BOOL:
+      out.set_bool_value(s.as_bool());
+      return out;
+    case arrow::Type::TIMESTAMP:
+      // epoch_frame::Scalar repr holds ns timestamp; prefer direct if possible
+      out.set_timestamp_nanos(
+          std::static_pointer_cast<arrow::TimestampScalar>(s.value())->value);
+      return out;
+    default:
+      // Fallback to repr as string
       out.set_string_value(s.repr());
       return out;
     }
-    if (t->id() == arrow::Type::BOOL) {
-      out.set_bool_value(s.as_bool());
-      return out;
-    }
-    if (t->id() == arrow::Type::TIMESTAMP) {
-      // epoch_frame::Scalar repr holds ns timestamp; prefer direct if possible
-      auto ts = s.cast(arrow::timestamp(arrow::TimeUnit::NANO)).as_int64();
-      out.set_timestamp_nanos(static_cast<uint64_t>(ts));
-      return out;
-    }
-    // Fallback to repr as string
-    out.set_string_value(s.repr());
-    return out;
   } catch (const std::exception &e) {
     // If any scalar conversion fails, set as null
     out.set_null_value(google::protobuf::NULL_VALUE);

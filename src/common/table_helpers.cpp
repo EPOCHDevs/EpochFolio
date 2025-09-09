@@ -8,6 +8,7 @@
 #include <arrow/chunked_array.h>
 #include <arrow/table.h>
 #include <arrow/type.h>
+#include <arrow/type_fwd.h>
 
 #include "chart_def.h"
 
@@ -55,6 +56,10 @@ MakeScalarFromArrow(const std::shared_ptr<arrow::Array> &array, int64_t row) {
   }
   case arrow::Type::BOOL: {
     auto a = std::static_pointer_cast<arrow::BooleanArray>(array);
+    return ToProtoScalarValue(a->Value(row));
+  }
+  case arrow::Type::TIMESTAMP: {
+    auto a = std::static_pointer_cast<arrow::TimestampArray>(array);
     return ToProtoScalarValue(a->Value(row));
   }
   default: {
