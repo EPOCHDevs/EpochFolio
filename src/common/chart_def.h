@@ -12,13 +12,10 @@
 #include <string_view>
 
 namespace epoch_folio {
-constexpr epoch_proto::AxisType kLinearAxisType{epoch_proto::AXIS_TYPE_LINEAR};
-constexpr epoch_proto::AxisType kLogAxisType{
-    epoch_proto::AXIS_TYPE_LOGARITHMIC};
-constexpr epoch_proto::AxisType kDateTimeAxisType{
-    epoch_proto::AXIS_TYPE_DATETIME};
-constexpr epoch_proto::AxisType kCategoryAxisType{
-    epoch_proto::AXIS_TYPE_CATEGORY};
+constexpr epoch_proto::AxisType kLinearAxisType{epoch_proto::AxisLinear};
+constexpr epoch_proto::AxisType kLogAxisType{epoch_proto::AxisLogarithmic};
+constexpr epoch_proto::AxisType kDateTimeAxisType{epoch_proto::AxisDateTime};
+constexpr epoch_proto::AxisType kCategoryAxisType{epoch_proto::AxisCategory};
 
 // Now in proto includes above
 

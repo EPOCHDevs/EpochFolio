@@ -44,11 +44,16 @@ epoch_proto::Scalar ToProtoScalar(const epoch_frame::Scalar &s) {
     case arrow::Type::BOOL:
       out.set_bool_value(s.as_bool());
       return out;
-    case arrow::Type::TIMESTAMP:
+    case arrow::Type::TIMESTAMP: {
       // epoch_frame::Scalar repr holds ns timestamp; prefer direct if possible
-      out.set_timestamp_nanos(
-          std::static_pointer_cast<arrow::TimestampScalar>(s.value())->value);
+      auto ts = std::static_pointer_cast<arrow::TimestampScalar>(s.value());
+      if (ts) {
+        out.set_timestamp_nanos(ts->value);
+      } else {
+        throw std::runtime_error("Invalid timestamp scalar");
+      }
       return out;
+    }
     default:
       // Fallback to repr as string
       out.set_string_value(s.repr());

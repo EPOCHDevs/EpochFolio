@@ -15,6 +15,16 @@
 
 namespace epoch_folio {
 
+// TearSheet category constants
+namespace categories {
+constexpr const char *StrategyBenchmark = "StrategyBenchmark";
+constexpr const char *RiskAnalysis = "RiskAnalysis";
+constexpr const char *ReturnsDistribution = "ReturnsDistribution";
+constexpr const char *Positions = "Positions";
+constexpr const char *Transactions = "Transactions";
+constexpr const char *RoundTrip = "RoundTrip";
+} // namespace categories
+
 class PortfolioTearSheetFactory {
 
 public:

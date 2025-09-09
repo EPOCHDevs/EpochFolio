@@ -1,4 +1,5 @@
 #include "gap_report.h"
+#include "epoch_folio/tearsheet.h"
 #include <arrow/builder.h>
 #include <arrow/compute/api_scalar.h>
 #include <arrow/table.h>
@@ -18,7 +19,7 @@ ReportMetadata GapReport::s_metadata = {
     .displayName = "Price Gap Analysis",
     .summary =
         "Analyzes opening price gaps, their fills, and patterns over time",
-    .category = epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS,
+    .category = epoch_folio::categories::RiskAnalysis,
     .tags = {"gaps", "overnight", "price-action", "fill-analysis",
              "market-microstructure"},
     .requiredColumns = {},
@@ -36,25 +37,25 @@ ReportMetadata GapReport::s_metadata = {
           epoch_proto::EPOCH_FOLIO_TYPE_BOOLEAN},
          {"gap_down_filled", "Gap Down Filled",
           epoch_proto::EPOCH_FOLIO_TYPE_BOOLEAN},
-         {"gap_up_size", "Gap Up Size", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
+         {"gap_up_size", "Gap Up Size", epoch_proto::TypeDecimal},
          {"gap_down_size", "Gap Down Size",
-          epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
+          epoch_proto::TypeDecimal},
          {"gap_up_fraction", "Gap Up Fraction",
-          epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
+          epoch_proto::TypeDecimal},
          {"gap_down_fraction", "Gap Down Fraction",
-          epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
-         {"o", "Open", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
-         {"h", "High", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
-         {"l", "Low", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
-         {"c", "Close", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
-         {"v", "Volume", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL}},
+          epoch_proto::TypeDecimal},
+         {"o", "Open", epoch_proto::TypeDecimal},
+         {"h", "High", epoch_proto::TypeDecimal},
+         {"l", "Low", epoch_proto::TypeDecimal},
+         {"c", "Close", epoch_proto::TypeDecimal},
+         {"v", "Volume", epoch_proto::TypeDecimal}},
     .typicalOutputs = {epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_CARD,
                        epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_BAR,
-                       epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE,
-                       epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_XRANGE,
-                       epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_HISTOGRAM,
-                       epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_PIE,
-                       epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES},
+                       epoch_proto::WidgetDataTable,
+                       epoch_proto::WidgetXRange,
+                       epoch_proto::WidgetHistogram,
+                       epoch_proto::WidgetPie,
+                       epoch_proto::WidgetLines},
 */
 
 const ReportMetadata &GapReport::metadata() const { return s_metadata; }
@@ -75,7 +76,10 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
   }
 
   // 1. Summary cards
-  result.cards = compute_summary_cards(filtered_gaps);
+  auto cards = compute_summary_cards(filtered_gaps);
+  for (auto &card : cards) {
+    *result.mutable_cards()->add_cards() = std::move(card);
+  }
 
   // Helper to read boolean options from metadata
   auto getBoolOpt = [&](std::string const &key, bool defVal) -> bool {
@@ -115,19 +119,19 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
     Chart chart;
     *chart.mutable_bar_def() =
         create_fill_rate_chart(filtered_gaps, "Gap Fill Analysis");
-    result.charts.push_back(std::move(chart));
+    *result.mutable_charts()->add_charts() = std::move(chart);
   }
 
   // 3. Day of week frequency table
   if (show_day_of_week_analysis) {
-    result.tables.emplace_back(create_frequency_table(
-        filtered_gaps, "day_of_week", "Gap Frequency by Day of Week"));
+    *result.mutable_tables()->add_tables() = create_frequency_table(
+        filtered_gaps, "day_of_week", "Gap Frequency by Day of Week");
   }
 
   // 4. Time bucket analysis table
   if (show_fill_time_analysis) {
-    result.tables.emplace_back(create_frequency_table(
-        filtered_gaps, "fill_time", "Gap Frequency by Time"));
+    *result.mutable_tables()->add_tables() = create_frequency_table(
+        filtered_gaps, "fill_time", "Gap Frequency by Time");
   }
 
   // 5. Streak visualization
@@ -135,7 +139,7 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
     Chart chart;
     *chart.mutable_x_range_def() =
         create_streak_chart(filtered_gaps, static_cast<uint32_t>(max_streaks));
-    result.charts.push_back(std::move(chart));
+    *result.mutable_charts()->add_charts() = std::move(chart);
   }
 
   // 6. Gap size distribution histogram
@@ -143,23 +147,23 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
     Chart chart;
     *chart.mutable_histogram_def() = create_gap_distribution(
         filtered_gaps, static_cast<uint32_t>(histogram_bins));
-    result.charts.push_back(std::move(chart));
+    *result.mutable_charts()->add_charts() = std::move(chart);
   }
 
   // 7. Performance analysis
   if (show_performance_analysis) {
-    result.tables.emplace_back(create_frequency_table(
-        filtered_gaps, "close_performance", "Gap Fill vs Close Performance"));
+    *result.mutable_tables()->add_tables() = create_frequency_table(
+        filtered_gaps, "ClosePerformance", "Gap Fill vs Close Performance");
   }
 
   // 8. Time distribution pie chart
   Chart chart;
   *chart.mutable_pie_def() = create_time_distribution(filtered_gaps);
-  result.charts.push_back(std::move(chart));
+  *result.mutable_charts()->add_charts() = std::move(chart);
 
   // 9. Gap details table
-  result.tables.emplace_back(create_gap_details_table(
-      filtered_gaps, static_cast<uint32_t>(max_table_rows)));
+  *result.mutable_tables()->add_tables() = create_gap_details_table(
+      filtered_gaps, static_cast<uint32_t>(max_table_rows));
 
   // 10. Trend analysis
   Chart chart2;
@@ -332,14 +336,14 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
 
   // Total gaps
   CardDef card1;
-  card1.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_CARD);
-  card1.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  card1.set_type(epoch_proto::WidgetCard);
+  card1.set_category(epoch_folio::categories::RiskAnalysis);
   card1.set_group_size(1);
   auto *data1 = card1.add_data();
   data1->set_title("Total Gaps");
   *data1->mutable_value() =
       ToProtoScalar(epoch_frame::Scalar{static_cast<int64_t>(gaps.num_rows())});
-  data1->set_type(epoch_proto::EPOCH_FOLIO_TYPE_INTEGER);
+  data1->set_type(epoch_proto::TypeInteger);
   cards.push_back(std::move(card1));
 
   // Count gap types using boolean columns
@@ -357,20 +361,20 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
 
   // Gap up/down counts
   CardDef card2;
-  card2.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_CARD);
-  card2.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  card2.set_type(epoch_proto::WidgetCard);
+  card2.set_category(epoch_folio::categories::RiskAnalysis);
   card2.set_group_size(2);
 
   auto *data2a = card2.add_data();
   data2a->set_title("Gap Up");
   *data2a->mutable_value() = ToProtoScalar(epoch_frame::Scalar{gap_up_count});
-  data2a->set_type(epoch_proto::EPOCH_FOLIO_TYPE_INTEGER);
+  data2a->set_type(epoch_proto::TypeInteger);
   data2a->set_group(1);
 
   auto *data2b = card2.add_data();
   data2b->set_title("Gap Down");
   *data2b->mutable_value() = ToProtoScalar(epoch_frame::Scalar{gap_down_count});
-  data2b->set_type(epoch_proto::EPOCH_FOLIO_TYPE_INTEGER);
+  data2b->set_type(epoch_proto::TypeInteger);
   data2b->set_group(1);
 
   cards.push_back(std::move(card2));
@@ -381,13 +385,13 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
                                          : 0;
 
   CardDef card3;
-  card3.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_CARD);
-  card3.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  card3.set_type(epoch_proto::WidgetCard);
+  card3.set_category(epoch_folio::categories::RiskAnalysis);
   card3.set_group_size(1);
   auto *data3 = card3.add_data();
   data3->set_title("Overall Fill Rate");
   *data3->mutable_value() = ToProtoScalar(epoch_frame::Scalar{fill_rate});
-  data3->set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+  data3->set_type(epoch_proto::TypePercent);
   cards.push_back(std::move(card3));
 
   // Average and max gap size
@@ -395,20 +399,20 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
       gaps.num_rows() > 0 ? total_gap_pct / gaps.num_rows() : 0;
 
   CardDef card4;
-  card4.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_CARD);
-  card4.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  card4.set_type(epoch_proto::WidgetCard);
+  card4.set_category(epoch_folio::categories::RiskAnalysis);
   card4.set_group_size(2);
 
   auto *data4a = card4.add_data();
   data4a->set_title("Avg Gap %");
   *data4a->mutable_value() = ToProtoScalar(epoch_frame::Scalar{avg_gap_pct});
-  data4a->set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+  data4a->set_type(epoch_proto::TypePercent);
   data4a->set_group(2);
 
   auto *data4b = card4.add_data();
   data4b->set_title("Max Gap %");
   *data4b->mutable_value() = ToProtoScalar(epoch_frame::Scalar{max_gap_pct});
-  data4b->set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+  data4b->set_type(epoch_proto::TypePercent);
   data4b->set_group(2);
 
   cards.push_back(std::move(card4));
@@ -450,8 +454,8 @@ BarDef GapReport::create_fill_rate_chart(const epoch_frame::DataFrame &gaps,
   auto *chart_def = bar_def.mutable_chart_def();
   chart_def->set_id("gap_fill_rates");
   chart_def->set_title(title);
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_BAR);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  chart_def->set_type(epoch_proto::WidgetBar);
+  chart_def->set_category(epoch_folio::categories::RiskAnalysis);
 
   // Set up axes
   *chart_def->mutable_y_axis() = MakePercentageAxis("Fill Rate (%)");
@@ -511,25 +515,25 @@ Table GapReport::create_frequency_table(const epoch_frame::DataFrame &gaps,
       schema, {category_array, frequency_array, percentage_array});
 
   Table result_table;
-  result_table.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
-  result_table.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  result_table.set_type(epoch_proto::WidgetDataTable);
+  result_table.set_category(epoch_proto::epoch_folio::categories::RiskAnalysis);
   result_table.set_title(title);
 
   // Add columns
   auto *col1 = result_table.add_columns();
   col1->set_name("Category");
   // col1->set_display_name("Category");
-  col1->set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
+  col1->set_type(epoch_proto::TypeString);
 
   auto *col2 = result_table.add_columns();
   col2->set_name("Frequency");
   // col2->set_display_name("Frequency");
-  col2->set_type(epoch_proto::EPOCH_FOLIO_TYPE_INTEGER);
+  col2->set_type(epoch_proto::TypeInteger);
 
   auto *col3 = result_table.add_columns();
   col3->set_name("Percentage");
   // col3->set_display_name("Percentage");
-  col3->set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+  col3->set_type(epoch_proto::TypePercent);
 
   // Set data
   *result_table.mutable_data() = MakeTableDataFromArrow(table);
@@ -586,8 +590,8 @@ XRangeDef GapReport::create_streak_chart(const epoch_frame::DataFrame &gaps,
   auto *chart_def = xrange_def.mutable_chart_def();
   chart_def->set_id("gap_streaks");
   chart_def->set_title("Recent Gap Streaks");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_XRANGE);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  chart_def->set_type(epoch_proto::WidgetXRange);
+  chart_def->set_category(epoch_proto::epoch_folio::categories::RiskAnalysis);
 
   // Set up axes
   auto *y_axis = chart_def->mutable_y_axis();
@@ -625,8 +629,8 @@ GapReport::create_gap_distribution(const epoch_frame::DataFrame &gaps,
   auto *chart_def = histogram_def.mutable_chart_def();
   chart_def->set_id("gap_distribution");
   chart_def->set_title("Gap Size Distribution");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_HISTOGRAM);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  chart_def->set_type(epoch_proto::WidgetHistogram);
+  chart_def->set_category(epoch_proto::epoch_folio::categories::RiskAnalysis);
 
   // Set up axes
   *chart_def->mutable_y_axis() = MakeLinearAxis("Frequency");
@@ -671,8 +675,8 @@ GapReport::create_time_distribution(const epoch_frame::DataFrame &gaps) const {
   auto *chart_def = pie_def.mutable_chart_def();
   chart_def->set_id("gap_time_distribution");
   chart_def->set_title("Gap Timing Distribution");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_PIE);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  chart_def->set_type(epoch_proto::WidgetPie);
+  chart_def->set_category(epoch_proto::epoch_folio::categories::RiskAnalysis);
 
   // Set up pie data
   auto *pie_data = pie_def.add_data();
@@ -759,45 +763,45 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
                is_filled_array, fill_pct_array, performance_array});
 
   Table result_table;
-  result_table.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
-  result_table.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  result_table.set_type(epoch_proto::WidgetDataTable);
+  result_table.set_category(epoch_proto::epoch_folio::categories::RiskAnalysis);
   result_table.set_title("Recent Gap Details");
 
   // Add columns
   auto *col1 = result_table.add_columns();
   col1->set_name("Date");
   // col1->set_display_name("Date");
-  col1->set_type(epoch_proto::EPOCH_FOLIO_TYPE_DATE_TIME);
+  col1->set_type(epoch_proto::TypeDateTime);
 
   auto *col2 = result_table.add_columns();
   col2->set_name("Symbol");
   // col2->set_display_name("Symbol");
-  col2->set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
+  col2->set_type(epoch_proto::TypeString);
 
   auto *col3 = result_table.add_columns();
   col3->set_name("Type");
   // col3->set_display_name("Type");
-  col3->set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
+  col3->set_type(epoch_proto::TypeString);
 
   auto *col4 = result_table.add_columns();
   col4->set_name("Gap %");
   // col4->set_display_name("Gap %");
-  col4->set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+  col4->set_type(epoch_proto::TypePercent);
 
   auto *col5 = result_table.add_columns();
   col5->set_name("Filled");
   // col5->set_display_name("Filled");
-  col5->set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
+  col5->set_type(epoch_proto::TypeString);
 
   auto *col6 = result_table.add_columns();
   col6->set_name("Fill %");
   // col6->set_display_name("Fill %");
-  col6->set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+  col6->set_type(epoch_proto::TypePercent);
 
   auto *col7 = result_table.add_columns();
   col7->set_name("Performance");
   // col7->set_display_name("Performance");
-  col7->set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
+  col7->set_type(epoch_proto::TypeString);
 
   // Set data
   *result_table.mutable_data() = MakeTableDataFromArrow(table);
@@ -851,8 +855,8 @@ GapReport::create_gap_trend_chart(const epoch_frame::DataFrame &gaps) const {
   auto *chart_def = lines_def.mutable_chart_def();
   chart_def->set_id("gap_trend");
   chart_def->set_title("Gap Frequency Trend (Monthly)");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
+  chart_def->set_type(epoch_proto::WidgetLines);
+  chart_def->set_category(epoch_proto::epoch_folio::categories::RiskAnalysis);
 
   // Set up axes
   *chart_def->mutable_y_axis() = MakeLinearAxis("Number of Gaps");

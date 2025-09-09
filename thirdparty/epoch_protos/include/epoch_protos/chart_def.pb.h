@@ -2072,10 +2072,10 @@ class ChartDef final : public ::google::protobuf::Message
   enum : int {
     kIdFieldNumber = 1,
     kTitleFieldNumber = 2,
+    kCategoryFieldNumber = 4,
     kYAxisFieldNumber = 5,
     kXAxisFieldNumber = 6,
     kTypeFieldNumber = 3,
-    kCategoryFieldNumber = 4,
   };
   // string id = 1;
   void clear_id() ;
@@ -2107,6 +2107,22 @@ class ChartDef final : public ::google::protobuf::Message
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_title(
       const std::string& value);
   std::string* _internal_mutable_title();
+
+  public:
+  // string category = 4;
+  void clear_category() ;
+  const std::string& category() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_category(Arg_&& arg, Args_... args);
+  std::string* mutable_category();
+  PROTOBUF_NODISCARD std::string* release_category();
+  void set_allocated_category(std::string* value);
+
+  private:
+  const std::string& _internal_category() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_category(
+      const std::string& value);
+  std::string* _internal_mutable_category();
 
   public:
   // optional .epoch_proto.AxisDef y_axis = 5;
@@ -2149,23 +2165,13 @@ class ChartDef final : public ::google::protobuf::Message
   void _internal_set_type(::epoch_proto::EpochFolioDashboardWidget value);
 
   public:
-  // .epoch_proto.EpochFolioCategory category = 4;
-  void clear_category() ;
-  ::epoch_proto::EpochFolioCategory category() const;
-  void set_category(::epoch_proto::EpochFolioCategory value);
-
-  private:
-  ::epoch_proto::EpochFolioCategory _internal_category() const;
-  void _internal_set_category(::epoch_proto::EpochFolioCategory value);
-
-  public:
   // @@protoc_insertion_point(class_scope:epoch_proto.ChartDef)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 6, 2,
-      36, 2>
+      44, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -2186,10 +2192,10 @@ class ChartDef final : public ::google::protobuf::Message
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr id_;
     ::google::protobuf::internal::ArenaStringPtr title_;
+    ::google::protobuf::internal::ArenaStringPtr category_;
     ::epoch_proto::AxisDef* y_axis_;
     ::epoch_proto::AxisDef* x_axis_;
     int type_;
-    int category_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -5449,26 +5455,52 @@ inline void ChartDef::_internal_set_type(::epoch_proto::EpochFolioDashboardWidge
   _impl_.type_ = value;
 }
 
-// .epoch_proto.EpochFolioCategory category = 4;
+// string category = 4;
 inline void ChartDef::clear_category() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.category_ = 0;
+  _impl_.category_.ClearToEmpty();
 }
-inline ::epoch_proto::EpochFolioCategory ChartDef::category() const {
+inline const std::string& ChartDef::category() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:epoch_proto.ChartDef.category)
   return _internal_category();
 }
-inline void ChartDef::set_category(::epoch_proto::EpochFolioCategory value) {
-  _internal_set_category(value);
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void ChartDef::set_category(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.category_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:epoch_proto.ChartDef.category)
 }
-inline ::epoch_proto::EpochFolioCategory ChartDef::_internal_category() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return static_cast<::epoch_proto::EpochFolioCategory>(_impl_.category_);
+inline std::string* ChartDef::mutable_category() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_category();
+  // @@protoc_insertion_point(field_mutable:epoch_proto.ChartDef.category)
+  return _s;
 }
-inline void ChartDef::_internal_set_category(::epoch_proto::EpochFolioCategory value) {
+inline const std::string& ChartDef::_internal_category() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.category_.Get();
+}
+inline void ChartDef::_internal_set_category(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.category_ = value;
+  _impl_.category_.Set(value, GetArena());
+}
+inline std::string* ChartDef::_internal_mutable_category() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.category_.Mutable( GetArena());
+}
+inline std::string* ChartDef::release_category() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:epoch_proto.ChartDef.category)
+  return _impl_.category_.Release();
+}
+inline void ChartDef::set_allocated_category(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.category_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.category_.IsDefault()) {
+    _impl_.category_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:epoch_proto.ChartDef.category)
 }
 
 // optional .epoch_proto.AxisDef y_axis = 5;

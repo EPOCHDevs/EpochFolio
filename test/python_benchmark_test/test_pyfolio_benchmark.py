@@ -103,12 +103,36 @@ class TestPyfolioBenchmark:
         charts_to_check = []
         
         if hasattr(tearsheet_data, 'charts'):
-            charts_to_check.extend(tearsheet_data.charts)
+            # Handle protobuf repeated field properly
+            if hasattr(tearsheet_data.charts, 'charts'):
+                # ChartList with nested charts
+                for chart in tearsheet_data.charts.charts:
+                    charts_to_check.append(chart)
+            else:
+                # Direct charts field
+                for chart in tearsheet_data.charts:
+                    charts_to_check.append(chart)
         
         # For FullTearSheet, check individual tearsheet sections
         if hasattr(tearsheet_data, 'returns_distribution') and tearsheet_data.returns_distribution:
             if hasattr(tearsheet_data.returns_distribution, 'charts'):
-                charts_to_check.extend(tearsheet_data.returns_distribution.charts)
+                if hasattr(tearsheet_data.returns_distribution.charts, 'charts'):
+                    for chart in tearsheet_data.returns_distribution.charts.charts:
+                        charts_to_check.append(chart)
+                else:
+                    for chart in tearsheet_data.returns_distribution.charts:
+                        charts_to_check.append(chart)
+        
+        # For FullTearSheet with categories structure
+        if hasattr(tearsheet_data, 'categories') and tearsheet_data.categories:
+            for category_name, category_data in tearsheet_data.categories.items():
+                if hasattr(category_data, 'charts'):
+                    if hasattr(category_data.charts, 'charts'):
+                        for chart in category_data.charts.charts:
+                            charts_to_check.append(chart)
+                    else:
+                        for chart in category_data.charts:
+                            charts_to_check.append(chart)
         
         # Look for time series data in charts
         for chart in charts_to_check:
@@ -143,12 +167,36 @@ class TestPyfolioBenchmark:
         tables_to_check = []
         
         if hasattr(tearsheet_data, 'tables'):
-            tables_to_check.extend(tearsheet_data.tables)
+            # Handle protobuf repeated field properly
+            if hasattr(tearsheet_data.tables, 'tables'):
+                # TableList with nested tables
+                for table in tearsheet_data.tables.tables:
+                    tables_to_check.append(table)
+            else:
+                # Direct tables field
+                for table in tearsheet_data.tables:
+                    tables_to_check.append(table)
         
         # For FullTearSheet, check individual tearsheet sections
         if hasattr(tearsheet_data, 'positions') and tearsheet_data.positions:
             if hasattr(tearsheet_data.positions, 'tables'):
-                tables_to_check.extend(tearsheet_data.positions.tables)
+                if hasattr(tearsheet_data.positions.tables, 'tables'):
+                    for table in tearsheet_data.positions.tables.tables:
+                        tables_to_check.append(table)
+                else:
+                    for table in tearsheet_data.positions.tables:
+                        tables_to_check.append(table)
+        
+        # For FullTearSheet with categories structure
+        if hasattr(tearsheet_data, 'categories') and tearsheet_data.categories:
+            for category_name, category_data in tearsheet_data.categories.items():
+                if hasattr(category_data, 'tables'):
+                    if hasattr(category_data.tables, 'tables'):
+                        for table in category_data.tables.tables:
+                            tables_to_check.append(table)
+                    else:
+                        for table in category_data.tables:
+                            tables_to_check.append(table)
         
         # Look for positions data in tables
         for table in tables_to_check:
@@ -175,12 +223,36 @@ class TestPyfolioBenchmark:
         tables_to_check = []
         
         if hasattr(tearsheet_data, 'tables'):
-            tables_to_check.extend(tearsheet_data.tables)
+            # Handle protobuf repeated field properly
+            if hasattr(tearsheet_data.tables, 'tables'):
+                # TableList with nested tables
+                for table in tearsheet_data.tables.tables:
+                    tables_to_check.append(table)
+            else:
+                # Direct tables field
+                for table in tearsheet_data.tables:
+                    tables_to_check.append(table)
         
         # For FullTearSheet, check individual tearsheet sections
         if hasattr(tearsheet_data, 'transactions') and tearsheet_data.transactions:
             if hasattr(tearsheet_data.transactions, 'tables'):
-                tables_to_check.extend(tearsheet_data.transactions.tables)
+                if hasattr(tearsheet_data.transactions.tables, 'tables'):
+                    for table in tearsheet_data.transactions.tables.tables:
+                        tables_to_check.append(table)
+                else:
+                    for table in tearsheet_data.transactions.tables:
+                        tables_to_check.append(table)
+        
+        # For FullTearSheet with categories structure
+        if hasattr(tearsheet_data, 'categories') and tearsheet_data.categories:
+            for category_name, category_data in tearsheet_data.categories.items():
+                if hasattr(category_data, 'tables'):
+                    if hasattr(category_data.tables, 'tables'):
+                        for table in category_data.tables.tables:
+                            tables_to_check.append(table)
+                    else:
+                        for table in category_data.tables:
+                            tables_to_check.append(table)
         
         # Look for transactions data in tables
         for table in tables_to_check:
@@ -220,12 +292,21 @@ class TestPyfolioBenchmark:
         
         # Check for data in different structures
         has_data = False
-        if hasattr(pb_data, 'charts') and len(pb_data.charts) > 0:
-            has_data = True
-        if hasattr(pb_data, 'tables') and len(pb_data.tables) > 0:
-            has_data = True
-        if hasattr(pb_data, 'cards') and len(pb_data.cards) > 0:
-            has_data = True
+        if hasattr(pb_data, 'charts'):
+            if hasattr(pb_data.charts, 'charts') and len(pb_data.charts.charts) > 0:
+                has_data = True
+            elif hasattr(pb_data.charts, '__len__') and len(pb_data.charts) > 0:
+                has_data = True
+        if hasattr(pb_data, 'tables'):
+            if hasattr(pb_data.tables, 'tables') and len(pb_data.tables.tables) > 0:
+                has_data = True
+            elif hasattr(pb_data.tables, '__len__') and len(pb_data.tables) > 0:
+                has_data = True
+        if hasattr(pb_data, 'cards'):
+            if hasattr(pb_data.cards, 'cards') and len(pb_data.cards.cards) > 0:
+                has_data = True
+            elif hasattr(pb_data.cards, '__len__') and len(pb_data.cards) > 0:
+                has_data = True
         
         # For FullTearSheet, check individual sections
         if hasattr(pb_data, 'strategy_benchmark') and pb_data.strategy_benchmark:
@@ -239,6 +320,10 @@ class TestPyfolioBenchmark:
         if hasattr(pb_data, 'transactions') and pb_data.transactions:
             has_data = True
         if hasattr(pb_data, 'round_trip') and pb_data.round_trip:
+            has_data = True
+        
+        # Check categories in FullTearSheet structure
+        if hasattr(pb_data, 'categories') and pb_data.categories:
             has_data = True
             
         assert has_data, f"No data found in {tearsheet_type} tearsheet"
@@ -312,8 +397,16 @@ class TestPyfolioBenchmark:
         
         # Look for round trip specific metrics in tables
         round_trip_metrics = []
-        for table in pb_data.tables:
-            if 'round' in table.title.lower() or 'trip' in table.title.lower():
+        tables_to_check = []
+        
+        if hasattr(pb_data, 'tables'):
+            if hasattr(pb_data.tables, 'tables'):
+                tables_to_check.extend(pb_data.tables.tables)
+            else:
+                tables_to_check.extend(pb_data.tables)
+        
+        for table in tables_to_check:
+            if hasattr(table, 'title') and ('round' in table.title.lower() or 'trip' in table.title.lower()):
                 round_trip_metrics.append(table.title)
         
         if round_trip_metrics:
@@ -351,16 +444,28 @@ class TestPyfolioBenchmark:
             tables_count = 0
             
             if hasattr(pb_data, 'charts'):
-                charts_count = len(pb_data.charts)
+                if hasattr(pb_data.charts, 'charts'):
+                    charts_count = len(pb_data.charts.charts)
+                elif hasattr(pb_data.charts, '__len__'):
+                    charts_count = len(pb_data.charts)
             if hasattr(pb_data, 'tables'):
-                tables_count = len(pb_data.tables)
+                if hasattr(pb_data.tables, 'tables'):
+                    tables_count = len(pb_data.tables.tables)
+                elif hasattr(pb_data.tables, '__len__'):
+                    tables_count = len(pb_data.tables)
             
             # For FullTearSheet, count across all sections
             if hasattr(pb_data, 'strategy_benchmark') and pb_data.strategy_benchmark:
                 if hasattr(pb_data.strategy_benchmark, 'charts'):
-                    charts_count += len(pb_data.strategy_benchmark.charts)
+                    if hasattr(pb_data.strategy_benchmark.charts, 'charts'):
+                        charts_count += len(pb_data.strategy_benchmark.charts.charts)
+                    elif hasattr(pb_data.strategy_benchmark.charts, '__len__'):
+                        charts_count += len(pb_data.strategy_benchmark.charts)
                 if hasattr(pb_data.strategy_benchmark, 'tables'):
-                    tables_count += len(pb_data.strategy_benchmark.tables)
+                    if hasattr(pb_data.strategy_benchmark.tables, 'tables'):
+                        tables_count += len(pb_data.strategy_benchmark.tables.tables)
+                    elif hasattr(pb_data.strategy_benchmark.tables, '__len__'):
+                        tables_count += len(pb_data.strategy_benchmark.tables)
             
             # Check other sections similarly...
             for section_name in ['risk_analysis', 'returns_distribution', 'positions', 'transactions', 'round_trip']:
@@ -368,9 +473,29 @@ class TestPyfolioBenchmark:
                     section = getattr(pb_data, section_name)
                     if section:
                         if hasattr(section, 'charts'):
-                            charts_count += len(section.charts)
+                            if hasattr(section.charts, 'charts'):
+                                charts_count += len(section.charts.charts)
+                            elif hasattr(section.charts, '__len__'):
+                                charts_count += len(section.charts)
                         if hasattr(section, 'tables'):
-                            tables_count += len(section.tables)
+                            if hasattr(section.tables, 'tables'):
+                                tables_count += len(section.tables.tables)
+                            elif hasattr(section.tables, '__len__'):
+                                tables_count += len(section.tables)
+            
+            # For FullTearSheet with categories structure
+            if hasattr(pb_data, 'categories') and pb_data.categories:
+                for category_name, category_data in pb_data.categories.items():
+                    if hasattr(category_data, 'charts'):
+                        if hasattr(category_data.charts, 'charts'):
+                            charts_count += len(category_data.charts.charts)
+                        elif hasattr(category_data.charts, '__len__'):
+                            charts_count += len(category_data.charts)
+                    if hasattr(category_data, 'tables'):
+                        if hasattr(category_data.tables, 'tables'):
+                            tables_count += len(category_data.tables.tables)
+                        elif hasattr(category_data.tables, '__len__'):
+                            tables_count += len(category_data.tables)
             
             results = {
                 'charts_count': charts_count,

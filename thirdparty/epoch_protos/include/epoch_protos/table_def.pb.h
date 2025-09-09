@@ -59,15 +59,9 @@ extern CardDataDefaultTypeInternal _CardData_default_instance_;
 class CardDef;
 struct CardDefDefaultTypeInternal;
 extern CardDefDefaultTypeInternal _CardDef_default_instance_;
-class CategoryDef;
-struct CategoryDefDefaultTypeInternal;
-extern CategoryDefDefaultTypeInternal _CategoryDef_default_instance_;
 class ColumnDef;
 struct ColumnDefDefaultTypeInternal;
 extern ColumnDefDefaultTypeInternal _ColumnDef_default_instance_;
-class SubCategoryDef;
-struct SubCategoryDefDefaultTypeInternal;
-extern SubCategoryDefDefaultTypeInternal _SubCategoryDef_default_instance_;
 class Table;
 struct TableDefaultTypeInternal;
 extern TableDefaultTypeInternal _Table_default_instance_;
@@ -88,214 +82,6 @@ namespace epoch_proto {
 // ===================================================================
 
 
-// -------------------------------------------------------------------
-
-class SubCategoryDef final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.SubCategoryDef) */ {
- public:
-  inline SubCategoryDef() : SubCategoryDef(nullptr) {}
-  ~SubCategoryDef() PROTOBUF_FINAL;
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(SubCategoryDef* msg, std::destroying_delete_t) {
-    SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(SubCategoryDef));
-  }
-#endif
-
-  template <typename = void>
-  explicit PROTOBUF_CONSTEXPR SubCategoryDef(
-      ::google::protobuf::internal::ConstantInitialized);
-
-  inline SubCategoryDef(const SubCategoryDef& from) : SubCategoryDef(nullptr, from) {}
-  inline SubCategoryDef(SubCategoryDef&& from) noexcept
-      : SubCategoryDef(nullptr, std::move(from)) {}
-  inline SubCategoryDef& operator=(const SubCategoryDef& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline SubCategoryDef& operator=(SubCategoryDef&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::google::protobuf::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const SubCategoryDef& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const SubCategoryDef* internal_default_instance() {
-    return reinterpret_cast<const SubCategoryDef*>(
-        &_SubCategoryDef_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages = 0;
-  friend void swap(SubCategoryDef& a, SubCategoryDef& b) { a.Swap(&b); }
-  inline void Swap(SubCategoryDef* other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(SubCategoryDef* other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  SubCategoryDef* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<SubCategoryDef>(arena);
-  }
-  using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const SubCategoryDef& from);
-  using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const SubCategoryDef& from) { SubCategoryDef::MergeImpl(*this, from); }
-
-  private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
-
-  public:
-  bool IsInitialized() const {
-    return true;
-  }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
-
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
-  #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::google::protobuf::Arena* arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(SubCategoryDef* other);
- private:
-  template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.SubCategoryDef"; }
-
- protected:
-  explicit SubCategoryDef(::google::protobuf::Arena* arena);
-  SubCategoryDef(::google::protobuf::Arena* arena, const SubCategoryDef& from);
-  SubCategoryDef(::google::protobuf::Arena* arena, SubCategoryDef&& from) noexcept
-      : SubCategoryDef(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
-
- public:
-  ::google::protobuf::Metadata GetMetadata() const;
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-  enum : int {
-    kNameFieldNumber = 2,
-    kTypeFieldNumber = 1,
-  };
-  // string name = 2;
-  void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* value);
-
-  private:
-  const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
-  std::string* _internal_mutable_name();
-
-  public:
-  // .epoch_proto.EpochFolioCategory type = 1;
-  void clear_type() ;
-  ::epoch_proto::EpochFolioCategory type() const;
-  void set_type(::epoch_proto::EpochFolioCategory value);
-
-  private:
-  ::epoch_proto::EpochFolioCategory _internal_type() const;
-  void _internal_set_type(::epoch_proto::EpochFolioCategory value);
-
-  public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.SubCategoryDef)
- private:
-  class _Internal;
-  friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 0,
-      39, 2>
-      _table_;
-
-  friend class ::google::protobuf::MessageLite;
-  friend class ::google::protobuf::Arena;
-  template <typename T>
-  friend class ::google::protobuf::Arena::InternalHelper;
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-  struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const SubCategoryDef& from_msg);
-    ::google::protobuf::internal::ArenaStringPtr name_;
-    int type_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_table_5fdef_2eproto;
-};
 // -------------------------------------------------------------------
 
 class ColumnDef final : public ::google::protobuf::Message
@@ -357,7 +143,7 @@ class ColumnDef final : public ::google::protobuf::Message
     return reinterpret_cast<const ColumnDef*>(
         &_ColumnDef_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 2;
+  static constexpr int kIndexInFileMessages = 0;
   friend void swap(ColumnDef& a, ColumnDef& b) { a.Swap(&b); }
   inline void Swap(ColumnDef* other) {
     if (other == this) return;
@@ -583,7 +369,7 @@ class TableRow final : public ::google::protobuf::Message
     return reinterpret_cast<const TableRow*>(
         &_TableRow_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 3;
+  static constexpr int kIndexInFileMessages = 1;
   friend void swap(TableRow& a, TableRow& b) { a.Swap(&b); }
   inline void Swap(TableRow* other) {
     if (other == this) return;
@@ -721,233 +507,6 @@ class TableRow final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class CategoryDef final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.CategoryDef) */ {
- public:
-  inline CategoryDef() : CategoryDef(nullptr) {}
-  ~CategoryDef() PROTOBUF_FINAL;
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CategoryDef* msg, std::destroying_delete_t) {
-    SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(CategoryDef));
-  }
-#endif
-
-  template <typename = void>
-  explicit PROTOBUF_CONSTEXPR CategoryDef(
-      ::google::protobuf::internal::ConstantInitialized);
-
-  inline CategoryDef(const CategoryDef& from) : CategoryDef(nullptr, from) {}
-  inline CategoryDef(CategoryDef&& from) noexcept
-      : CategoryDef(nullptr, std::move(from)) {}
-  inline CategoryDef& operator=(const CategoryDef& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline CategoryDef& operator=(CategoryDef&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::google::protobuf::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const CategoryDef& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const CategoryDef* internal_default_instance() {
-    return reinterpret_cast<const CategoryDef*>(
-        &_CategoryDef_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages = 1;
-  friend void swap(CategoryDef& a, CategoryDef& b) { a.Swap(&b); }
-  inline void Swap(CategoryDef* other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(CategoryDef* other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  CategoryDef* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CategoryDef>(arena);
-  }
-  using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const CategoryDef& from);
-  using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const CategoryDef& from) { CategoryDef::MergeImpl(*this, from); }
-
-  private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
-
-  public:
-  bool IsInitialized() const {
-    return true;
-  }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
-
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
-  #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::google::protobuf::Arena* arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(CategoryDef* other);
- private:
-  template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.CategoryDef"; }
-
- protected:
-  explicit CategoryDef(::google::protobuf::Arena* arena);
-  CategoryDef(::google::protobuf::Arena* arena, const CategoryDef& from);
-  CategoryDef(::google::protobuf::Arena* arena, CategoryDef&& from) noexcept
-      : CategoryDef(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
-
- public:
-  ::google::protobuf::Metadata GetMetadata() const;
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-  enum : int {
-    kSubCategoriesFieldNumber = 3,
-    kNameFieldNumber = 2,
-    kTypeFieldNumber = 1,
-  };
-  // repeated .epoch_proto.SubCategoryDef sub_categories = 3;
-  int sub_categories_size() const;
-  private:
-  int _internal_sub_categories_size() const;
-
-  public:
-  void clear_sub_categories() ;
-  ::epoch_proto::SubCategoryDef* mutable_sub_categories(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::SubCategoryDef>* mutable_sub_categories();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::SubCategoryDef>& _internal_sub_categories() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::SubCategoryDef>* _internal_mutable_sub_categories();
-  public:
-  const ::epoch_proto::SubCategoryDef& sub_categories(int index) const;
-  ::epoch_proto::SubCategoryDef* add_sub_categories();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::SubCategoryDef>& sub_categories() const;
-  // string name = 2;
-  void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* value);
-
-  private:
-  const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
-  std::string* _internal_mutable_name();
-
-  public:
-  // .epoch_proto.EpochFolioCategory type = 1;
-  void clear_type() ;
-  ::epoch_proto::EpochFolioCategory type() const;
-  void set_type(::epoch_proto::EpochFolioCategory value);
-
-  private:
-  ::epoch_proto::EpochFolioCategory _internal_type() const;
-  void _internal_set_type(::epoch_proto::EpochFolioCategory value);
-
-  public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.CategoryDef)
- private:
-  class _Internal;
-  friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 1,
-      36, 2>
-      _table_;
-
-  friend class ::google::protobuf::MessageLite;
-  friend class ::google::protobuf::Arena;
-  template <typename T>
-  friend class ::google::protobuf::Arena::InternalHelper;
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-  struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const CategoryDef& from_msg);
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::SubCategoryDef > sub_categories_;
-    ::google::protobuf::internal::ArenaStringPtr name_;
-    int type_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
-    PROTOBUF_TSAN_DECLARE_MEMBER
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_table_5fdef_2eproto;
-};
-// -------------------------------------------------------------------
-
 class CardData final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:epoch_proto.CardData) */ {
  public:
@@ -1007,7 +566,7 @@ class CardData final : public ::google::protobuf::Message
     return reinterpret_cast<const CardData*>(
         &_CardData_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 6;
+  static constexpr int kIndexInFileMessages = 4;
   friend void swap(CardData& a, CardData& b) { a.Swap(&b); }
   inline void Swap(CardData* other) {
     if (other == this) return;
@@ -1245,7 +804,7 @@ class TableData final : public ::google::protobuf::Message
     return reinterpret_cast<const TableData*>(
         &_TableData_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 4;
+  static constexpr int kIndexInFileMessages = 2;
   friend void swap(TableData& a, TableData& b) { a.Swap(&b); }
   inline void Swap(TableData* other) {
     if (other == this) return;
@@ -1442,7 +1001,7 @@ class CardDef final : public ::google::protobuf::Message
     return reinterpret_cast<const CardDef*>(
         &_CardDef_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 7;
+  static constexpr int kIndexInFileMessages = 5;
   friend void swap(CardDef& a, CardDef& b) { a.Swap(&b); }
   inline void Swap(CardDef* other) {
     if (other == this) return;
@@ -1530,9 +1089,9 @@ class CardDef final : public ::google::protobuf::Message
   // accessors -------------------------------------------------------
   enum : int {
     kDataFieldNumber = 3,
-    kTypeFieldNumber = 1,
     kCategoryFieldNumber = 2,
     kGroupSizeFieldNumber = 4,
+    kTypeFieldNumber = 1,
   };
   // repeated .epoch_proto.CardData data = 3;
   int data_size() const;
@@ -1551,24 +1110,20 @@ class CardDef final : public ::google::protobuf::Message
   const ::epoch_proto::CardData& data(int index) const;
   ::epoch_proto::CardData* add_data();
   const ::google::protobuf::RepeatedPtrField<::epoch_proto::CardData>& data() const;
-  // .epoch_proto.EpochFolioDashboardWidget type = 1;
-  void clear_type() ;
-  ::epoch_proto::EpochFolioDashboardWidget type() const;
-  void set_type(::epoch_proto::EpochFolioDashboardWidget value);
-
-  private:
-  ::epoch_proto::EpochFolioDashboardWidget _internal_type() const;
-  void _internal_set_type(::epoch_proto::EpochFolioDashboardWidget value);
-
-  public:
-  // .epoch_proto.EpochFolioCategory category = 2;
+  // string category = 2;
   void clear_category() ;
-  ::epoch_proto::EpochFolioCategory category() const;
-  void set_category(::epoch_proto::EpochFolioCategory value);
+  const std::string& category() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_category(Arg_&& arg, Args_... args);
+  std::string* mutable_category();
+  PROTOBUF_NODISCARD std::string* release_category();
+  void set_allocated_category(std::string* value);
 
   private:
-  ::epoch_proto::EpochFolioCategory _internal_category() const;
-  void _internal_set_category(::epoch_proto::EpochFolioCategory value);
+  const std::string& _internal_category() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_category(
+      const std::string& value);
+  std::string* _internal_mutable_category();
 
   public:
   // uint64 group_size = 4;
@@ -1581,13 +1136,23 @@ class CardDef final : public ::google::protobuf::Message
   void _internal_set_group_size(::uint64_t value);
 
   public:
+  // .epoch_proto.EpochFolioDashboardWidget type = 1;
+  void clear_type() ;
+  ::epoch_proto::EpochFolioDashboardWidget type() const;
+  void set_type(::epoch_proto::EpochFolioDashboardWidget value);
+
+  private:
+  ::epoch_proto::EpochFolioDashboardWidget _internal_type() const;
+  void _internal_set_type(::epoch_proto::EpochFolioDashboardWidget value);
+
+  public:
   // @@protoc_insertion_point(class_scope:epoch_proto.CardDef)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       2, 4, 1,
-      0, 2>
+      36, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -1605,9 +1170,9 @@ class CardDef final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const CardDef& from_msg);
     ::google::protobuf::RepeatedPtrField< ::epoch_proto::CardData > data_;
-    int type_;
-    int category_;
+    ::google::protobuf::internal::ArenaStringPtr category_;
     ::uint64_t group_size_;
+    int type_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -1675,7 +1240,7 @@ class Table final : public ::google::protobuf::Message
     return reinterpret_cast<const Table*>(
         &_Table_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 5;
+  static constexpr int kIndexInFileMessages = 3;
   friend void swap(Table& a, Table& b) { a.Swap(&b); }
   inline void Swap(Table* other) {
     if (other == this) return;
@@ -1763,10 +1328,10 @@ class Table final : public ::google::protobuf::Message
   // accessors -------------------------------------------------------
   enum : int {
     kColumnsFieldNumber = 4,
+    kCategoryFieldNumber = 2,
     kTitleFieldNumber = 3,
     kDataFieldNumber = 5,
     kTypeFieldNumber = 1,
-    kCategoryFieldNumber = 2,
   };
   // repeated .epoch_proto.ColumnDef columns = 4;
   int columns_size() const;
@@ -1785,6 +1350,22 @@ class Table final : public ::google::protobuf::Message
   const ::epoch_proto::ColumnDef& columns(int index) const;
   ::epoch_proto::ColumnDef* add_columns();
   const ::google::protobuf::RepeatedPtrField<::epoch_proto::ColumnDef>& columns() const;
+  // string category = 2;
+  void clear_category() ;
+  const std::string& category() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_category(Arg_&& arg, Args_... args);
+  std::string* mutable_category();
+  PROTOBUF_NODISCARD std::string* release_category();
+  void set_allocated_category(std::string* value);
+
+  private:
+  const std::string& _internal_category() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_category(
+      const std::string& value);
+  std::string* _internal_mutable_category();
+
+  public:
   // string title = 3;
   void clear_title() ;
   const std::string& title() const;
@@ -1826,23 +1407,13 @@ class Table final : public ::google::protobuf::Message
   void _internal_set_type(::epoch_proto::EpochFolioDashboardWidget value);
 
   public:
-  // .epoch_proto.EpochFolioCategory category = 2;
-  void clear_category() ;
-  ::epoch_proto::EpochFolioCategory category() const;
-  void set_category(::epoch_proto::EpochFolioCategory value);
-
-  private:
-  ::epoch_proto::EpochFolioCategory _internal_category() const;
-  void _internal_set_category(::epoch_proto::EpochFolioCategory value);
-
-  public:
   // @@protoc_insertion_point(class_scope:epoch_proto.Table)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       3, 5, 2,
-      31, 2>
+      39, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -1862,10 +1433,10 @@ class Table final : public ::google::protobuf::Message
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::epoch_proto::ColumnDef > columns_;
+    ::google::protobuf::internal::ArenaStringPtr category_;
     ::google::protobuf::internal::ArenaStringPtr title_;
     ::epoch_proto::TableData* data_;
     int type_;
-    int category_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -1884,203 +1455,6 @@ class Table final : public ::google::protobuf::Message
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
-// SubCategoryDef
-
-// .epoch_proto.EpochFolioCategory type = 1;
-inline void SubCategoryDef::clear_type() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.type_ = 0;
-}
-inline ::epoch_proto::EpochFolioCategory SubCategoryDef::type() const {
-  // @@protoc_insertion_point(field_get:epoch_proto.SubCategoryDef.type)
-  return _internal_type();
-}
-inline void SubCategoryDef::set_type(::epoch_proto::EpochFolioCategory value) {
-  _internal_set_type(value);
-  // @@protoc_insertion_point(field_set:epoch_proto.SubCategoryDef.type)
-}
-inline ::epoch_proto::EpochFolioCategory SubCategoryDef::_internal_type() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return static_cast<::epoch_proto::EpochFolioCategory>(_impl_.type_);
-}
-inline void SubCategoryDef::_internal_set_type(::epoch_proto::EpochFolioCategory value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.type_ = value;
-}
-
-// string name = 2;
-inline void SubCategoryDef::clear_name() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
-}
-inline const std::string& SubCategoryDef::name() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.SubCategoryDef.name)
-  return _internal_name();
-}
-template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void SubCategoryDef::set_name(Arg_&& arg,
-                                                     Args_... args) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
-  // @@protoc_insertion_point(field_set:epoch_proto.SubCategoryDef.name)
-}
-inline std::string* SubCategoryDef::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.SubCategoryDef.name)
-  return _s;
-}
-inline const std::string& SubCategoryDef::_internal_name() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.name_.Get();
-}
-inline void SubCategoryDef::_internal_set_name(const std::string& value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.Set(value, GetArena());
-}
-inline std::string* SubCategoryDef::_internal_mutable_name() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.name_.Mutable( GetArena());
-}
-inline std::string* SubCategoryDef::release_name() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.SubCategoryDef.name)
-  return _impl_.name_.Release();
-}
-inline void SubCategoryDef::set_allocated_name(std::string* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.SubCategoryDef.name)
-}
-
-// -------------------------------------------------------------------
-
-// CategoryDef
-
-// .epoch_proto.EpochFolioCategory type = 1;
-inline void CategoryDef::clear_type() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.type_ = 0;
-}
-inline ::epoch_proto::EpochFolioCategory CategoryDef::type() const {
-  // @@protoc_insertion_point(field_get:epoch_proto.CategoryDef.type)
-  return _internal_type();
-}
-inline void CategoryDef::set_type(::epoch_proto::EpochFolioCategory value) {
-  _internal_set_type(value);
-  // @@protoc_insertion_point(field_set:epoch_proto.CategoryDef.type)
-}
-inline ::epoch_proto::EpochFolioCategory CategoryDef::_internal_type() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return static_cast<::epoch_proto::EpochFolioCategory>(_impl_.type_);
-}
-inline void CategoryDef::_internal_set_type(::epoch_proto::EpochFolioCategory value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.type_ = value;
-}
-
-// string name = 2;
-inline void CategoryDef::clear_name() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.ClearToEmpty();
-}
-inline const std::string& CategoryDef::name() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.CategoryDef.name)
-  return _internal_name();
-}
-template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void CategoryDef::set_name(Arg_&& arg,
-                                                     Args_... args) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
-  // @@protoc_insertion_point(field_set:epoch_proto.CategoryDef.name)
-}
-inline std::string* CategoryDef::mutable_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  std::string* _s = _internal_mutable_name();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.CategoryDef.name)
-  return _s;
-}
-inline const std::string& CategoryDef::_internal_name() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.name_.Get();
-}
-inline void CategoryDef::_internal_set_name(const std::string& value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.Set(value, GetArena());
-}
-inline std::string* CategoryDef::_internal_mutable_name() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.name_.Mutable( GetArena());
-}
-inline std::string* CategoryDef::release_name() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.CategoryDef.name)
-  return _impl_.name_.Release();
-}
-inline void CategoryDef::set_allocated_name(std::string* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.CategoryDef.name)
-}
-
-// repeated .epoch_proto.SubCategoryDef sub_categories = 3;
-inline int CategoryDef::_internal_sub_categories_size() const {
-  return _internal_sub_categories().size();
-}
-inline int CategoryDef::sub_categories_size() const {
-  return _internal_sub_categories_size();
-}
-inline void CategoryDef::clear_sub_categories() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.sub_categories_.Clear();
-}
-inline ::epoch_proto::SubCategoryDef* CategoryDef::mutable_sub_categories(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:epoch_proto.CategoryDef.sub_categories)
-  return _internal_mutable_sub_categories()->Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField<::epoch_proto::SubCategoryDef>* CategoryDef::mutable_sub_categories()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable_list:epoch_proto.CategoryDef.sub_categories)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_sub_categories();
-}
-inline const ::epoch_proto::SubCategoryDef& CategoryDef::sub_categories(int index) const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.CategoryDef.sub_categories)
-  return _internal_sub_categories().Get(index);
-}
-inline ::epoch_proto::SubCategoryDef* CategoryDef::add_sub_categories() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::epoch_proto::SubCategoryDef* _add = _internal_mutable_sub_categories()->Add();
-  // @@protoc_insertion_point(field_add:epoch_proto.CategoryDef.sub_categories)
-  return _add;
-}
-inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::SubCategoryDef>& CategoryDef::sub_categories() const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_list:epoch_proto.CategoryDef.sub_categories)
-  return _internal_sub_categories();
-}
-inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::SubCategoryDef>&
-CategoryDef::_internal_sub_categories() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.sub_categories_;
-}
-inline ::google::protobuf::RepeatedPtrField<::epoch_proto::SubCategoryDef>*
-CategoryDef::_internal_mutable_sub_categories() {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return &_impl_.sub_categories_;
-}
-
 // -------------------------------------------------------------------
 
 // ColumnDef
@@ -2331,26 +1705,52 @@ inline void Table::_internal_set_type(::epoch_proto::EpochFolioDashboardWidget v
   _impl_.type_ = value;
 }
 
-// .epoch_proto.EpochFolioCategory category = 2;
+// string category = 2;
 inline void Table::clear_category() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.category_ = 0;
+  _impl_.category_.ClearToEmpty();
 }
-inline ::epoch_proto::EpochFolioCategory Table::category() const {
+inline const std::string& Table::category() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:epoch_proto.Table.category)
   return _internal_category();
 }
-inline void Table::set_category(::epoch_proto::EpochFolioCategory value) {
-  _internal_set_category(value);
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void Table::set_category(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.category_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:epoch_proto.Table.category)
 }
-inline ::epoch_proto::EpochFolioCategory Table::_internal_category() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return static_cast<::epoch_proto::EpochFolioCategory>(_impl_.category_);
+inline std::string* Table::mutable_category() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_category();
+  // @@protoc_insertion_point(field_mutable:epoch_proto.Table.category)
+  return _s;
 }
-inline void Table::_internal_set_category(::epoch_proto::EpochFolioCategory value) {
+inline const std::string& Table::_internal_category() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.category_.Get();
+}
+inline void Table::_internal_set_category(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.category_ = value;
+  _impl_.category_.Set(value, GetArena());
+}
+inline std::string* Table::_internal_mutable_category() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.category_.Mutable( GetArena());
+}
+inline std::string* Table::release_category() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:epoch_proto.Table.category)
+  return _impl_.category_.Release();
+}
+inline void Table::set_allocated_category(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.category_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.category_.IsDefault()) {
+    _impl_.category_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:epoch_proto.Table.category)
 }
 
 // string title = 3;
@@ -2759,26 +2159,52 @@ inline void CardDef::_internal_set_type(::epoch_proto::EpochFolioDashboardWidget
   _impl_.type_ = value;
 }
 
-// .epoch_proto.EpochFolioCategory category = 2;
+// string category = 2;
 inline void CardDef::clear_category() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.category_ = 0;
+  _impl_.category_.ClearToEmpty();
 }
-inline ::epoch_proto::EpochFolioCategory CardDef::category() const {
+inline const std::string& CardDef::category() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:epoch_proto.CardDef.category)
   return _internal_category();
 }
-inline void CardDef::set_category(::epoch_proto::EpochFolioCategory value) {
-  _internal_set_category(value);
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void CardDef::set_category(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.category_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:epoch_proto.CardDef.category)
 }
-inline ::epoch_proto::EpochFolioCategory CardDef::_internal_category() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return static_cast<::epoch_proto::EpochFolioCategory>(_impl_.category_);
+inline std::string* CardDef::mutable_category() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_category();
+  // @@protoc_insertion_point(field_mutable:epoch_proto.CardDef.category)
+  return _s;
 }
-inline void CardDef::_internal_set_category(::epoch_proto::EpochFolioCategory value) {
+inline const std::string& CardDef::_internal_category() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.category_.Get();
+}
+inline void CardDef::_internal_set_category(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.category_ = value;
+  _impl_.category_.Set(value, GetArena());
+}
+inline std::string* CardDef::_internal_mutable_category() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.category_.Mutable( GetArena());
+}
+inline std::string* CardDef::release_category() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:epoch_proto.CardDef.category)
+  return _impl_.category_.Release();
+}
+inline void CardDef::set_allocated_category(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.category_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.category_.IsDefault()) {
+    _impl_.category_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:epoch_proto.CardDef.category)
 }
 
 // repeated .epoch_proto.CardData data = 3;

@@ -20,11 +20,11 @@ namespace epoch_folio {
 using ReportId = std::string;
 
 struct ReportMetadata {
-  ReportId id;                                // stable id e.g. "gap_report"
-  std::string displayName;                    // human friendly
-  std::string summary;                        // short description
-  epoch_proto::EpochFolioCategory category{}; // classification
-  std::vector<std::string> tags;              // discovery/AI hints
+  ReportId id;                   // stable id e.g. "gap_report"
+  std::string displayName;       // human friendly
+  std::string summary;           // short description
+  std::string category{};        // classification
+  std::vector<std::string> tags; // discovery/AI hints
   std::vector<epoch_proto::ColumnDef> requiredColumns; // expected input columns
   std::vector<epoch_proto::EpochFolioDashboardWidget>
       typicalOutputs;           // for UI pre-layout

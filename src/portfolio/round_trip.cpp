@@ -5,6 +5,7 @@
 #include "round_trip.h"
 #include "common/chart_def.h"
 #include "common/type_helper.h"
+#include "epoch_protos/common.pb.h"
 #include <epoch_frame/factory/dataframe_factory.h>
 #include <epoch_frame/factory/index_factory.h>
 #include <epoch_frame/factory/series_factory.h>
@@ -116,7 +117,7 @@ epoch_proto::Table GetSymbolsTable(epoch_frame::DataFrame const &round_trip,
   epoch_proto::ColumnDef key_col;
   key_col.set_id("key");
   key_col.set_name("Stats");
-  key_col.set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
+  key_col.set_type(epoch_proto::TypeString);
   result_table.add_columns()->CopyFrom(std::move(key_col));
 
   frames.reserve(groups.size());
@@ -130,7 +131,7 @@ epoch_proto::Table GetSymbolsTable(epoch_frame::DataFrame const &round_trip,
     epoch_proto::ColumnDef symbol_col;
     symbol_col.set_id(symbol_name);
     symbol_col.set_name(symbol_name);
-    symbol_col.set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+    symbol_col.set_type(epoch_proto::TypePercent);
     result_table.add_columns()->CopyFrom(std::move(symbol_col));
   }
   arrow::TablePtr table;
@@ -140,8 +141,8 @@ epoch_proto::Table GetSymbolsTable(epoch_frame::DataFrame const &round_trip,
                 .table();
   }
 
-  result_table.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
-  result_table.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+  result_table.set_type(epoch_proto::WidgetDataTable);
+  result_table.set_category("RoundTrip");
   result_table.set_title("Returns by Symbol");
 
   // Set data
@@ -252,8 +253,8 @@ GetRoundTripStats(epoch_frame::DataFrame const &round_trip) {
               &cols,
           const std::shared_ptr<arrow::Table> &data) {
         epoch_proto::Table t;
-        t.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
-        t.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+        t.set_type(epoch_proto::WidgetDataTable);
+        t.set_category("RoundTrip");
         t.set_title(title);
         for (auto const &c : cols) {
           epoch_proto::ColumnDef cd;
@@ -268,37 +269,33 @@ GetRoundTripStats(epoch_frame::DataFrame const &round_trip) {
   std::vector<epoch_proto::Table> out;
   out.reserve(5);
 
-  out.emplace_back(
-      make_table("PnL Statistics",
-                 {{"key", epoch_proto::EPOCH_FOLIO_TYPE_STRING},
-                  {"all_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
-                  {"long_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
-                  {"short_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL}},
-                 pnl));
+  out.emplace_back(make_table("PnL Statistics",
+                              {{"key", epoch_proto::TypeString},
+                               {"all_trades", epoch_proto::TypeDecimal},
+                               {"long_trades", epoch_proto::TypeDecimal},
+                               {"short_trades", epoch_proto::TypeDecimal}},
+                              pnl));
 
-  out.emplace_back(
-      make_table("Trade Summary",
-                 {{"key", epoch_proto::EPOCH_FOLIO_TYPE_STRING},
-                  {"all_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
-                  {"long_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL},
-                  {"short_trades", epoch_proto::EPOCH_FOLIO_TYPE_DECIMAL}},
-                 summary));
+  out.emplace_back(make_table("Trade Summary",
+                              {{"key", epoch_proto::TypeString},
+                               {"all_trades", epoch_proto::TypeDecimal},
+                               {"long_trades", epoch_proto::TypeDecimal},
+                               {"short_trades", epoch_proto::TypeDecimal}},
+                              summary));
 
-  out.emplace_back(
-      make_table("Duration Analysis",
-                 {{"key", epoch_proto::EPOCH_FOLIO_TYPE_STRING},
-                  {"all_trades", epoch_proto::EPOCH_FOLIO_TYPE_DAY_DURATION},
-                  {"long_trades", epoch_proto::EPOCH_FOLIO_TYPE_DAY_DURATION},
-                  {"short_trades", epoch_proto::EPOCH_FOLIO_TYPE_DAY_DURATION}},
-                 duration));
+  out.emplace_back(make_table("Duration Analysis",
+                              {{"key", epoch_proto::TypeString},
+                               {"all_trades", epoch_proto::TypeDayDuration},
+                               {"long_trades", epoch_proto::TypeDayDuration},
+                               {"short_trades", epoch_proto::TypeDayDuration}},
+                              duration));
 
-  out.emplace_back(
-      make_table("Return Analysis",
-                 {{"key", epoch_proto::EPOCH_FOLIO_TYPE_STRING},
-                  {"all_trades", epoch_proto::EPOCH_FOLIO_TYPE_PERCENT},
-                  {"long_trades", epoch_proto::EPOCH_FOLIO_TYPE_PERCENT},
-                  {"short_trades", epoch_proto::EPOCH_FOLIO_TYPE_PERCENT}},
-                 returns));
+  out.emplace_back(make_table("Return Analysis",
+                              {{"key", epoch_proto::TypeString},
+                               {"all_trades", epoch_proto::TypePercent},
+                               {"long_trades", epoch_proto::TypePercent},
+                               {"short_trades", epoch_proto::TypePercent}},
+                              returns));
 
   out.emplace_back(GetSymbolsTable(round_trip, RETURNS_STATS));
   return out;

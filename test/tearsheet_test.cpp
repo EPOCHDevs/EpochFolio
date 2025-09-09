@@ -86,16 +86,29 @@ TEST_CASE("Tearsheet") {
   std::filesystem::create_directories(output_dir);
 
   write_protobuf(test_result, output_dir + "/full_test_result.pb");
-  write_protobuf(test_result.positions(),
-                 output_dir + "/positions_test_result.pb");
-  write_protobuf(test_result.strategy_benchmark(),
-                 output_dir + "/strategy_benchmark_test_result.pb");
-  write_protobuf(test_result.transactions(),
-                 output_dir + "/transactions_test_result.pb");
-  write_protobuf(test_result.round_trip(),
-                 output_dir + "/round_trip_test_result.pb");
-  write_protobuf(test_result.risk_analysis(),
-                 output_dir + "/risk_analysis_test_result.pb");
-  write_protobuf(test_result.returns_distribution(),
-                 output_dir + "/returns_distribution_test_result.pb");
+  auto &categories = test_result.categories();
+  if (categories.contains(epoch_folio::categories::Positions)) {
+    write_protobuf(categories.at(epoch_folio::categories::Positions),
+                   output_dir + "/positions_test_result.pb");
+  }
+  if (categories.contains(epoch_folio::categories::StrategyBenchmark)) {
+    write_protobuf(categories.at(epoch_folio::categories::StrategyBenchmark),
+                   output_dir + "/strategy_benchmark_test_result.pb");
+  }
+  if (categories.contains(epoch_folio::categories::Transactions)) {
+    write_protobuf(categories.at(epoch_folio::categories::Transactions),
+                   output_dir + "/transactions_test_result.pb");
+  }
+  if (categories.contains(epoch_folio::categories::RoundTrip)) {
+    write_protobuf(categories.at(epoch_folio::categories::RoundTrip),
+                   output_dir + "/round_trip_test_result.pb");
+  }
+  if (categories.contains(epoch_folio::categories::RiskAnalysis)) {
+    write_protobuf(categories.at(epoch_folio::categories::RiskAnalysis),
+                   output_dir + "/risk_analysis_test_result.pb");
+  }
+  if (categories.contains(epoch_folio::categories::ReturnsDistribution)) {
+    write_protobuf(categories.at(epoch_folio::categories::ReturnsDistribution),
+                   output_dir + "/returns_distribution_test_result.pb");
+  }
 }

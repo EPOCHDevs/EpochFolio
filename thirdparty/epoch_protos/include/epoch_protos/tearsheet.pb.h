@@ -28,6 +28,9 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"  // IWYU pragma: export
+#include "google/protobuf/map.h"  // IWYU pragma: export
+#include "google/protobuf/map_entry.h"
+#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "common.pb.h"
 #include "table_def.pb.h"
@@ -55,9 +58,21 @@ struct TableStruct_tearsheet_2eproto {
 extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_tearsheet_2eproto;
 namespace epoch_proto {
+class CardDefList;
+struct CardDefListDefaultTypeInternal;
+extern CardDefListDefaultTypeInternal _CardDefList_default_instance_;
+class ChartList;
+struct ChartListDefaultTypeInternal;
+extern ChartListDefaultTypeInternal _ChartList_default_instance_;
 class FullTearSheet;
 struct FullTearSheetDefaultTypeInternal;
 extern FullTearSheetDefaultTypeInternal _FullTearSheet_default_instance_;
+class FullTearSheet_CategoriesEntry_DoNotUse;
+struct FullTearSheet_CategoriesEntry_DoNotUseDefaultTypeInternal;
+extern FullTearSheet_CategoriesEntry_DoNotUseDefaultTypeInternal _FullTearSheet_CategoriesEntry_DoNotUse_default_instance_;
+class TableList;
+struct TableListDefaultTypeInternal;
+extern TableListDefaultTypeInternal _TableList_default_instance_;
 class TearSheet;
 struct TearSheetDefaultTypeInternal;
 extern TearSheetDefaultTypeInternal _TearSheet_default_instance_;
@@ -72,6 +87,597 @@ namespace epoch_proto {
 // ===================================================================
 
 
+// -------------------------------------------------------------------
+
+class CardDefList final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.CardDefList) */ {
+ public:
+  inline CardDefList() : CardDefList(nullptr) {}
+  ~CardDefList() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(CardDefList* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(CardDefList));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR CardDefList(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline CardDefList(const CardDefList& from) : CardDefList(nullptr, from) {}
+  inline CardDefList(CardDefList&& from) noexcept
+      : CardDefList(nullptr, std::move(from)) {}
+  inline CardDefList& operator=(const CardDefList& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline CardDefList& operator=(CardDefList&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const CardDefList& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const CardDefList* internal_default_instance() {
+    return reinterpret_cast<const CardDefList*>(
+        &_CardDefList_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 0;
+  friend void swap(CardDefList& a, CardDefList& b) { a.Swap(&b); }
+  inline void Swap(CardDefList* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(CardDefList* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  CardDefList* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<CardDefList>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const CardDefList& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const CardDefList& from) { CardDefList::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(CardDefList* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "epoch_proto.CardDefList"; }
+
+ protected:
+  explicit CardDefList(::google::protobuf::Arena* arena);
+  CardDefList(::google::protobuf::Arena* arena, const CardDefList& from);
+  CardDefList(::google::protobuf::Arena* arena, CardDefList&& from) noexcept
+      : CardDefList(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kCardsFieldNumber = 1,
+  };
+  // repeated .epoch_proto.CardDef cards = 1;
+  int cards_size() const;
+  private:
+  int _internal_cards_size() const;
+
+  public:
+  void clear_cards() ;
+  ::epoch_proto::CardDef* mutable_cards(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>* mutable_cards();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>& _internal_cards() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>* _internal_mutable_cards();
+  public:
+  const ::epoch_proto::CardDef& cards(int index) const;
+  ::epoch_proto::CardDef* add_cards();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>& cards() const;
+  // @@protoc_insertion_point(class_scope:epoch_proto.CardDefList)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      0, 1, 1,
+      0, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const CardDefList& from_msg);
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::CardDef > cards_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_tearsheet_2eproto;
+};
+// -------------------------------------------------------------------
+
+class TableList final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.TableList) */ {
+ public:
+  inline TableList() : TableList(nullptr) {}
+  ~TableList() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(TableList* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(TableList));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR TableList(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline TableList(const TableList& from) : TableList(nullptr, from) {}
+  inline TableList(TableList&& from) noexcept
+      : TableList(nullptr, std::move(from)) {}
+  inline TableList& operator=(const TableList& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline TableList& operator=(TableList&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const TableList& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const TableList* internal_default_instance() {
+    return reinterpret_cast<const TableList*>(
+        &_TableList_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 2;
+  friend void swap(TableList& a, TableList& b) { a.Swap(&b); }
+  inline void Swap(TableList* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(TableList* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  TableList* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<TableList>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const TableList& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const TableList& from) { TableList::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(TableList* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "epoch_proto.TableList"; }
+
+ protected:
+  explicit TableList(::google::protobuf::Arena* arena);
+  TableList(::google::protobuf::Arena* arena, const TableList& from);
+  TableList(::google::protobuf::Arena* arena, TableList&& from) noexcept
+      : TableList(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kTablesFieldNumber = 1,
+  };
+  // repeated .epoch_proto.Table tables = 1;
+  int tables_size() const;
+  private:
+  int _internal_tables_size() const;
+
+  public:
+  void clear_tables() ;
+  ::epoch_proto::Table* mutable_tables(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>* mutable_tables();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>& _internal_tables() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>* _internal_mutable_tables();
+  public:
+  const ::epoch_proto::Table& tables(int index) const;
+  ::epoch_proto::Table* add_tables();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>& tables() const;
+  // @@protoc_insertion_point(class_scope:epoch_proto.TableList)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      0, 1, 1,
+      0, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const TableList& from_msg);
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Table > tables_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_tearsheet_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ChartList final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.ChartList) */ {
+ public:
+  inline ChartList() : ChartList(nullptr) {}
+  ~ChartList() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(ChartList* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(ChartList));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR ChartList(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline ChartList(const ChartList& from) : ChartList(nullptr, from) {}
+  inline ChartList(ChartList&& from) noexcept
+      : ChartList(nullptr, std::move(from)) {}
+  inline ChartList& operator=(const ChartList& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ChartList& operator=(ChartList&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const ChartList& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const ChartList* internal_default_instance() {
+    return reinterpret_cast<const ChartList*>(
+        &_ChartList_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 1;
+  friend void swap(ChartList& a, ChartList& b) { a.Swap(&b); }
+  inline void Swap(ChartList* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ChartList* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  ChartList* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<ChartList>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const ChartList& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const ChartList& from) { ChartList::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(ChartList* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "epoch_proto.ChartList"; }
+
+ protected:
+  explicit ChartList(::google::protobuf::Arena* arena);
+  ChartList(::google::protobuf::Arena* arena, const ChartList& from);
+  ChartList(::google::protobuf::Arena* arena, ChartList&& from) noexcept
+      : ChartList(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kChartsFieldNumber = 1,
+  };
+  // repeated .epoch_proto.Chart charts = 1;
+  int charts_size() const;
+  private:
+  int _internal_charts_size() const;
+
+  public:
+  void clear_charts() ;
+  ::epoch_proto::Chart* mutable_charts(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>* mutable_charts();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>& _internal_charts() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>* _internal_mutable_charts();
+  public:
+  const ::epoch_proto::Chart& charts(int index) const;
+  ::epoch_proto::Chart* add_charts();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>& charts() const;
+  // @@protoc_insertion_point(class_scope:epoch_proto.ChartList)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      0, 1, 1,
+      0, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const ChartList& from_msg);
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Chart > charts_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_tearsheet_2eproto;
+};
 // -------------------------------------------------------------------
 
 class TearSheet final : public ::google::protobuf::Message
@@ -133,7 +739,7 @@ class TearSheet final : public ::google::protobuf::Message
     return reinterpret_cast<const TearSheet*>(
         &_TearSheet_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 0;
+  static constexpr int kIndexInFileMessages = 3;
   friend void swap(TearSheet& a, TearSheet& b) { a.Swap(&b); }
   inline void Swap(TearSheet* other) {
     if (other == this) return;
@@ -224,57 +830,51 @@ class TearSheet final : public ::google::protobuf::Message
     kChartsFieldNumber = 2,
     kTablesFieldNumber = 3,
   };
-  // repeated .epoch_proto.CardDef cards = 1;
-  int cards_size() const;
-  private:
-  int _internal_cards_size() const;
-
-  public:
+  // .epoch_proto.CardDefList cards = 1;
+  bool has_cards() const;
   void clear_cards() ;
-  ::epoch_proto::CardDef* mutable_cards(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>* mutable_cards();
+  const ::epoch_proto::CardDefList& cards() const;
+  PROTOBUF_NODISCARD ::epoch_proto::CardDefList* release_cards();
+  ::epoch_proto::CardDefList* mutable_cards();
+  void set_allocated_cards(::epoch_proto::CardDefList* value);
+  void unsafe_arena_set_allocated_cards(::epoch_proto::CardDefList* value);
+  ::epoch_proto::CardDefList* unsafe_arena_release_cards();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>& _internal_cards() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>* _internal_mutable_cards();
-  public:
-  const ::epoch_proto::CardDef& cards(int index) const;
-  ::epoch_proto::CardDef* add_cards();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>& cards() const;
-  // repeated .epoch_proto.Chart charts = 2;
-  int charts_size() const;
-  private:
-  int _internal_charts_size() const;
+  const ::epoch_proto::CardDefList& _internal_cards() const;
+  ::epoch_proto::CardDefList* _internal_mutable_cards();
 
   public:
+  // .epoch_proto.ChartList charts = 2;
+  bool has_charts() const;
   void clear_charts() ;
-  ::epoch_proto::Chart* mutable_charts(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>* mutable_charts();
+  const ::epoch_proto::ChartList& charts() const;
+  PROTOBUF_NODISCARD ::epoch_proto::ChartList* release_charts();
+  ::epoch_proto::ChartList* mutable_charts();
+  void set_allocated_charts(::epoch_proto::ChartList* value);
+  void unsafe_arena_set_allocated_charts(::epoch_proto::ChartList* value);
+  ::epoch_proto::ChartList* unsafe_arena_release_charts();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>& _internal_charts() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>* _internal_mutable_charts();
-  public:
-  const ::epoch_proto::Chart& charts(int index) const;
-  ::epoch_proto::Chart* add_charts();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>& charts() const;
-  // repeated .epoch_proto.Table tables = 3;
-  int tables_size() const;
-  private:
-  int _internal_tables_size() const;
+  const ::epoch_proto::ChartList& _internal_charts() const;
+  ::epoch_proto::ChartList* _internal_mutable_charts();
 
   public:
+  // .epoch_proto.TableList tables = 3;
+  bool has_tables() const;
   void clear_tables() ;
-  ::epoch_proto::Table* mutable_tables(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>* mutable_tables();
+  const ::epoch_proto::TableList& tables() const;
+  PROTOBUF_NODISCARD ::epoch_proto::TableList* release_tables();
+  ::epoch_proto::TableList* mutable_tables();
+  void set_allocated_tables(::epoch_proto::TableList* value);
+  void unsafe_arena_set_allocated_tables(::epoch_proto::TableList* value);
+  ::epoch_proto::TableList* unsafe_arena_release_tables();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>& _internal_tables() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>* _internal_mutable_tables();
+  const ::epoch_proto::TableList& _internal_tables() const;
+  ::epoch_proto::TableList* _internal_mutable_tables();
+
   public:
-  const ::epoch_proto::Table& tables(int index) const;
-  ::epoch_proto::Table* add_tables();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>& tables() const;
   // @@protoc_insertion_point(class_scope:epoch_proto.TearSheet)
  private:
   class _Internal;
@@ -298,14 +898,54 @@ class TearSheet final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const TearSheet& from_msg);
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::CardDef > cards_;
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Chart > charts_;
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Table > tables_;
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::epoch_proto::CardDefList* cards_;
+    ::epoch_proto::ChartList* charts_;
+    ::epoch_proto::TableList* tables_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_tearsheet_2eproto;
+};
+// -------------------------------------------------------------------
+
+class FullTearSheet_CategoriesEntry_DoNotUse final
+    : public ::google::protobuf::internal::MapEntry<
+          std::string, ::google::protobuf::Message,
+          ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+          ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE> {
+ public:
+  using SuperType = ::google::protobuf::internal::MapEntry<
+      std::string, ::google::protobuf::Message,
+      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>;
+  FullTearSheet_CategoriesEntry_DoNotUse();
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR FullTearSheet_CategoriesEntry_DoNotUse(
+      ::google::protobuf::internal::ConstantInitialized);
+  explicit FullTearSheet_CategoriesEntry_DoNotUse(::google::protobuf::Arena* arena);
+  static const FullTearSheet_CategoriesEntry_DoNotUse* internal_default_instance() {
+    return reinterpret_cast<const FullTearSheet_CategoriesEntry_DoNotUse*>(
+        &_FullTearSheet_CategoriesEntry_DoNotUse_default_instance_);
+  }
+
+
+ private:
+  friend class ::google::protobuf::MessageLite;
+  friend struct ::TableStruct_tearsheet_2eproto;
+
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 1,
+      53, 2>
+      _table_;
+
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 };
 // -------------------------------------------------------------------
 
@@ -368,7 +1008,7 @@ class FullTearSheet final : public ::google::protobuf::Message
     return reinterpret_cast<const FullTearSheet*>(
         &_FullTearSheet_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 1;
+  static constexpr int kIndexInFileMessages = 5;
   friend void swap(FullTearSheet& a, FullTearSheet& b) { a.Swap(&b); }
   inline void Swap(FullTearSheet* other) {
     if (other == this) return;
@@ -455,101 +1095,21 @@ class FullTearSheet final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kStrategyBenchmarkFieldNumber = 1,
-    kRiskAnalysisFieldNumber = 2,
-    kReturnsDistributionFieldNumber = 3,
-    kPositionsFieldNumber = 4,
-    kTransactionsFieldNumber = 5,
-    kRoundTripFieldNumber = 6,
+    kCategoriesFieldNumber = 1,
   };
-  // .epoch_proto.TearSheet strategy_benchmark = 1;
-  bool has_strategy_benchmark() const;
-  void clear_strategy_benchmark() ;
-  const ::epoch_proto::TearSheet& strategy_benchmark() const;
-  PROTOBUF_NODISCARD ::epoch_proto::TearSheet* release_strategy_benchmark();
-  ::epoch_proto::TearSheet* mutable_strategy_benchmark();
-  void set_allocated_strategy_benchmark(::epoch_proto::TearSheet* value);
-  void unsafe_arena_set_allocated_strategy_benchmark(::epoch_proto::TearSheet* value);
-  ::epoch_proto::TearSheet* unsafe_arena_release_strategy_benchmark();
-
+  // map<string, .epoch_proto.TearSheet> categories = 1;
+  int categories_size() const;
   private:
-  const ::epoch_proto::TearSheet& _internal_strategy_benchmark() const;
-  ::epoch_proto::TearSheet* _internal_mutable_strategy_benchmark();
+  int _internal_categories_size() const;
 
   public:
-  // .epoch_proto.TearSheet risk_analysis = 2;
-  bool has_risk_analysis() const;
-  void clear_risk_analysis() ;
-  const ::epoch_proto::TearSheet& risk_analysis() const;
-  PROTOBUF_NODISCARD ::epoch_proto::TearSheet* release_risk_analysis();
-  ::epoch_proto::TearSheet* mutable_risk_analysis();
-  void set_allocated_risk_analysis(::epoch_proto::TearSheet* value);
-  void unsafe_arena_set_allocated_risk_analysis(::epoch_proto::TearSheet* value);
-  ::epoch_proto::TearSheet* unsafe_arena_release_risk_analysis();
+  void clear_categories() ;
+  const ::google::protobuf::Map<std::string, ::epoch_proto::TearSheet>& categories() const;
+  ::google::protobuf::Map<std::string, ::epoch_proto::TearSheet>* mutable_categories();
 
   private:
-  const ::epoch_proto::TearSheet& _internal_risk_analysis() const;
-  ::epoch_proto::TearSheet* _internal_mutable_risk_analysis();
-
-  public:
-  // .epoch_proto.TearSheet returns_distribution = 3;
-  bool has_returns_distribution() const;
-  void clear_returns_distribution() ;
-  const ::epoch_proto::TearSheet& returns_distribution() const;
-  PROTOBUF_NODISCARD ::epoch_proto::TearSheet* release_returns_distribution();
-  ::epoch_proto::TearSheet* mutable_returns_distribution();
-  void set_allocated_returns_distribution(::epoch_proto::TearSheet* value);
-  void unsafe_arena_set_allocated_returns_distribution(::epoch_proto::TearSheet* value);
-  ::epoch_proto::TearSheet* unsafe_arena_release_returns_distribution();
-
-  private:
-  const ::epoch_proto::TearSheet& _internal_returns_distribution() const;
-  ::epoch_proto::TearSheet* _internal_mutable_returns_distribution();
-
-  public:
-  // .epoch_proto.TearSheet positions = 4;
-  bool has_positions() const;
-  void clear_positions() ;
-  const ::epoch_proto::TearSheet& positions() const;
-  PROTOBUF_NODISCARD ::epoch_proto::TearSheet* release_positions();
-  ::epoch_proto::TearSheet* mutable_positions();
-  void set_allocated_positions(::epoch_proto::TearSheet* value);
-  void unsafe_arena_set_allocated_positions(::epoch_proto::TearSheet* value);
-  ::epoch_proto::TearSheet* unsafe_arena_release_positions();
-
-  private:
-  const ::epoch_proto::TearSheet& _internal_positions() const;
-  ::epoch_proto::TearSheet* _internal_mutable_positions();
-
-  public:
-  // .epoch_proto.TearSheet transactions = 5;
-  bool has_transactions() const;
-  void clear_transactions() ;
-  const ::epoch_proto::TearSheet& transactions() const;
-  PROTOBUF_NODISCARD ::epoch_proto::TearSheet* release_transactions();
-  ::epoch_proto::TearSheet* mutable_transactions();
-  void set_allocated_transactions(::epoch_proto::TearSheet* value);
-  void unsafe_arena_set_allocated_transactions(::epoch_proto::TearSheet* value);
-  ::epoch_proto::TearSheet* unsafe_arena_release_transactions();
-
-  private:
-  const ::epoch_proto::TearSheet& _internal_transactions() const;
-  ::epoch_proto::TearSheet* _internal_mutable_transactions();
-
-  public:
-  // .epoch_proto.TearSheet round_trip = 6;
-  bool has_round_trip() const;
-  void clear_round_trip() ;
-  const ::epoch_proto::TearSheet& round_trip() const;
-  PROTOBUF_NODISCARD ::epoch_proto::TearSheet* release_round_trip();
-  ::epoch_proto::TearSheet* mutable_round_trip();
-  void set_allocated_round_trip(::epoch_proto::TearSheet* value);
-  void unsafe_arena_set_allocated_round_trip(::epoch_proto::TearSheet* value);
-  ::epoch_proto::TearSheet* unsafe_arena_release_round_trip();
-
-  private:
-  const ::epoch_proto::TearSheet& _internal_round_trip() const;
-  ::epoch_proto::TearSheet* _internal_mutable_round_trip();
+  const ::google::protobuf::Map<std::string, ::epoch_proto::TearSheet>& _internal_categories() const;
+  ::google::protobuf::Map<std::string, ::epoch_proto::TearSheet>* _internal_mutable_categories();
 
   public:
   // @@protoc_insertion_point(class_scope:epoch_proto.FullTearSheet)
@@ -557,8 +1117,8 @@ class FullTearSheet final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 6, 6,
-      0, 2>
+      0, 1, 2,
+      44, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -575,14 +1135,11 @@ class FullTearSheet final : public ::google::protobuf::Message
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FullTearSheet& from_msg);
-    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    ::google::protobuf::internal::MapField<FullTearSheet_CategoriesEntry_DoNotUse, std::string, ::epoch_proto::TearSheet,
+                      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+                      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
+        categories_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::epoch_proto::TearSheet* strategy_benchmark_;
-    ::epoch_proto::TearSheet* risk_analysis_;
-    ::epoch_proto::TearSheet* returns_distribution_;
-    ::epoch_proto::TearSheet* positions_;
-    ::epoch_proto::TearSheet* transactions_;
-    ::epoch_proto::TearSheet* round_trip_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -603,721 +1160,475 @@ class FullTearSheet final : public ::google::protobuf::Message
 #endif  // __GNUC__
 // -------------------------------------------------------------------
 
-// TearSheet
+// CardDefList
 
 // repeated .epoch_proto.CardDef cards = 1;
-inline int TearSheet::_internal_cards_size() const {
+inline int CardDefList::_internal_cards_size() const {
   return _internal_cards().size();
 }
-inline int TearSheet::cards_size() const {
+inline int CardDefList::cards_size() const {
   return _internal_cards_size();
 }
-inline ::epoch_proto::CardDef* TearSheet::mutable_cards(int index)
+inline ::epoch_proto::CardDef* CardDefList::mutable_cards(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:epoch_proto.TearSheet.cards)
+  // @@protoc_insertion_point(field_mutable:epoch_proto.CardDefList.cards)
   return _internal_mutable_cards()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>* TearSheet::mutable_cards()
+inline ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>* CardDefList::mutable_cards()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable_list:epoch_proto.TearSheet.cards)
+  // @@protoc_insertion_point(field_mutable_list:epoch_proto.CardDefList.cards)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_cards();
 }
-inline const ::epoch_proto::CardDef& TearSheet::cards(int index) const
+inline const ::epoch_proto::CardDef& CardDefList::cards(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.TearSheet.cards)
+  // @@protoc_insertion_point(field_get:epoch_proto.CardDefList.cards)
   return _internal_cards().Get(index);
 }
-inline ::epoch_proto::CardDef* TearSheet::add_cards() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::epoch_proto::CardDef* CardDefList::add_cards() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::epoch_proto::CardDef* _add = _internal_mutable_cards()->Add();
-  // @@protoc_insertion_point(field_add:epoch_proto.TearSheet.cards)
+  // @@protoc_insertion_point(field_add:epoch_proto.CardDefList.cards)
   return _add;
 }
-inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>& TearSheet::cards() const
+inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>& CardDefList::cards() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_list:epoch_proto.TearSheet.cards)
+  // @@protoc_insertion_point(field_list:epoch_proto.CardDefList.cards)
   return _internal_cards();
 }
 inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>&
-TearSheet::_internal_cards() const {
+CardDefList::_internal_cards() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.cards_;
 }
 inline ::google::protobuf::RepeatedPtrField<::epoch_proto::CardDef>*
-TearSheet::_internal_mutable_cards() {
+CardDefList::_internal_mutable_cards() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.cards_;
 }
 
-// repeated .epoch_proto.Chart charts = 2;
-inline int TearSheet::_internal_charts_size() const {
+// -------------------------------------------------------------------
+
+// ChartList
+
+// repeated .epoch_proto.Chart charts = 1;
+inline int ChartList::_internal_charts_size() const {
   return _internal_charts().size();
 }
-inline int TearSheet::charts_size() const {
+inline int ChartList::charts_size() const {
   return _internal_charts_size();
 }
-inline ::epoch_proto::Chart* TearSheet::mutable_charts(int index)
+inline ::epoch_proto::Chart* ChartList::mutable_charts(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:epoch_proto.TearSheet.charts)
+  // @@protoc_insertion_point(field_mutable:epoch_proto.ChartList.charts)
   return _internal_mutable_charts()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>* TearSheet::mutable_charts()
+inline ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>* ChartList::mutable_charts()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable_list:epoch_proto.TearSheet.charts)
+  // @@protoc_insertion_point(field_mutable_list:epoch_proto.ChartList.charts)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_charts();
 }
-inline const ::epoch_proto::Chart& TearSheet::charts(int index) const
+inline const ::epoch_proto::Chart& ChartList::charts(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.TearSheet.charts)
+  // @@protoc_insertion_point(field_get:epoch_proto.ChartList.charts)
   return _internal_charts().Get(index);
 }
-inline ::epoch_proto::Chart* TearSheet::add_charts() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::epoch_proto::Chart* ChartList::add_charts() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::epoch_proto::Chart* _add = _internal_mutable_charts()->Add();
-  // @@protoc_insertion_point(field_add:epoch_proto.TearSheet.charts)
+  // @@protoc_insertion_point(field_add:epoch_proto.ChartList.charts)
   return _add;
 }
-inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>& TearSheet::charts() const
+inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>& ChartList::charts() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_list:epoch_proto.TearSheet.charts)
+  // @@protoc_insertion_point(field_list:epoch_proto.ChartList.charts)
   return _internal_charts();
 }
 inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>&
-TearSheet::_internal_charts() const {
+ChartList::_internal_charts() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.charts_;
 }
 inline ::google::protobuf::RepeatedPtrField<::epoch_proto::Chart>*
-TearSheet::_internal_mutable_charts() {
+ChartList::_internal_mutable_charts() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.charts_;
 }
 
-// repeated .epoch_proto.Table tables = 3;
-inline int TearSheet::_internal_tables_size() const {
+// -------------------------------------------------------------------
+
+// TableList
+
+// repeated .epoch_proto.Table tables = 1;
+inline int TableList::_internal_tables_size() const {
   return _internal_tables().size();
 }
-inline int TearSheet::tables_size() const {
+inline int TableList::tables_size() const {
   return _internal_tables_size();
 }
-inline ::epoch_proto::Table* TearSheet::mutable_tables(int index)
+inline ::epoch_proto::Table* TableList::mutable_tables(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:epoch_proto.TearSheet.tables)
+  // @@protoc_insertion_point(field_mutable:epoch_proto.TableList.tables)
   return _internal_mutable_tables()->Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>* TearSheet::mutable_tables()
+inline ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>* TableList::mutable_tables()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable_list:epoch_proto.TearSheet.tables)
+  // @@protoc_insertion_point(field_mutable_list:epoch_proto.TableList.tables)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_tables();
 }
-inline const ::epoch_proto::Table& TearSheet::tables(int index) const
+inline const ::epoch_proto::Table& TableList::tables(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.TearSheet.tables)
+  // @@protoc_insertion_point(field_get:epoch_proto.TableList.tables)
   return _internal_tables().Get(index);
 }
-inline ::epoch_proto::Table* TearSheet::add_tables() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::epoch_proto::Table* TableList::add_tables() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::epoch_proto::Table* _add = _internal_mutable_tables()->Add();
-  // @@protoc_insertion_point(field_add:epoch_proto.TearSheet.tables)
+  // @@protoc_insertion_point(field_add:epoch_proto.TableList.tables)
   return _add;
 }
-inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>& TearSheet::tables() const
+inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>& TableList::tables() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_list:epoch_proto.TearSheet.tables)
+  // @@protoc_insertion_point(field_list:epoch_proto.TableList.tables)
   return _internal_tables();
 }
 inline const ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>&
-TearSheet::_internal_tables() const {
+TableList::_internal_tables() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.tables_;
 }
 inline ::google::protobuf::RepeatedPtrField<::epoch_proto::Table>*
-TearSheet::_internal_mutable_tables() {
+TableList::_internal_mutable_tables() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.tables_;
 }
 
 // -------------------------------------------------------------------
 
+// TearSheet
+
+// .epoch_proto.CardDefList cards = 1;
+inline bool TearSheet::has_cards() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.cards_ != nullptr);
+  return value;
+}
+inline void TearSheet::clear_cards() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.cards_ != nullptr) _impl_.cards_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline const ::epoch_proto::CardDefList& TearSheet::_internal_cards() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  const ::epoch_proto::CardDefList* p = _impl_.cards_;
+  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::CardDefList&>(::epoch_proto::_CardDefList_default_instance_);
+}
+inline const ::epoch_proto::CardDefList& TearSheet::cards() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:epoch_proto.TearSheet.cards)
+  return _internal_cards();
+}
+inline void TearSheet::unsafe_arena_set_allocated_cards(::epoch_proto::CardDefList* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.cards_);
+  }
+  _impl_.cards_ = reinterpret_cast<::epoch_proto::CardDefList*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.TearSheet.cards)
+}
+inline ::epoch_proto::CardDefList* TearSheet::release_cards() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  ::epoch_proto::CardDefList* released = _impl_.cards_;
+  _impl_.cards_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+inline ::epoch_proto::CardDefList* TearSheet::unsafe_arena_release_cards() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:epoch_proto.TearSheet.cards)
+
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  ::epoch_proto::CardDefList* temp = _impl_.cards_;
+  _impl_.cards_ = nullptr;
+  return temp;
+}
+inline ::epoch_proto::CardDefList* TearSheet::_internal_mutable_cards() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.cards_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::CardDefList>(GetArena());
+    _impl_.cards_ = reinterpret_cast<::epoch_proto::CardDefList*>(p);
+  }
+  return _impl_.cards_;
+}
+inline ::epoch_proto::CardDefList* TearSheet::mutable_cards() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  ::epoch_proto::CardDefList* _msg = _internal_mutable_cards();
+  // @@protoc_insertion_point(field_mutable:epoch_proto.TearSheet.cards)
+  return _msg;
+}
+inline void TearSheet::set_allocated_cards(::epoch_proto::CardDefList* value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete (_impl_.cards_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+
+  _impl_.cards_ = reinterpret_cast<::epoch_proto::CardDefList*>(value);
+  // @@protoc_insertion_point(field_set_allocated:epoch_proto.TearSheet.cards)
+}
+
+// .epoch_proto.ChartList charts = 2;
+inline bool TearSheet::has_charts() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.charts_ != nullptr);
+  return value;
+}
+inline void TearSheet::clear_charts() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.charts_ != nullptr) _impl_.charts_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const ::epoch_proto::ChartList& TearSheet::_internal_charts() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  const ::epoch_proto::ChartList* p = _impl_.charts_;
+  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::ChartList&>(::epoch_proto::_ChartList_default_instance_);
+}
+inline const ::epoch_proto::ChartList& TearSheet::charts() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:epoch_proto.TearSheet.charts)
+  return _internal_charts();
+}
+inline void TearSheet::unsafe_arena_set_allocated_charts(::epoch_proto::ChartList* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.charts_);
+  }
+  _impl_.charts_ = reinterpret_cast<::epoch_proto::ChartList*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.TearSheet.charts)
+}
+inline ::epoch_proto::ChartList* TearSheet::release_charts() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::epoch_proto::ChartList* released = _impl_.charts_;
+  _impl_.charts_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+inline ::epoch_proto::ChartList* TearSheet::unsafe_arena_release_charts() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:epoch_proto.TearSheet.charts)
+
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  ::epoch_proto::ChartList* temp = _impl_.charts_;
+  _impl_.charts_ = nullptr;
+  return temp;
+}
+inline ::epoch_proto::ChartList* TearSheet::_internal_mutable_charts() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.charts_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::ChartList>(GetArena());
+    _impl_.charts_ = reinterpret_cast<::epoch_proto::ChartList*>(p);
+  }
+  return _impl_.charts_;
+}
+inline ::epoch_proto::ChartList* TearSheet::mutable_charts() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  ::epoch_proto::ChartList* _msg = _internal_mutable_charts();
+  // @@protoc_insertion_point(field_mutable:epoch_proto.TearSheet.charts)
+  return _msg;
+}
+inline void TearSheet::set_allocated_charts(::epoch_proto::ChartList* value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete (_impl_.charts_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+
+  _impl_.charts_ = reinterpret_cast<::epoch_proto::ChartList*>(value);
+  // @@protoc_insertion_point(field_set_allocated:epoch_proto.TearSheet.charts)
+}
+
+// .epoch_proto.TableList tables = 3;
+inline bool TearSheet::has_tables() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.tables_ != nullptr);
+  return value;
+}
+inline void TearSheet::clear_tables() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.tables_ != nullptr) _impl_.tables_->Clear();
+  _impl_._has_bits_[0] &= ~0x00000004u;
+}
+inline const ::epoch_proto::TableList& TearSheet::_internal_tables() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  const ::epoch_proto::TableList* p = _impl_.tables_;
+  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::TableList&>(::epoch_proto::_TableList_default_instance_);
+}
+inline const ::epoch_proto::TableList& TearSheet::tables() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:epoch_proto.TearSheet.tables)
+  return _internal_tables();
+}
+inline void TearSheet::unsafe_arena_set_allocated_tables(::epoch_proto::TableList* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.tables_);
+  }
+  _impl_.tables_ = reinterpret_cast<::epoch_proto::TableList*>(value);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000004u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000004u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.TearSheet.tables)
+}
+inline ::epoch_proto::TableList* TearSheet::release_tables() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  _impl_._has_bits_[0] &= ~0x00000004u;
+  ::epoch_proto::TableList* released = _impl_.tables_;
+  _impl_.tables_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+inline ::epoch_proto::TableList* TearSheet::unsafe_arena_release_tables() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:epoch_proto.TearSheet.tables)
+
+  _impl_._has_bits_[0] &= ~0x00000004u;
+  ::epoch_proto::TableList* temp = _impl_.tables_;
+  _impl_.tables_ = nullptr;
+  return temp;
+}
+inline ::epoch_proto::TableList* TearSheet::_internal_mutable_tables() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.tables_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::TableList>(GetArena());
+    _impl_.tables_ = reinterpret_cast<::epoch_proto::TableList*>(p);
+  }
+  return _impl_.tables_;
+}
+inline ::epoch_proto::TableList* TearSheet::mutable_tables() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000004u;
+  ::epoch_proto::TableList* _msg = _internal_mutable_tables();
+  // @@protoc_insertion_point(field_mutable:epoch_proto.TearSheet.tables)
+  return _msg;
+}
+inline void TearSheet::set_allocated_tables(::epoch_proto::TableList* value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete (_impl_.tables_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    _impl_._has_bits_[0] |= 0x00000004u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000004u;
+  }
+
+  _impl_.tables_ = reinterpret_cast<::epoch_proto::TableList*>(value);
+  // @@protoc_insertion_point(field_set_allocated:epoch_proto.TearSheet.tables)
+}
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // FullTearSheet
 
-// .epoch_proto.TearSheet strategy_benchmark = 1;
-inline bool FullTearSheet::has_strategy_benchmark() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.strategy_benchmark_ != nullptr);
-  return value;
+// map<string, .epoch_proto.TearSheet> categories = 1;
+inline int FullTearSheet::_internal_categories_size() const {
+  return _internal_categories().size();
 }
-inline void FullTearSheet::clear_strategy_benchmark() {
+inline int FullTearSheet::categories_size() const {
+  return _internal_categories_size();
+}
+inline void FullTearSheet::clear_categories() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.strategy_benchmark_ != nullptr) _impl_.strategy_benchmark_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_.categories_.Clear();
 }
-inline const ::epoch_proto::TearSheet& FullTearSheet::_internal_strategy_benchmark() const {
+inline const ::google::protobuf::Map<std::string, ::epoch_proto::TearSheet>& FullTearSheet::_internal_categories() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::TearSheet* p = _impl_.strategy_benchmark_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::TearSheet&>(::epoch_proto::_TearSheet_default_instance_);
+  return _impl_.categories_.GetMap();
 }
-inline const ::epoch_proto::TearSheet& FullTearSheet::strategy_benchmark() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.FullTearSheet.strategy_benchmark)
-  return _internal_strategy_benchmark();
+inline const ::google::protobuf::Map<std::string, ::epoch_proto::TearSheet>& FullTearSheet::categories() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_map:epoch_proto.FullTearSheet.categories)
+  return _internal_categories();
 }
-inline void FullTearSheet::unsafe_arena_set_allocated_strategy_benchmark(::epoch_proto::TearSheet* value) {
+inline ::google::protobuf::Map<std::string, ::epoch_proto::TearSheet>* FullTearSheet::_internal_mutable_categories() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.strategy_benchmark_);
-  }
-  _impl_.strategy_benchmark_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.FullTearSheet.strategy_benchmark)
+  return _impl_.categories_.MutableMap();
 }
-inline ::epoch_proto::TearSheet* FullTearSheet::release_strategy_benchmark() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::TearSheet* released = _impl_.strategy_benchmark_;
-  _impl_.strategy_benchmark_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::unsafe_arena_release_strategy_benchmark() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.FullTearSheet.strategy_benchmark)
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::TearSheet* temp = _impl_.strategy_benchmark_;
-  _impl_.strategy_benchmark_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::_internal_mutable_strategy_benchmark() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.strategy_benchmark_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::TearSheet>(GetArena());
-    _impl_.strategy_benchmark_ = reinterpret_cast<::epoch_proto::TearSheet*>(p);
-  }
-  return _impl_.strategy_benchmark_;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::mutable_strategy_benchmark() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  ::epoch_proto::TearSheet* _msg = _internal_mutable_strategy_benchmark();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.FullTearSheet.strategy_benchmark)
-  return _msg;
-}
-inline void FullTearSheet::set_allocated_strategy_benchmark(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete (_impl_.strategy_benchmark_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-
-  _impl_.strategy_benchmark_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.FullTearSheet.strategy_benchmark)
-}
-
-// .epoch_proto.TearSheet risk_analysis = 2;
-inline bool FullTearSheet::has_risk_analysis() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.risk_analysis_ != nullptr);
-  return value;
-}
-inline void FullTearSheet::clear_risk_analysis() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.risk_analysis_ != nullptr) _impl_.risk_analysis_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000002u;
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::_internal_risk_analysis() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::TearSheet* p = _impl_.risk_analysis_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::TearSheet&>(::epoch_proto::_TearSheet_default_instance_);
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::risk_analysis() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.FullTearSheet.risk_analysis)
-  return _internal_risk_analysis();
-}
-inline void FullTearSheet::unsafe_arena_set_allocated_risk_analysis(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.risk_analysis_);
-  }
-  _impl_.risk_analysis_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000002u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000002u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.FullTearSheet.risk_analysis)
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::release_risk_analysis() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000002u;
-  ::epoch_proto::TearSheet* released = _impl_.risk_analysis_;
-  _impl_.risk_analysis_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::unsafe_arena_release_risk_analysis() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.FullTearSheet.risk_analysis)
-
-  _impl_._has_bits_[0] &= ~0x00000002u;
-  ::epoch_proto::TearSheet* temp = _impl_.risk_analysis_;
-  _impl_.risk_analysis_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::_internal_mutable_risk_analysis() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.risk_analysis_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::TearSheet>(GetArena());
-    _impl_.risk_analysis_ = reinterpret_cast<::epoch_proto::TearSheet*>(p);
-  }
-  return _impl_.risk_analysis_;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::mutable_risk_analysis() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000002u;
-  ::epoch_proto::TearSheet* _msg = _internal_mutable_risk_analysis();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.FullTearSheet.risk_analysis)
-  return _msg;
-}
-inline void FullTearSheet::set_allocated_risk_analysis(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete (_impl_.risk_analysis_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000002u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000002u;
-  }
-
-  _impl_.risk_analysis_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.FullTearSheet.risk_analysis)
-}
-
-// .epoch_proto.TearSheet returns_distribution = 3;
-inline bool FullTearSheet::has_returns_distribution() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.returns_distribution_ != nullptr);
-  return value;
-}
-inline void FullTearSheet::clear_returns_distribution() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.returns_distribution_ != nullptr) _impl_.returns_distribution_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000004u;
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::_internal_returns_distribution() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::TearSheet* p = _impl_.returns_distribution_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::TearSheet&>(::epoch_proto::_TearSheet_default_instance_);
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::returns_distribution() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.FullTearSheet.returns_distribution)
-  return _internal_returns_distribution();
-}
-inline void FullTearSheet::unsafe_arena_set_allocated_returns_distribution(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.returns_distribution_);
-  }
-  _impl_.returns_distribution_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000004u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000004u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.FullTearSheet.returns_distribution)
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::release_returns_distribution() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000004u;
-  ::epoch_proto::TearSheet* released = _impl_.returns_distribution_;
-  _impl_.returns_distribution_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::unsafe_arena_release_returns_distribution() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.FullTearSheet.returns_distribution)
-
-  _impl_._has_bits_[0] &= ~0x00000004u;
-  ::epoch_proto::TearSheet* temp = _impl_.returns_distribution_;
-  _impl_.returns_distribution_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::_internal_mutable_returns_distribution() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.returns_distribution_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::TearSheet>(GetArena());
-    _impl_.returns_distribution_ = reinterpret_cast<::epoch_proto::TearSheet*>(p);
-  }
-  return _impl_.returns_distribution_;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::mutable_returns_distribution() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000004u;
-  ::epoch_proto::TearSheet* _msg = _internal_mutable_returns_distribution();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.FullTearSheet.returns_distribution)
-  return _msg;
-}
-inline void FullTearSheet::set_allocated_returns_distribution(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete (_impl_.returns_distribution_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000004u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000004u;
-  }
-
-  _impl_.returns_distribution_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.FullTearSheet.returns_distribution)
-}
-
-// .epoch_proto.TearSheet positions = 4;
-inline bool FullTearSheet::has_positions() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.positions_ != nullptr);
-  return value;
-}
-inline void FullTearSheet::clear_positions() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.positions_ != nullptr) _impl_.positions_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000008u;
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::_internal_positions() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::TearSheet* p = _impl_.positions_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::TearSheet&>(::epoch_proto::_TearSheet_default_instance_);
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::positions() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.FullTearSheet.positions)
-  return _internal_positions();
-}
-inline void FullTearSheet::unsafe_arena_set_allocated_positions(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.positions_);
-  }
-  _impl_.positions_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000008u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000008u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.FullTearSheet.positions)
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::release_positions() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000008u;
-  ::epoch_proto::TearSheet* released = _impl_.positions_;
-  _impl_.positions_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::unsafe_arena_release_positions() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.FullTearSheet.positions)
-
-  _impl_._has_bits_[0] &= ~0x00000008u;
-  ::epoch_proto::TearSheet* temp = _impl_.positions_;
-  _impl_.positions_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::_internal_mutable_positions() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.positions_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::TearSheet>(GetArena());
-    _impl_.positions_ = reinterpret_cast<::epoch_proto::TearSheet*>(p);
-  }
-  return _impl_.positions_;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::mutable_positions() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000008u;
-  ::epoch_proto::TearSheet* _msg = _internal_mutable_positions();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.FullTearSheet.positions)
-  return _msg;
-}
-inline void FullTearSheet::set_allocated_positions(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete (_impl_.positions_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000008u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000008u;
-  }
-
-  _impl_.positions_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.FullTearSheet.positions)
-}
-
-// .epoch_proto.TearSheet transactions = 5;
-inline bool FullTearSheet::has_transactions() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.transactions_ != nullptr);
-  return value;
-}
-inline void FullTearSheet::clear_transactions() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.transactions_ != nullptr) _impl_.transactions_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000010u;
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::_internal_transactions() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::TearSheet* p = _impl_.transactions_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::TearSheet&>(::epoch_proto::_TearSheet_default_instance_);
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::transactions() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.FullTearSheet.transactions)
-  return _internal_transactions();
-}
-inline void FullTearSheet::unsafe_arena_set_allocated_transactions(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.transactions_);
-  }
-  _impl_.transactions_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000010u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000010u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.FullTearSheet.transactions)
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::release_transactions() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000010u;
-  ::epoch_proto::TearSheet* released = _impl_.transactions_;
-  _impl_.transactions_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::unsafe_arena_release_transactions() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.FullTearSheet.transactions)
-
-  _impl_._has_bits_[0] &= ~0x00000010u;
-  ::epoch_proto::TearSheet* temp = _impl_.transactions_;
-  _impl_.transactions_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::_internal_mutable_transactions() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.transactions_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::TearSheet>(GetArena());
-    _impl_.transactions_ = reinterpret_cast<::epoch_proto::TearSheet*>(p);
-  }
-  return _impl_.transactions_;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::mutable_transactions() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000010u;
-  ::epoch_proto::TearSheet* _msg = _internal_mutable_transactions();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.FullTearSheet.transactions)
-  return _msg;
-}
-inline void FullTearSheet::set_allocated_transactions(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete (_impl_.transactions_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000010u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000010u;
-  }
-
-  _impl_.transactions_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.FullTearSheet.transactions)
-}
-
-// .epoch_proto.TearSheet round_trip = 6;
-inline bool FullTearSheet::has_round_trip() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.round_trip_ != nullptr);
-  return value;
-}
-inline void FullTearSheet::clear_round_trip() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.round_trip_ != nullptr) _impl_.round_trip_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000020u;
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::_internal_round_trip() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::TearSheet* p = _impl_.round_trip_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::TearSheet&>(::epoch_proto::_TearSheet_default_instance_);
-}
-inline const ::epoch_proto::TearSheet& FullTearSheet::round_trip() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:epoch_proto.FullTearSheet.round_trip)
-  return _internal_round_trip();
-}
-inline void FullTearSheet::unsafe_arena_set_allocated_round_trip(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.round_trip_);
-  }
-  _impl_.round_trip_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000020u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000020u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.FullTearSheet.round_trip)
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::release_round_trip() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000020u;
-  ::epoch_proto::TearSheet* released = _impl_.round_trip_;
-  _impl_.round_trip_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::unsafe_arena_release_round_trip() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.FullTearSheet.round_trip)
-
-  _impl_._has_bits_[0] &= ~0x00000020u;
-  ::epoch_proto::TearSheet* temp = _impl_.round_trip_;
-  _impl_.round_trip_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::_internal_mutable_round_trip() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.round_trip_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::TearSheet>(GetArena());
-    _impl_.round_trip_ = reinterpret_cast<::epoch_proto::TearSheet*>(p);
-  }
-  return _impl_.round_trip_;
-}
-inline ::epoch_proto::TearSheet* FullTearSheet::mutable_round_trip() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000020u;
-  ::epoch_proto::TearSheet* _msg = _internal_mutable_round_trip();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.FullTearSheet.round_trip)
-  return _msg;
-}
-inline void FullTearSheet::set_allocated_round_trip(::epoch_proto::TearSheet* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete (_impl_.round_trip_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = (value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000020u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000020u;
-  }
-
-  _impl_.round_trip_ = reinterpret_cast<::epoch_proto::TearSheet*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.FullTearSheet.round_trip)
+inline ::google::protobuf::Map<std::string, ::epoch_proto::TearSheet>* FullTearSheet::mutable_categories() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable_map:epoch_proto.FullTearSheet.categories)
+  return _internal_mutable_categories();
 }
 
 #ifdef __GNUC__

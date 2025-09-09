@@ -6,6 +6,7 @@
 
 #include "common/table_helpers.h"
 #include "common/type_helper.h"
+#include "epoch_folio/tearsheet.h"
 #include "portfolio/pos.h"
 #include "portfolio/timeseries.h"
 #include <epoch_frame/factory/date_offset_factory.h>
@@ -33,8 +34,8 @@ epoch_proto::Table MakeTopPositionsTable(std::string const &id,
   try {
     k = std::min<uint64_t>(k, x.size());
     epoch_proto::Table table_proto;
-    table_proto.set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE);
-    table_proto.set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    table_proto.set_type(epoch_proto::WidgetDataTable);
+    table_proto.set_category(epoch_folio::categories::Positions);
     table_proto.set_title(name);
 
     // Columns: id/name and max (%)
@@ -42,14 +43,14 @@ epoch_proto::Table MakeTopPositionsTable(std::string const &id,
       epoch_proto::ColumnDef c;
       c.set_id(id);
       c.set_name(name);
-      c.set_type(epoch_proto::EPOCH_FOLIO_TYPE_STRING);
+      c.set_type(epoch_proto::TypeString);
       *table_proto.add_columns() = std::move(c);
     }
     {
       epoch_proto::ColumnDef c;
       c.set_id("max");
       c.set_name("Max");
-      c.set_type(epoch_proto::EPOCH_FOLIO_TYPE_PERCENT);
+      c.set_type(epoch_proto::TypePercent);
       *table_proto.add_columns() = std::move(c);
     }
 
@@ -121,8 +122,8 @@ LinesDef TearSheetFactory::MakeExposureOverTimeChart(
     auto *cd = out.mutable_chart_def();
     cd->set_id("exposure");
     cd->set_title("Exposure");
-    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_AREA);
-    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    cd->set_type(epoch_proto::WidgetArea);
+    cd->set_category(epoch_folio::categories::Positions);
 
     // Long/Short lines
     auto ls = MakeSeriesLines(longExposure, shortExposure, "Long", "Short");
@@ -138,8 +139,8 @@ LinesDef TearSheetFactory::MakeExposureOverTimeChart(
     auto *cd = out.mutable_chart_def();
     cd->set_id("exposure");
     cd->set_title("Exposure");
-    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_AREA);
-    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    cd->set_type(epoch_proto::WidgetArea);
+    cd->set_category(epoch_folio::categories::Positions);
     return out;
   }
 }
@@ -150,8 +151,8 @@ LinesDef TearSheetFactory::MakeAllocationOverTimeChart(
   auto *cd = out.mutable_chart_def();
   cd->set_id("allocationOverTime");
   cd->set_title("Allocation over time");
-  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
-  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+  cd->set_type(epoch_proto::WidgetLines);
+  cd->set_category(epoch_folio::categories::Positions);
 
   auto lines = MakeSeriesLines(topPositionAllocations);
   for (auto &line : lines) {
@@ -169,8 +170,8 @@ LinesDef TearSheetFactory::MakeAllocationSummaryChart(
   auto *cd = out.mutable_chart_def();
   cd->set_id("allocationSummary");
   cd->set_title("Allocation summary");
-  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
-  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+  cd->set_type(epoch_proto::WidgetLines);
+  cd->set_category(epoch_folio::categories::Positions);
   *out.add_lines() = MakeSeriesLine(net, "Net");
   return out;
 }
@@ -188,8 +189,8 @@ LinesDef TearSheetFactory::MakeTotalHoldingsChart(
   auto *cd = out.mutable_chart_def();
   cd->set_id("totalHoldings");
   cd->set_title("Total Holdings");
-  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
-  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+  cd->set_type(epoch_proto::WidgetLines);
+  cd->set_category(epoch_folio::categories::Positions);
   *out.add_lines() = MakeSeriesLine(dailyHoldings, "Daily holdings");
   *out.add_straight_lines() = MakeStraightLine(
       "Average daily holdings, overall", avgDailyHoldings, false);
@@ -207,8 +208,8 @@ LinesDef TearSheetFactory::MakeLongShortHoldingsChart(
     auto *cd = out.mutable_chart_def();
     cd->set_id("longShortHoldings");
     cd->set_title("Long and short holdings");
-    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_AREA);
-    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    cd->set_type(epoch_proto::WidgetArea);
+    cd->set_category(epoch_folio::categories::Positions);
 
     try {
       auto longMaxScalar = longHoldings.max();
@@ -254,8 +255,8 @@ LinesDef TearSheetFactory::MakeLongShortHoldingsChart(
     auto *cd = out.mutable_chart_def();
     cd->set_id("longShortHoldings");
     cd->set_title("Long and short holdings");
-    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_AREA);
-    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    cd->set_type(epoch_proto::WidgetArea);
+    cd->set_category(epoch_folio::categories::Positions);
     return out;
   }
 }
@@ -270,8 +271,8 @@ LinesDef TearSheetFactory::MakeGrossLeverageChart() const {
     auto *cd = out.mutable_chart_def();
     cd->set_id("grossLeverage");
     cd->set_title("Gross Leverage");
-    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
-    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    cd->set_type(epoch_proto::WidgetLines);
+    cd->set_category(epoch_folio::categories::Positions);
     *out.add_lines() = MakeSeriesLine(grossLeverage, "Gross Leverage");
     *out.add_straight_lines() = MakeStraightLine("", glMean, false);
     return out;
@@ -281,8 +282,8 @@ LinesDef TearSheetFactory::MakeGrossLeverageChart() const {
     auto *cd = out.mutable_chart_def();
     cd->set_id("grossLeverage");
     cd->set_title("Gross Leverage");
-    cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
-    cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+    cd->set_type(epoch_proto::WidgetLines);
+    cd->set_category(epoch_folio::categories::Positions);
     return out;
   }
 }
@@ -292,8 +293,8 @@ LinesDef TearSheetFactory::MakeSectorExposureChart() const {
   auto *cd = out.mutable_chart_def();
   cd->set_id("sectorExposure");
   cd->set_title("Sector Exposure");
-  cd->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
-  cd->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_POSITIONS);
+  cd->set_type(epoch_proto::WidgetLines);
+  cd->set_category(epoch_folio::categories::Positions);
   return out;
 }
 
@@ -382,7 +383,6 @@ void TearSheetFactory::Make(uint32_t k,
 
     if (topPositions[2].size() == 0) {
       SPDLOG_WARN("No top positions found");
-      output.mutable_positions()->Clear();
       return;
     }
 
@@ -394,7 +394,7 @@ void TearSheetFactory::Make(uint32_t k,
       auto charts =
           MakeTopPositionsLineCharts(positions, positionsAlloc[columns]);
       for (auto &chart : charts) {
-        *ts.add_charts() = std::move(chart);
+        *ts.mutable_charts()->add_charts() = std::move(chart);
       }
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to build positions charts: {}", e.what());
@@ -403,16 +403,16 @@ void TearSheetFactory::Make(uint32_t k,
     try {
       auto tables = MakeTopPositionsTables(topPositions, k);
       for (auto &table : tables) {
-        *ts.add_tables() = std::move(table);
+        *ts.mutable_tables()->add_tables() = std::move(table);
       }
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to build positions tables: {}", e.what());
     }
 
-    *output.mutable_positions() = std::move(ts);
+    (*output.mutable_categories())[epoch_folio::categories::Positions] =
+        std::move(ts);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Exception in TearSheetFactory::Make: {}", e.what());
-    output.mutable_positions()->Clear();
   }
 }
 } // namespace epoch_folio::positions

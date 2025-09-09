@@ -12,7 +12,7 @@
 
 namespace epoch_folio {
 struct CategoryMetaData {
-  epoch_proto::EpochFolioCategory value;
+  std::string value;
   std::string label;
   std::string description;
 };

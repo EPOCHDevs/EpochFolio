@@ -3,6 +3,7 @@
 //
 
 #include "tearsheet.h"
+#include "epoch_folio/tearsheet.h"
 #include <arrow/acero/exec_plan.h>
 #include <arrow/acero/options.h>
 #include <common/chart_def.h>
@@ -63,8 +64,8 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
   auto *chart_def = xrange.mutable_chart_def();
   chart_def->set_id("xrange");
   chart_def->set_title("Round trip lifetimes");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_XRANGE);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+  chart_def->set_type(epoch_proto::WidgetXRange);
+  chart_def->set_category(epoch_folio::categories::RoundTrip);
 
   // Set up y-axis
   auto *y_axis = chart_def->mutable_y_axis();
@@ -120,8 +121,8 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
   auto *chart_def = prob_profit_chart.mutable_chart_def();
   chart_def->set_id("prob_profit_trade");
   chart_def->set_title("Probability of making a profitable decision");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_LINES);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+  chart_def->set_type(epoch_proto::WidgetLines);
+  chart_def->set_category(epoch_folio::categories::RoundTrip);
   *chart_def->mutable_y_axis() = MakeLinearAxis("Belief");
   *chart_def->mutable_x_axis() = MakeLinearAxis("Probability");
 
@@ -171,8 +172,8 @@ HistogramDef TearSheetFactory::MakeHoldingTimeChart(
   auto *chart_def = histogram_def.mutable_chart_def();
   chart_def->set_id("holding_time");
   chart_def->set_title("Holding time in days");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_HISTOGRAM);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+  chart_def->set_type(epoch_proto::WidgetHistogram);
+  chart_def->set_category(epoch_folio::categories::RoundTrip);
 
   // Set data
   auto data_series = trades["duration"]
@@ -194,8 +195,8 @@ HistogramDef TearSheetFactory::MakePnlPerRoundTripDollarsChart(
   auto *chart_def = histogram_def.mutable_chart_def();
   chart_def->set_id("pnl_per_round_trip");
   chart_def->set_title("PnL per round trip in dollars");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_HISTOGRAM);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+  chart_def->set_type(epoch_proto::WidgetHistogram);
+  chart_def->set_category(epoch_folio::categories::RoundTrip);
 
   // Set data
   *histogram_def.mutable_data() = MakeArrayFromArrow(trades["pnl"].array());
@@ -211,8 +212,8 @@ HistogramDef TearSheetFactory::MakeReturnsPerRoundTripDollarsChart(
   auto *chart_def = histogram_def.mutable_chart_def();
   chart_def->set_id("returns_per_round_trip");
   chart_def->set_title("Returns per round trip in dollars");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_HISTOGRAM);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+  chart_def->set_type(epoch_proto::WidgetHistogram);
+  chart_def->set_category(epoch_folio::categories::RoundTrip);
 
   // Set data
   *histogram_def.mutable_data() =
@@ -227,7 +228,6 @@ void TearSheetFactory::Make(epoch_proto::FullTearSheet &output) const {
 
     if (trades.num_rows() == 0) {
       SPDLOG_WARN("No trades found, skipping round trip tear sheet");
-      output.mutable_round_trip()->Clear();
       return;
     }
 
@@ -292,15 +292,15 @@ void TearSheetFactory::Make(epoch_proto::FullTearSheet &output) const {
 
     epoch_proto::TearSheet tear_sheet;
     for (auto &chart : charts) {
-      *tear_sheet.add_charts() = std::move(chart);
+      *tear_sheet.mutable_charts()->add_charts() = std::move(chart);
     }
     for (auto &table : tables) {
-      *tear_sheet.add_tables() = std::move(table);
+      *tear_sheet.mutable_tables()->add_tables() = std::move(table);
     }
-    *output.mutable_round_trip() = std::move(tear_sheet);
+    (*output.mutable_categories())[epoch_folio::categories::RoundTrip] =
+        std::move(tear_sheet);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create round trip tearsheet: {}", e.what());
-    output.mutable_round_trip()->Clear();
   }
 }
 
@@ -412,8 +412,8 @@ PieDef TearSheetFactory::MakeProfitabilityPieChart(
   auto *chart_def = pie_def.mutable_chart_def();
   chart_def->set_id("profitability_pie");
   chart_def->set_title("Profitability (PnL / PnL total)");
-  chart_def->set_type(epoch_proto::EPOCH_FOLIO_DASHBOARD_WIDGET_PIE);
-  chart_def->set_category(epoch_proto::EPOCH_FOLIO_CATEGORY_ROUND_TRIP);
+  chart_def->set_type(epoch_proto::WidgetPie);
+  chart_def->set_category(epoch_folio::categories::RoundTrip);
 
   // Add the pie data
   *pie_def.add_data() = std::move(profit_attr_data);

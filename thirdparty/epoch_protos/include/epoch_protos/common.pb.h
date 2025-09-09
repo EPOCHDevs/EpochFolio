@@ -67,57 +67,19 @@ namespace protobuf {
 }  // namespace google
 
 namespace epoch_proto {
-enum EpochFolioCategory : int {
-  EPOCH_FOLIO_CATEGORY_UNSPECIFIED = 0,
-  EPOCH_FOLIO_CATEGORY_STRATEGY_BENCHMARK = 1,
-  EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS = 2,
-  EPOCH_FOLIO_CATEGORY_RETURNS_DISTRIBUTION = 3,
-  EPOCH_FOLIO_CATEGORY_POSITIONS = 4,
-  EPOCH_FOLIO_CATEGORY_TRANSACTIONS = 5,
-  EPOCH_FOLIO_CATEGORY_ROUND_TRIP = 6,
-  EpochFolioCategory_INT_MIN_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<::int32_t>::min(),
-  EpochFolioCategory_INT_MAX_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<::int32_t>::max(),
-};
-
-bool EpochFolioCategory_IsValid(int value);
-extern const uint32_t EpochFolioCategory_internal_data_[];
-constexpr EpochFolioCategory EpochFolioCategory_MIN = static_cast<EpochFolioCategory>(0);
-constexpr EpochFolioCategory EpochFolioCategory_MAX = static_cast<EpochFolioCategory>(6);
-constexpr int EpochFolioCategory_ARRAYSIZE = 6 + 1;
-const ::google::protobuf::EnumDescriptor*
-EpochFolioCategory_descriptor();
-template <typename T>
-const std::string& EpochFolioCategory_Name(T value) {
-  static_assert(std::is_same<T, EpochFolioCategory>::value ||
-                    std::is_integral<T>::value,
-                "Incorrect type passed to EpochFolioCategory_Name().");
-  return EpochFolioCategory_Name(static_cast<EpochFolioCategory>(value));
-}
-template <>
-inline const std::string& EpochFolioCategory_Name(EpochFolioCategory value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<EpochFolioCategory_descriptor,
-                                                 0, 6>(
-      static_cast<int>(value));
-}
-inline bool EpochFolioCategory_Parse(absl::string_view name, EpochFolioCategory* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<EpochFolioCategory>(
-      EpochFolioCategory_descriptor(), name, value);
-}
 enum EpochFolioDashboardWidget : int {
-  EPOCH_FOLIO_DASHBOARD_WIDGET_UNSPECIFIED = 0,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_CARD = 1,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_LINES = 2,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_BAR = 3,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_DATA_TABLE = 4,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_XRANGE = 5,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_HISTOGRAM = 6,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_PIE = 7,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_HEAT_MAP = 8,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_BOX_PLOT = 9,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_AREA = 10,
-  EPOCH_FOLIO_DASHBOARD_WIDGET_COLUMN = 11,
+  WidgetUnspecified = 0,
+  WidgetCard = 1,
+  WidgetLines = 2,
+  WidgetBar = 3,
+  WidgetDataTable = 4,
+  WidgetXRange = 5,
+  WidgetHistogram = 6,
+  WidgetPie = 7,
+  WidgetHeatMap = 8,
+  WidgetBoxPlot = 9,
+  WidgetArea = 10,
+  WidgetColumn = 11,
   EpochFolioDashboardWidget_INT_MIN_SENTINEL_DO_NOT_USE_ =
       std::numeric_limits<::int32_t>::min(),
   EpochFolioDashboardWidget_INT_MAX_SENTINEL_DO_NOT_USE_ =
@@ -149,16 +111,17 @@ inline bool EpochFolioDashboardWidget_Parse(absl::string_view name, EpochFolioDa
       EpochFolioDashboardWidget_descriptor(), name, value);
 }
 enum EpochFolioType : int {
-  EPOCH_FOLIO_TYPE_UNSPECIFIED = 0,
-  EPOCH_FOLIO_TYPE_STRING = 1,
-  EPOCH_FOLIO_TYPE_INTEGER = 2,
-  EPOCH_FOLIO_TYPE_DECIMAL = 3,
-  EPOCH_FOLIO_TYPE_PERCENT = 4,
-  EPOCH_FOLIO_TYPE_BOOLEAN = 5,
-  EPOCH_FOLIO_TYPE_DATE_TIME = 6,
-  EPOCH_FOLIO_TYPE_DATE = 7,
-  EPOCH_FOLIO_TYPE_DAY_DURATION = 8,
-  EPOCH_FOLIO_TYPE_MONETARY = 9,
+  TypeUnspecified = 0,
+  TypeString = 1,
+  TypeInteger = 2,
+  TypeDecimal = 3,
+  TypePercent = 4,
+  TypeBoolean = 5,
+  TypeDateTime = 6,
+  TypeDate = 7,
+  TypeDayDuration = 8,
+  TypeMonetary = 9,
+  TypeDuration = 10,
   EpochFolioType_INT_MIN_SENTINEL_DO_NOT_USE_ =
       std::numeric_limits<::int32_t>::min(),
   EpochFolioType_INT_MAX_SENTINEL_DO_NOT_USE_ =
@@ -168,8 +131,8 @@ enum EpochFolioType : int {
 bool EpochFolioType_IsValid(int value);
 extern const uint32_t EpochFolioType_internal_data_[];
 constexpr EpochFolioType EpochFolioType_MIN = static_cast<EpochFolioType>(0);
-constexpr EpochFolioType EpochFolioType_MAX = static_cast<EpochFolioType>(9);
-constexpr int EpochFolioType_ARRAYSIZE = 9 + 1;
+constexpr EpochFolioType EpochFolioType_MAX = static_cast<EpochFolioType>(10);
+constexpr int EpochFolioType_ARRAYSIZE = 10 + 1;
 const ::google::protobuf::EnumDescriptor*
 EpochFolioType_descriptor();
 template <typename T>
@@ -182,7 +145,7 @@ const std::string& EpochFolioType_Name(T value) {
 template <>
 inline const std::string& EpochFolioType_Name(EpochFolioType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<EpochFolioType_descriptor,
-                                                 0, 9>(
+                                                 0, 10>(
       static_cast<int>(value));
 }
 inline bool EpochFolioType_Parse(absl::string_view name, EpochFolioType* value) {
@@ -190,11 +153,11 @@ inline bool EpochFolioType_Parse(absl::string_view name, EpochFolioType* value) 
       EpochFolioType_descriptor(), name, value);
 }
 enum AxisType : int {
-  AXIS_TYPE_UNSPECIFIED = 0,
-  AXIS_TYPE_LINEAR = 1,
-  AXIS_TYPE_LOGARITHMIC = 2,
-  AXIS_TYPE_DATETIME = 3,
-  AXIS_TYPE_CATEGORY = 4,
+  AxisUnspecified = 0,
+  AxisLinear = 1,
+  AxisLogarithmic = 2,
+  AxisDateTime = 3,
+  AxisCategory = 4,
   AxisType_INT_MIN_SENTINEL_DO_NOT_USE_ =
       std::numeric_limits<::int32_t>::min(),
   AxisType_INT_MAX_SENTINEL_DO_NOT_USE_ =
@@ -1100,12 +1063,6 @@ Array::_internal_mutable_values() {
 namespace google {
 namespace protobuf {
 
-template <>
-struct is_proto_enum<::epoch_proto::EpochFolioCategory> : std::true_type {};
-template <>
-inline const EnumDescriptor* GetEnumDescriptor<::epoch_proto::EpochFolioCategory>() {
-  return ::epoch_proto::EpochFolioCategory_descriptor();
-}
 template <>
 struct is_proto_enum<::epoch_proto::EpochFolioDashboardWidget> : std::true_type {};
 template <>
