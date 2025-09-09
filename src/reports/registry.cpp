@@ -37,7 +37,7 @@ std::unique_ptr<IReport> ReportRegistry::create(
 
 void initialize_all_reports() {
   // Explicitly register all reports to ensure they're available
-  GapReport::register_report();
+  // GapReport::register_report();
 }
 
 } // namespace epoch_folio

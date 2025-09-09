@@ -158,6 +158,7 @@ enum EpochFolioType : int {
   EPOCH_FOLIO_TYPE_DATE_TIME = 6,
   EPOCH_FOLIO_TYPE_DATE = 7,
   EPOCH_FOLIO_TYPE_DAY_DURATION = 8,
+  EPOCH_FOLIO_TYPE_MONETARY = 9,
   EpochFolioType_INT_MIN_SENTINEL_DO_NOT_USE_ =
       std::numeric_limits<::int32_t>::min(),
   EpochFolioType_INT_MAX_SENTINEL_DO_NOT_USE_ =
@@ -167,8 +168,8 @@ enum EpochFolioType : int {
 bool EpochFolioType_IsValid(int value);
 extern const uint32_t EpochFolioType_internal_data_[];
 constexpr EpochFolioType EpochFolioType_MIN = static_cast<EpochFolioType>(0);
-constexpr EpochFolioType EpochFolioType_MAX = static_cast<EpochFolioType>(8);
-constexpr int EpochFolioType_ARRAYSIZE = 8 + 1;
+constexpr EpochFolioType EpochFolioType_MAX = static_cast<EpochFolioType>(9);
+constexpr int EpochFolioType_ARRAYSIZE = 9 + 1;
 const ::google::protobuf::EnumDescriptor*
 EpochFolioType_descriptor();
 template <typename T>
@@ -181,7 +182,7 @@ const std::string& EpochFolioType_Name(T value) {
 template <>
 inline const std::string& EpochFolioType_Name(EpochFolioType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<EpochFolioType_descriptor,
-                                                 0, 8>(
+                                                 0, 9>(
       static_cast<int>(value));
 }
 inline bool EpochFolioType_Parse(absl::string_view name, EpochFolioType* value) {

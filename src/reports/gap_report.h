@@ -12,10 +12,11 @@ public:
       : IReport(config) {}
   const ReportMetadata &metadata() const override;
 
-  TearSheet generate(const epoch_frame::DataFrame &df) const override;
+  epoch_proto::TearSheet
+  generate(const epoch_frame::DataFrame &df) const override;
 
 private:
-  TearSheet generate_impl(const epoch_frame::DataFrame &df) const;
+  epoch_proto::TearSheet generate_impl(const epoch_frame::DataFrame &df) const;
 
   // Analysis helpers
   std::vector<CardDef>

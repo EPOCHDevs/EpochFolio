@@ -59,12 +59,14 @@ ReportMetadata GapReport::s_metadata = {
 
 const ReportMetadata &GapReport::metadata() const { return s_metadata; }
 
-TearSheet GapReport::generate(const epoch_frame::DataFrame &df) const {
+epoch_proto::TearSheet
+GapReport::generate(const epoch_frame::DataFrame &df) const {
   return generate_impl(df);
 }
 
-TearSheet GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
-  TearSheet result;
+epoch_proto::TearSheet
+GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
+  epoch_proto::TearSheet result;
 
   auto filtered_gaps = filter_gaps(df);
   if (filtered_gaps.num_rows() == 0) {

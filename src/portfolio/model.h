@@ -128,21 +128,6 @@ struct TearSheetOption {
   std::string transactionTimezone{"America/New_York"};
 };
 
-struct TearSheet {
-  std::vector<epoch_proto::CardDef> cards{};
-  std::vector<epoch_proto::Chart> charts;
-  std::vector<epoch_proto::Table> tables{};
-};
-
-struct FullTearSheet {
-  TearSheet strategy_benchmark;
-  TearSheet risk_analysis;
-  TearSheet returns_distribution;
-  TearSheet positions;
-  TearSheet transactions;
-  TearSheet round_trip;
-};
-
 using BoxPlotOutliers = std::vector<epoch_proto::BoxPlotOutlier>;
 std::pair<epoch_proto::BoxPlotDataPoint, BoxPlotOutliers>
 MakeBoxPlotDataPoint(int64_t category_index, const epoch_frame::Series &x);

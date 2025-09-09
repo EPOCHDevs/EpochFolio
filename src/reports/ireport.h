@@ -11,9 +11,8 @@
 
 #include <epoch_frame/frame_or_series.h>
 
-#include "epoch_folio/metadata.h"
 #include "epoch_protos/table_def.pb.h" // ColumnDef, enums in metadata
-#include "portfolio/model.h"           // TearSheet
+#include "epoch_protos/tearsheet.pb.h"
 #include <epoch_metadata/transforms/transform_configuration.h>
 
 namespace epoch_folio {
@@ -42,7 +41,8 @@ public:
 
   // Single dataset -> one TearSheet. Options and input mapping come from
   // configuration.
-  virtual TearSheet generate(const epoch_frame::DataFrame &df) const = 0;
+  virtual epoch_proto::TearSheet
+  generate(const epoch_frame::DataFrame &df) const = 0;
 
 protected:
   explicit IReport(
