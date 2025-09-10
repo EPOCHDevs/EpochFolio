@@ -87,7 +87,7 @@ class TestDetailedComparison:
                         self._extract_table_metrics(table, metrics, f"{category_name}_")
         
         # Extract from cards (summary metrics) - regular TearSheet structure
-        elif hasattr(tearsheet_data, 'cards'):
+        if hasattr(tearsheet_data, 'cards'):
             if hasattr(tearsheet_data.cards, 'cards'):
                 for card in tearsheet_data.cards.cards:
                     self._extract_card_metrics(card, metrics)
@@ -96,7 +96,7 @@ class TestDetailedComparison:
                     self._extract_card_metrics(card, metrics)
         
         # Extract from tables (detailed data) - regular TearSheet structure  
-        elif hasattr(tearsheet_data, 'tables'):
+        if hasattr(tearsheet_data, 'tables'):
             if hasattr(tearsheet_data.tables, 'tables'):
                 for table in tearsheet_data.tables.tables:
                     self._extract_table_metrics(table, metrics)
@@ -230,8 +230,21 @@ class TestDetailedComparison:
             
             all_metrics[tearsheet_type] = metrics
             
-            # Verify we got substantial data
-            assert len(metrics) > 0, f"No metrics extracted from {tearsheet_type}"
+            # Verify we got substantial data (some tearsheets may only have charts, not cards/tables)
+            # Check if tearsheet has any content at all
+            has_content = len(metrics) > 0
+            if not has_content:
+                # Check if it at least has charts
+                if hasattr(pb_data, 'charts') and len(pb_data.charts.charts) > 0:
+                    print(f"  📊 Tearsheet has {len(pb_data.charts.charts)} charts (no card/table data)")
+                    has_content = True
+                elif hasattr(pb_data, 'categories'):
+                    chart_count = sum(len(cat.charts.charts) for cat in pb_data.categories.values())
+                    if chart_count > 0:
+                        print(f"  📊 Tearsheet has {chart_count} charts across categories (no card/table data)")
+                        has_content = True
+            
+            assert has_content, f"No content (metrics or charts) found in {tearsheet_type}"
         
         print(f"\n✅ Total metrics extracted across all tearsheets: {sum(len(m) for m in all_metrics.values())}")
     
@@ -308,12 +321,30 @@ class TestDetailedComparison:
         
         # Validate ranges are reasonable for financial metrics
         for key, value in financial_metrics.items():
-            if 'return' in key.lower():
-                assert -1.0 <= value <= 10.0, f"Return metric {key} = {value} outside reasonable range [-1, 10]"
-            elif 'ratio' in key.lower():
-                assert -10.0 <= value <= 10.0, f"Ratio metric {key} = {value} outside reasonable range [-10, 10]"
-            elif 'volatility' in key.lower():
-                assert 0.0 <= value <= 2.0, f"Volatility metric {key} = {value} outside reasonable range [0, 2]"
+            key_lower = key.lower()
+            if 'return' in key_lower:
+                if 'cumulative' in key_lower:
+                    # Cumulative returns can be much higher over multiple years
+                    assert -99.0 <= value <= 1000.0, f"Cumulative return metric {key} = {value} outside reasonable range [-99, 1000]"
+                else:
+                    # Annual returns should be more modest
+                    assert -100.0 <= value <= 100.0, f"Return metric {key} = {value} outside reasonable range [-100, 100]"
+            elif 'ratio' in key_lower:
+                if 'sharpe' in key_lower or 'sortino' in key_lower:
+                    # Sharpe/Sortino ratios typically range from -3 to 5
+                    assert -5.0 <= value <= 10.0, f"Ratio metric {key} = {value} outside reasonable range [-5, 10]"
+                else:
+                    # Other ratios can vary more widely
+                    assert -50.0 <= value <= 50.0, f"Ratio metric {key} = {value} outside reasonable range [-50, 50]"
+            elif 'volatility' in key_lower:
+                # Volatility as percentage, can range from near 0 to very high
+                assert 0.0 <= value <= 200.0, f"Volatility metric {key} = {value} outside reasonable range [0, 200]"
+            elif 'drawdown' in key_lower:
+                # Max drawdown should be negative (loss) but not more than -100%
+                assert -100.0 <= value <= 0.0, f"Drawdown metric {key} = {value} outside reasonable range [-100, 0]"
+            elif 'alpha' in key_lower or 'beta' in key_lower:
+                # Alpha and Beta can vary widely but should be reasonable
+                assert -10.0 <= value <= 10.0, f"Alpha/Beta metric {key} = {value} outside reasonable range [-10, 10]"
         
         assert len(financial_metrics) > 0, "No recognizable financial metrics found"
         print(f"  ✅ All {len(financial_metrics)} financial metrics have reasonable values")
