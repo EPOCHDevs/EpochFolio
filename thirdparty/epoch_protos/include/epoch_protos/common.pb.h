@@ -250,13 +250,17 @@ class Scalar final : public ::google::protobuf::Message
     return *internal_default_instance();
   }
   enum ValueCase {
-    kDoubleValue = 1,
-    kInt64Value = 2,
-    kUint64Value = 3,
-    kStringValue = 4,
-    kBoolValue = 5,
-    kTimestampNanos = 6,
-    kNullValue = 7,
+    kStringValue = 1,
+    kIntegerValue = 2,
+    kDecimalValue = 3,
+    kPercentValue = 4,
+    kBooleanValue = 5,
+    kTimestampMs = 6,
+    kDateValue = 7,
+    kDayDuration = 8,
+    kMonetaryValue = 9,
+    kDurationMs = 10,
+    kNullValue = 11,
     VALUE_NOT_SET = 0,
   };
   static inline const Scalar* internal_default_instance() {
@@ -350,48 +354,19 @@ class Scalar final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kDoubleValueFieldNumber = 1,
-    kInt64ValueFieldNumber = 2,
-    kUint64ValueFieldNumber = 3,
-    kStringValueFieldNumber = 4,
-    kBoolValueFieldNumber = 5,
-    kTimestampNanosFieldNumber = 6,
-    kNullValueFieldNumber = 7,
+    kStringValueFieldNumber = 1,
+    kIntegerValueFieldNumber = 2,
+    kDecimalValueFieldNumber = 3,
+    kPercentValueFieldNumber = 4,
+    kBooleanValueFieldNumber = 5,
+    kTimestampMsFieldNumber = 6,
+    kDateValueFieldNumber = 7,
+    kDayDurationFieldNumber = 8,
+    kMonetaryValueFieldNumber = 9,
+    kDurationMsFieldNumber = 10,
+    kNullValueFieldNumber = 11,
   };
-  // double double_value = 1;
-  bool has_double_value() const;
-  void clear_double_value() ;
-  double double_value() const;
-  void set_double_value(double value);
-
-  private:
-  double _internal_double_value() const;
-  void _internal_set_double_value(double value);
-
-  public:
-  // int64 int64_value = 2;
-  bool has_int64_value() const;
-  void clear_int64_value() ;
-  ::int64_t int64_value() const;
-  void set_int64_value(::int64_t value);
-
-  private:
-  ::int64_t _internal_int64_value() const;
-  void _internal_set_int64_value(::int64_t value);
-
-  public:
-  // uint64 uint64_value = 3;
-  bool has_uint64_value() const;
-  void clear_uint64_value() ;
-  ::uint64_t uint64_value() const;
-  void set_uint64_value(::uint64_t value);
-
-  private:
-  ::uint64_t _internal_uint64_value() const;
-  void _internal_set_uint64_value(::uint64_t value);
-
-  public:
-  // string string_value = 4;
+  // string string_value = 1;
   bool has_string_value() const;
   void clear_string_value() ;
   const std::string& string_value() const;
@@ -408,29 +383,106 @@ class Scalar final : public ::google::protobuf::Message
   std::string* _internal_mutable_string_value();
 
   public:
-  // bool bool_value = 5;
-  bool has_bool_value() const;
-  void clear_bool_value() ;
-  bool bool_value() const;
-  void set_bool_value(bool value);
+  // int64 integer_value = 2;
+  bool has_integer_value() const;
+  void clear_integer_value() ;
+  ::int64_t integer_value() const;
+  void set_integer_value(::int64_t value);
 
   private:
-  bool _internal_bool_value() const;
-  void _internal_set_bool_value(bool value);
+  ::int64_t _internal_integer_value() const;
+  void _internal_set_integer_value(::int64_t value);
 
   public:
-  // int64 timestamp_nanos = 6;
-  bool has_timestamp_nanos() const;
-  void clear_timestamp_nanos() ;
-  ::int64_t timestamp_nanos() const;
-  void set_timestamp_nanos(::int64_t value);
+  // double decimal_value = 3;
+  bool has_decimal_value() const;
+  void clear_decimal_value() ;
+  double decimal_value() const;
+  void set_decimal_value(double value);
 
   private:
-  ::int64_t _internal_timestamp_nanos() const;
-  void _internal_set_timestamp_nanos(::int64_t value);
+  double _internal_decimal_value() const;
+  void _internal_set_decimal_value(double value);
 
   public:
-  // .google.protobuf.NullValue null_value = 7;
+  // double percent_value = 4;
+  bool has_percent_value() const;
+  void clear_percent_value() ;
+  double percent_value() const;
+  void set_percent_value(double value);
+
+  private:
+  double _internal_percent_value() const;
+  void _internal_set_percent_value(double value);
+
+  public:
+  // bool boolean_value = 5;
+  bool has_boolean_value() const;
+  void clear_boolean_value() ;
+  bool boolean_value() const;
+  void set_boolean_value(bool value);
+
+  private:
+  bool _internal_boolean_value() const;
+  void _internal_set_boolean_value(bool value);
+
+  public:
+  // int64 timestamp_ms = 6;
+  bool has_timestamp_ms() const;
+  void clear_timestamp_ms() ;
+  ::int64_t timestamp_ms() const;
+  void set_timestamp_ms(::int64_t value);
+
+  private:
+  ::int64_t _internal_timestamp_ms() const;
+  void _internal_set_timestamp_ms(::int64_t value);
+
+  public:
+  // int64 date_value = 7;
+  bool has_date_value() const;
+  void clear_date_value() ;
+  ::int64_t date_value() const;
+  void set_date_value(::int64_t value);
+
+  private:
+  ::int64_t _internal_date_value() const;
+  void _internal_set_date_value(::int64_t value);
+
+  public:
+  // int32 day_duration = 8;
+  bool has_day_duration() const;
+  void clear_day_duration() ;
+  ::int32_t day_duration() const;
+  void set_day_duration(::int32_t value);
+
+  private:
+  ::int32_t _internal_day_duration() const;
+  void _internal_set_day_duration(::int32_t value);
+
+  public:
+  // double monetary_value = 9;
+  bool has_monetary_value() const;
+  void clear_monetary_value() ;
+  double monetary_value() const;
+  void set_monetary_value(double value);
+
+  private:
+  double _internal_monetary_value() const;
+  void _internal_set_monetary_value(double value);
+
+  public:
+  // int64 duration_ms = 10;
+  bool has_duration_ms() const;
+  void clear_duration_ms() ;
+  ::int64_t duration_ms() const;
+  void set_duration_ms(::int64_t value);
+
+  private:
+  ::int64_t _internal_duration_ms() const;
+  void _internal_set_duration_ms(::int64_t value);
+
+  public:
+  // .google.protobuf.NullValue null_value = 11;
   bool has_null_value() const;
   void clear_null_value() ;
   ::google::protobuf::NullValue null_value() const;
@@ -446,19 +498,23 @@ class Scalar final : public ::google::protobuf::Message
   // @@protoc_insertion_point(class_scope:epoch_proto.Scalar)
  private:
   class _Internal;
-  void set_has_double_value();
-  void set_has_int64_value();
-  void set_has_uint64_value();
   void set_has_string_value();
-  void set_has_bool_value();
-  void set_has_timestamp_nanos();
+  void set_has_integer_value();
+  void set_has_decimal_value();
+  void set_has_percent_value();
+  void set_has_boolean_value();
+  void set_has_timestamp_ms();
+  void set_has_date_value();
+  void set_has_day_duration();
+  void set_has_monetary_value();
+  void set_has_duration_ms();
   void set_has_null_value();
   inline bool has_value() const;
   inline void clear_has_value();
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      0, 7, 0,
-      39, 2>
+      0, 11, 0,
+      47, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -478,12 +534,16 @@ class Scalar final : public ::google::protobuf::Message
     union ValueUnion {
       constexpr ValueUnion() : _constinit_{} {}
       ::google::protobuf::internal::ConstantInitialized _constinit_;
-      double double_value_;
-      ::int64_t int64_value_;
-      ::uint64_t uint64_value_;
       ::google::protobuf::internal::ArenaStringPtr string_value_;
-      bool bool_value_;
-      ::int64_t timestamp_nanos_;
+      ::int64_t integer_value_;
+      double decimal_value_;
+      double percent_value_;
+      bool boolean_value_;
+      ::int64_t timestamp_ms_;
+      ::int64_t date_value_;
+      ::int32_t day_duration_;
+      double monetary_value_;
+      ::int64_t duration_ms_;
       int null_value_;
     } value_;
     ::google::protobuf::internal::CachedSize _cached_size_;
@@ -707,106 +767,7 @@ class Array final : public ::google::protobuf::Message
 
 // Scalar
 
-// double double_value = 1;
-inline bool Scalar::has_double_value() const {
-  return value_case() == kDoubleValue;
-}
-inline void Scalar::set_has_double_value() {
-  _impl_._oneof_case_[0] = kDoubleValue;
-}
-inline void Scalar::clear_double_value() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value_case() == kDoubleValue) {
-    _impl_.value_.double_value_ = 0;
-    clear_has_value();
-  }
-}
-inline double Scalar::double_value() const {
-  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.double_value)
-  return _internal_double_value();
-}
-inline void Scalar::set_double_value(double value) {
-  if (value_case() != kDoubleValue) {
-    clear_value();
-    set_has_double_value();
-  }
-  _impl_.value_.double_value_ = value;
-  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.double_value)
-}
-inline double Scalar::_internal_double_value() const {
-  if (value_case() == kDoubleValue) {
-    return _impl_.value_.double_value_;
-  }
-  return 0;
-}
-
-// int64 int64_value = 2;
-inline bool Scalar::has_int64_value() const {
-  return value_case() == kInt64Value;
-}
-inline void Scalar::set_has_int64_value() {
-  _impl_._oneof_case_[0] = kInt64Value;
-}
-inline void Scalar::clear_int64_value() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value_case() == kInt64Value) {
-    _impl_.value_.int64_value_ = ::int64_t{0};
-    clear_has_value();
-  }
-}
-inline ::int64_t Scalar::int64_value() const {
-  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.int64_value)
-  return _internal_int64_value();
-}
-inline void Scalar::set_int64_value(::int64_t value) {
-  if (value_case() != kInt64Value) {
-    clear_value();
-    set_has_int64_value();
-  }
-  _impl_.value_.int64_value_ = value;
-  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.int64_value)
-}
-inline ::int64_t Scalar::_internal_int64_value() const {
-  if (value_case() == kInt64Value) {
-    return _impl_.value_.int64_value_;
-  }
-  return ::int64_t{0};
-}
-
-// uint64 uint64_value = 3;
-inline bool Scalar::has_uint64_value() const {
-  return value_case() == kUint64Value;
-}
-inline void Scalar::set_has_uint64_value() {
-  _impl_._oneof_case_[0] = kUint64Value;
-}
-inline void Scalar::clear_uint64_value() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value_case() == kUint64Value) {
-    _impl_.value_.uint64_value_ = ::uint64_t{0u};
-    clear_has_value();
-  }
-}
-inline ::uint64_t Scalar::uint64_value() const {
-  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.uint64_value)
-  return _internal_uint64_value();
-}
-inline void Scalar::set_uint64_value(::uint64_t value) {
-  if (value_case() != kUint64Value) {
-    clear_value();
-    set_has_uint64_value();
-  }
-  _impl_.value_.uint64_value_ = value;
-  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.uint64_value)
-}
-inline ::uint64_t Scalar::_internal_uint64_value() const {
-  if (value_case() == kUint64Value) {
-    return _impl_.value_.uint64_value_;
-  }
-  return ::uint64_t{0u};
-}
-
-// string string_value = 4;
+// string string_value = 1;
 inline bool Scalar::has_string_value() const {
   return value_case() == kStringValue;
 }
@@ -891,73 +852,304 @@ inline void Scalar::set_allocated_string_value(std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:epoch_proto.Scalar.string_value)
 }
 
-// bool bool_value = 5;
-inline bool Scalar::has_bool_value() const {
-  return value_case() == kBoolValue;
+// int64 integer_value = 2;
+inline bool Scalar::has_integer_value() const {
+  return value_case() == kIntegerValue;
 }
-inline void Scalar::set_has_bool_value() {
-  _impl_._oneof_case_[0] = kBoolValue;
+inline void Scalar::set_has_integer_value() {
+  _impl_._oneof_case_[0] = kIntegerValue;
 }
-inline void Scalar::clear_bool_value() {
+inline void Scalar::clear_integer_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value_case() == kBoolValue) {
-    _impl_.value_.bool_value_ = false;
+  if (value_case() == kIntegerValue) {
+    _impl_.value_.integer_value_ = ::int64_t{0};
     clear_has_value();
   }
 }
-inline bool Scalar::bool_value() const {
-  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.bool_value)
-  return _internal_bool_value();
+inline ::int64_t Scalar::integer_value() const {
+  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.integer_value)
+  return _internal_integer_value();
 }
-inline void Scalar::set_bool_value(bool value) {
-  if (value_case() != kBoolValue) {
+inline void Scalar::set_integer_value(::int64_t value) {
+  if (value_case() != kIntegerValue) {
     clear_value();
-    set_has_bool_value();
+    set_has_integer_value();
   }
-  _impl_.value_.bool_value_ = value;
-  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.bool_value)
+  _impl_.value_.integer_value_ = value;
+  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.integer_value)
 }
-inline bool Scalar::_internal_bool_value() const {
-  if (value_case() == kBoolValue) {
-    return _impl_.value_.bool_value_;
-  }
-  return false;
-}
-
-// int64 timestamp_nanos = 6;
-inline bool Scalar::has_timestamp_nanos() const {
-  return value_case() == kTimestampNanos;
-}
-inline void Scalar::set_has_timestamp_nanos() {
-  _impl_._oneof_case_[0] = kTimestampNanos;
-}
-inline void Scalar::clear_timestamp_nanos() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (value_case() == kTimestampNanos) {
-    _impl_.value_.timestamp_nanos_ = ::int64_t{0};
-    clear_has_value();
-  }
-}
-inline ::int64_t Scalar::timestamp_nanos() const {
-  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.timestamp_nanos)
-  return _internal_timestamp_nanos();
-}
-inline void Scalar::set_timestamp_nanos(::int64_t value) {
-  if (value_case() != kTimestampNanos) {
-    clear_value();
-    set_has_timestamp_nanos();
-  }
-  _impl_.value_.timestamp_nanos_ = value;
-  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.timestamp_nanos)
-}
-inline ::int64_t Scalar::_internal_timestamp_nanos() const {
-  if (value_case() == kTimestampNanos) {
-    return _impl_.value_.timestamp_nanos_;
+inline ::int64_t Scalar::_internal_integer_value() const {
+  if (value_case() == kIntegerValue) {
+    return _impl_.value_.integer_value_;
   }
   return ::int64_t{0};
 }
 
-// .google.protobuf.NullValue null_value = 7;
+// double decimal_value = 3;
+inline bool Scalar::has_decimal_value() const {
+  return value_case() == kDecimalValue;
+}
+inline void Scalar::set_has_decimal_value() {
+  _impl_._oneof_case_[0] = kDecimalValue;
+}
+inline void Scalar::clear_decimal_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value_case() == kDecimalValue) {
+    _impl_.value_.decimal_value_ = 0;
+    clear_has_value();
+  }
+}
+inline double Scalar::decimal_value() const {
+  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.decimal_value)
+  return _internal_decimal_value();
+}
+inline void Scalar::set_decimal_value(double value) {
+  if (value_case() != kDecimalValue) {
+    clear_value();
+    set_has_decimal_value();
+  }
+  _impl_.value_.decimal_value_ = value;
+  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.decimal_value)
+}
+inline double Scalar::_internal_decimal_value() const {
+  if (value_case() == kDecimalValue) {
+    return _impl_.value_.decimal_value_;
+  }
+  return 0;
+}
+
+// double percent_value = 4;
+inline bool Scalar::has_percent_value() const {
+  return value_case() == kPercentValue;
+}
+inline void Scalar::set_has_percent_value() {
+  _impl_._oneof_case_[0] = kPercentValue;
+}
+inline void Scalar::clear_percent_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value_case() == kPercentValue) {
+    _impl_.value_.percent_value_ = 0;
+    clear_has_value();
+  }
+}
+inline double Scalar::percent_value() const {
+  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.percent_value)
+  return _internal_percent_value();
+}
+inline void Scalar::set_percent_value(double value) {
+  if (value_case() != kPercentValue) {
+    clear_value();
+    set_has_percent_value();
+  }
+  _impl_.value_.percent_value_ = value;
+  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.percent_value)
+}
+inline double Scalar::_internal_percent_value() const {
+  if (value_case() == kPercentValue) {
+    return _impl_.value_.percent_value_;
+  }
+  return 0;
+}
+
+// bool boolean_value = 5;
+inline bool Scalar::has_boolean_value() const {
+  return value_case() == kBooleanValue;
+}
+inline void Scalar::set_has_boolean_value() {
+  _impl_._oneof_case_[0] = kBooleanValue;
+}
+inline void Scalar::clear_boolean_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value_case() == kBooleanValue) {
+    _impl_.value_.boolean_value_ = false;
+    clear_has_value();
+  }
+}
+inline bool Scalar::boolean_value() const {
+  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.boolean_value)
+  return _internal_boolean_value();
+}
+inline void Scalar::set_boolean_value(bool value) {
+  if (value_case() != kBooleanValue) {
+    clear_value();
+    set_has_boolean_value();
+  }
+  _impl_.value_.boolean_value_ = value;
+  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.boolean_value)
+}
+inline bool Scalar::_internal_boolean_value() const {
+  if (value_case() == kBooleanValue) {
+    return _impl_.value_.boolean_value_;
+  }
+  return false;
+}
+
+// int64 timestamp_ms = 6;
+inline bool Scalar::has_timestamp_ms() const {
+  return value_case() == kTimestampMs;
+}
+inline void Scalar::set_has_timestamp_ms() {
+  _impl_._oneof_case_[0] = kTimestampMs;
+}
+inline void Scalar::clear_timestamp_ms() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value_case() == kTimestampMs) {
+    _impl_.value_.timestamp_ms_ = ::int64_t{0};
+    clear_has_value();
+  }
+}
+inline ::int64_t Scalar::timestamp_ms() const {
+  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.timestamp_ms)
+  return _internal_timestamp_ms();
+}
+inline void Scalar::set_timestamp_ms(::int64_t value) {
+  if (value_case() != kTimestampMs) {
+    clear_value();
+    set_has_timestamp_ms();
+  }
+  _impl_.value_.timestamp_ms_ = value;
+  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.timestamp_ms)
+}
+inline ::int64_t Scalar::_internal_timestamp_ms() const {
+  if (value_case() == kTimestampMs) {
+    return _impl_.value_.timestamp_ms_;
+  }
+  return ::int64_t{0};
+}
+
+// int64 date_value = 7;
+inline bool Scalar::has_date_value() const {
+  return value_case() == kDateValue;
+}
+inline void Scalar::set_has_date_value() {
+  _impl_._oneof_case_[0] = kDateValue;
+}
+inline void Scalar::clear_date_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value_case() == kDateValue) {
+    _impl_.value_.date_value_ = ::int64_t{0};
+    clear_has_value();
+  }
+}
+inline ::int64_t Scalar::date_value() const {
+  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.date_value)
+  return _internal_date_value();
+}
+inline void Scalar::set_date_value(::int64_t value) {
+  if (value_case() != kDateValue) {
+    clear_value();
+    set_has_date_value();
+  }
+  _impl_.value_.date_value_ = value;
+  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.date_value)
+}
+inline ::int64_t Scalar::_internal_date_value() const {
+  if (value_case() == kDateValue) {
+    return _impl_.value_.date_value_;
+  }
+  return ::int64_t{0};
+}
+
+// int32 day_duration = 8;
+inline bool Scalar::has_day_duration() const {
+  return value_case() == kDayDuration;
+}
+inline void Scalar::set_has_day_duration() {
+  _impl_._oneof_case_[0] = kDayDuration;
+}
+inline void Scalar::clear_day_duration() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value_case() == kDayDuration) {
+    _impl_.value_.day_duration_ = 0;
+    clear_has_value();
+  }
+}
+inline ::int32_t Scalar::day_duration() const {
+  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.day_duration)
+  return _internal_day_duration();
+}
+inline void Scalar::set_day_duration(::int32_t value) {
+  if (value_case() != kDayDuration) {
+    clear_value();
+    set_has_day_duration();
+  }
+  _impl_.value_.day_duration_ = value;
+  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.day_duration)
+}
+inline ::int32_t Scalar::_internal_day_duration() const {
+  if (value_case() == kDayDuration) {
+    return _impl_.value_.day_duration_;
+  }
+  return 0;
+}
+
+// double monetary_value = 9;
+inline bool Scalar::has_monetary_value() const {
+  return value_case() == kMonetaryValue;
+}
+inline void Scalar::set_has_monetary_value() {
+  _impl_._oneof_case_[0] = kMonetaryValue;
+}
+inline void Scalar::clear_monetary_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value_case() == kMonetaryValue) {
+    _impl_.value_.monetary_value_ = 0;
+    clear_has_value();
+  }
+}
+inline double Scalar::monetary_value() const {
+  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.monetary_value)
+  return _internal_monetary_value();
+}
+inline void Scalar::set_monetary_value(double value) {
+  if (value_case() != kMonetaryValue) {
+    clear_value();
+    set_has_monetary_value();
+  }
+  _impl_.value_.monetary_value_ = value;
+  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.monetary_value)
+}
+inline double Scalar::_internal_monetary_value() const {
+  if (value_case() == kMonetaryValue) {
+    return _impl_.value_.monetary_value_;
+  }
+  return 0;
+}
+
+// int64 duration_ms = 10;
+inline bool Scalar::has_duration_ms() const {
+  return value_case() == kDurationMs;
+}
+inline void Scalar::set_has_duration_ms() {
+  _impl_._oneof_case_[0] = kDurationMs;
+}
+inline void Scalar::clear_duration_ms() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value_case() == kDurationMs) {
+    _impl_.value_.duration_ms_ = ::int64_t{0};
+    clear_has_value();
+  }
+}
+inline ::int64_t Scalar::duration_ms() const {
+  // @@protoc_insertion_point(field_get:epoch_proto.Scalar.duration_ms)
+  return _internal_duration_ms();
+}
+inline void Scalar::set_duration_ms(::int64_t value) {
+  if (value_case() != kDurationMs) {
+    clear_value();
+    set_has_duration_ms();
+  }
+  _impl_.value_.duration_ms_ = value;
+  // @@protoc_insertion_point(field_set:epoch_proto.Scalar.duration_ms)
+}
+inline ::int64_t Scalar::_internal_duration_ms() const {
+  if (value_case() == kDurationMs) {
+    return _impl_.value_.duration_ms_;
+  }
+  return ::int64_t{0};
+}
+
+// .google.protobuf.NullValue null_value = 11;
 inline bool Scalar::has_null_value() const {
   return value_case() == kNullValue;
 }

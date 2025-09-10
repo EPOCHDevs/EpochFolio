@@ -73,43 +73,36 @@ class TestDetailedComparison:
         """Extract all metrics from protobuf tearsheet"""
         metrics = {}
         
-        # Extract from cards (summary metrics)
-        if hasattr(tearsheet_data, 'cards'):
-            for card in tearsheet_data.cards:
-                if hasattr(card, 'title') and hasattr(card, 'value'):
-                    title = card.title
-                    value = self._extract_value(card.value)
-                    if value is not None:
-                        metrics[f"card_{title}"] = value
+        # Handle FullTearSheet with categories map structure
+        if hasattr(tearsheet_data, 'categories'):
+            for category_name, category in tearsheet_data.categories.items():
+                # Extract from cards in this category
+                if hasattr(category, 'cards') and hasattr(category.cards, 'cards'):
+                    for card in category.cards.cards:
+                        self._extract_card_metrics(card, metrics, f"{category_name}_")
                 
-                # Extract key-value pairs from cards
-                if hasattr(card, 'key_values'):
-                    for kv in card.key_values:
-                        if hasattr(kv, 'key') and hasattr(kv, 'values') and len(kv.values) > 0:
-                            key = kv.key
-                            value = self._extract_value(kv.values[0])
-                            if value is not None:
-                                metrics[f"kv_{key}"] = value
+                # Extract from tables in this category  
+                if hasattr(category, 'tables') and hasattr(category.tables, 'tables'):
+                    for table in category.tables.tables:
+                        self._extract_table_metrics(table, metrics, f"{category_name}_")
         
-        # Extract from tables (detailed data)
-        if hasattr(tearsheet_data, 'tables'):
-            for table in tearsheet_data.tables:
-                if hasattr(table, 'title') and hasattr(table, 'rows'):
-                    table_name = table.title.replace(' ', '_').lower()
-                    
-                    # Extract table data as list of rows
-                    rows_data = []
-                    for row in table.rows:
-                        if hasattr(row, 'cells'):
-                            row_data = []
-                            for cell in row.cells:
-                                value = self._extract_value(cell)
-                                row_data.append(value)
-                            if row_data:
-                                rows_data.append(row_data)
-                    
-                    if rows_data:
-                        metrics[f"table_{table_name}"] = rows_data
+        # Extract from cards (summary metrics) - regular TearSheet structure
+        elif hasattr(tearsheet_data, 'cards'):
+            if hasattr(tearsheet_data.cards, 'cards'):
+                for card in tearsheet_data.cards.cards:
+                    self._extract_card_metrics(card, metrics)
+            else:
+                for card in tearsheet_data.cards:
+                    self._extract_card_metrics(card, metrics)
+        
+        # Extract from tables (detailed data) - regular TearSheet structure  
+        elif hasattr(tearsheet_data, 'tables'):
+            if hasattr(tearsheet_data.tables, 'tables'):
+                for table in tearsheet_data.tables.tables:
+                    self._extract_table_metrics(table, metrics)
+            else:
+                for table in tearsheet_data.tables:
+                    self._extract_table_metrics(table, metrics)
         
         # For FullTearSheet, extract from each section
         if hasattr(tearsheet_data, 'strategy_benchmark') and tearsheet_data.strategy_benchmark:
@@ -128,17 +121,46 @@ class TestDetailedComparison:
         
         return metrics
     
+    def _extract_card_metrics(self, card, metrics, prefix=""):
+        """Extract metrics from a single card"""
+        for card_data in card.data:
+            if hasattr(card_data, 'title') and hasattr(card_data, 'value'):
+                title = card_data.title
+                value = self._extract_value(card_data.value)
+                if value is not None:
+                    metrics[f"{prefix}card_{title}"] = value
+    
+    def _extract_table_metrics(self, table, metrics, prefix=""):
+        """Extract metrics from a single table"""
+        if hasattr(table, 'title') and hasattr(table, 'data') and hasattr(table.data, 'rows'):
+            table_name = table.title.replace(' ', '_').lower()
+            
+            # Extract table data as list of rows
+            rows_data = []
+            for row in table.data.rows:
+                if hasattr(row, 'values'):
+                    row_data = []
+                    for cell in row.values:
+                        value = self._extract_value(cell)
+                        row_data.append(value)
+                    if row_data:
+                        rows_data.append(row_data)
+            
+            if rows_data:
+                metrics[f"{prefix}table_{table_name}"] = rows_data
+    
     def _extract_value(self, value_obj):
-        """Extract value from protobuf value object"""
-        if hasattr(value_obj, 'double_value'):
-            return value_obj.double_value
-        elif hasattr(value_obj, 'string_value'):
-            return value_obj.string_value
-        elif hasattr(value_obj, 'int_value'):
-            return value_obj.int_value
-        elif hasattr(value_obj, 'bool_value'):
-            return value_obj.bool_value
-        return None
+        """Extract value from protobuf value object - handles all Scalar field variations"""
+        if not hasattr(value_obj, 'WhichOneof'):
+            return None
+            
+        # Get the active oneof field
+        active_field = value_obj.WhichOneof('value')
+        if active_field is None:
+            return None
+            
+        # Return the value of whichever field is set
+        return getattr(value_obj, active_field)
     
     def extract_time_series_data(self, tearsheet_data) -> Optional[pd.Series]:
         """Extract time series data for pyfolio comparison"""
@@ -146,40 +168,42 @@ class TestDetailedComparison:
         charts_to_check = []
         
         if hasattr(tearsheet_data, 'charts'):
-            charts_to_check.extend(tearsheet_data.charts)
+            charts_to_check.extend(tearsheet_data.charts.charts)
         
         # For FullTearSheet, check sections
         if hasattr(tearsheet_data, 'returns_distribution') and tearsheet_data.returns_distribution:
             if hasattr(tearsheet_data.returns_distribution, 'charts'):
-                charts_to_check.extend(tearsheet_data.returns_distribution.charts)
+                charts_to_check.extend(tearsheet_data.returns_distribution.charts.charts)
         
         for chart in charts_to_check:
-            if hasattr(chart, 'title') and ('return' in chart.title.lower() or 'cumulative' in chart.title.lower()):
-                if hasattr(chart, 'data') and hasattr(chart.data, 'line_series'):
-                    for series in chart.data.line_series:
-                        if hasattr(series, 'data_points') and len(series.data_points) > 10:  # Need substantial data
-                            dates = []
-                            values = []
-                            
-                            for point in series.data_points:
-                                try:
-                                    # Extract timestamp and value
-                                    if hasattr(point, 'x_value') and hasattr(point, 'y_value'):
-                                        x_val = self._extract_value(point.x_value)
-                                        y_val = self._extract_value(point.y_value)
-                                        
-                                        if x_val is not None and y_val is not None:
-                                            # Try to convert timestamp
-                                            if isinstance(x_val, str):
-                                                dates.append(pd.Timestamp(x_val))
-                                            else:
-                                                dates.append(pd.Timestamp.fromtimestamp(x_val))
-                                            values.append(float(y_val))
-                                except Exception:
-                                    continue
-                            
-                            if len(dates) > 10 and len(values) > 10:
-                                return pd.Series(values, index=dates, name='returns')
+            # Check for lines chart with cumulative returns data
+            if hasattr(chart, 'lines_def'):
+                lines_def = chart.lines_def
+                if hasattr(lines_def, 'chart_def') and hasattr(lines_def.chart_def, 'title'):
+                    title = lines_def.chart_def.title.lower()
+                    if 'return' in title or 'cumulative' in title:
+                        if hasattr(lines_def, 'lines'):
+                            for line in lines_def.lines:
+                                if hasattr(line, 'data') and len(line.data) > 10:  # Need substantial data
+                                    dates = []
+                                    values = []
+                                    
+                                    for point in line.data:
+                                        try:
+                                            # Extract timestamp (x) and value (y)
+                                            if hasattr(point, 'x') and hasattr(point, 'y'):
+                                                # x is timestamp_ms, y is double
+                                                timestamp_ms = point.x
+                                                value = point.y
+                                                
+                                                # Convert timestamp from milliseconds to seconds
+                                                dates.append(pd.Timestamp.fromtimestamp(timestamp_ms / 1000.0))
+                                                values.append(float(value))
+                                        except Exception:
+                                            continue
+                                    
+                                    if len(dates) > 10 and len(values) > 10:
+                                        return pd.Series(values, index=dates, name='returns')
         
         return None
     

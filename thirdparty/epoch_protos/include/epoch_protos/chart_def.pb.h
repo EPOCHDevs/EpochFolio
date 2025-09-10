@@ -129,6 +129,1076 @@ namespace epoch_proto {
 
 // -------------------------------------------------------------------
 
+class XRangePoint final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.XRangePoint) */ {
+ public:
+  inline XRangePoint() : XRangePoint(nullptr) {}
+  ~XRangePoint() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(XRangePoint* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(XRangePoint));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR XRangePoint(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline XRangePoint(const XRangePoint& from) : XRangePoint(nullptr, from) {}
+  inline XRangePoint(XRangePoint&& from) noexcept
+      : XRangePoint(nullptr, std::move(from)) {}
+  inline XRangePoint& operator=(const XRangePoint& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline XRangePoint& operator=(XRangePoint&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const XRangePoint& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const XRangePoint* internal_default_instance() {
+    return reinterpret_cast<const XRangePoint*>(
+        &_XRangePoint_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 15;
+  friend void swap(XRangePoint& a, XRangePoint& b) { a.Swap(&b); }
+  inline void Swap(XRangePoint* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(XRangePoint* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  XRangePoint* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<XRangePoint>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const XRangePoint& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const XRangePoint& from) { XRangePoint::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(XRangePoint* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "epoch_proto.XRangePoint"; }
+
+ protected:
+  explicit XRangePoint(::google::protobuf::Arena* arena);
+  XRangePoint(::google::protobuf::Arena* arena, const XRangePoint& from);
+  XRangePoint(::google::protobuf::Arena* arena, XRangePoint&& from) noexcept
+      : XRangePoint(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kXFieldNumber = 1,
+    kX2FieldNumber = 2,
+    kYFieldNumber = 3,
+    kIsLongFieldNumber = 4,
+  };
+  // int64 x = 1;
+  void clear_x() ;
+  ::int64_t x() const;
+  void set_x(::int64_t value);
+
+  private:
+  ::int64_t _internal_x() const;
+  void _internal_set_x(::int64_t value);
+
+  public:
+  // int64 x2 = 2;
+  void clear_x2() ;
+  ::int64_t x2() const;
+  void set_x2(::int64_t value);
+
+  private:
+  ::int64_t _internal_x2() const;
+  void _internal_set_x2(::int64_t value);
+
+  public:
+  // uint64 y = 3;
+  void clear_y() ;
+  ::uint64_t y() const;
+  void set_y(::uint64_t value);
+
+  private:
+  ::uint64_t _internal_y() const;
+  void _internal_set_y(::uint64_t value);
+
+  public:
+  // bool is_long = 4;
+  void clear_is_long() ;
+  bool is_long() const;
+  void set_is_long(bool value);
+
+  private:
+  bool _internal_is_long() const;
+  void _internal_set_is_long(bool value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:epoch_proto.XRangePoint)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      2, 4, 0,
+      0, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const XRangePoint& from_msg);
+    ::int64_t x_;
+    ::int64_t x2_;
+    ::uint64_t y_;
+    bool is_long_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_chart_5fdef_2eproto;
+};
+// -------------------------------------------------------------------
+
+class StraightLineDef final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.StraightLineDef) */ {
+ public:
+  inline StraightLineDef() : StraightLineDef(nullptr) {}
+  ~StraightLineDef() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(StraightLineDef* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(StraightLineDef));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR StraightLineDef(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline StraightLineDef(const StraightLineDef& from) : StraightLineDef(nullptr, from) {}
+  inline StraightLineDef(StraightLineDef&& from) noexcept
+      : StraightLineDef(nullptr, std::move(from)) {}
+  inline StraightLineDef& operator=(const StraightLineDef& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline StraightLineDef& operator=(StraightLineDef&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const StraightLineDef& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const StraightLineDef* internal_default_instance() {
+    return reinterpret_cast<const StraightLineDef*>(
+        &_StraightLineDef_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 2;
+  friend void swap(StraightLineDef& a, StraightLineDef& b) { a.Swap(&b); }
+  inline void Swap(StraightLineDef* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(StraightLineDef* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  StraightLineDef* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<StraightLineDef>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const StraightLineDef& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const StraightLineDef& from) { StraightLineDef::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(StraightLineDef* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "epoch_proto.StraightLineDef"; }
+
+ protected:
+  explicit StraightLineDef(::google::protobuf::Arena* arena);
+  StraightLineDef(::google::protobuf::Arena* arena, const StraightLineDef& from);
+  StraightLineDef(::google::protobuf::Arena* arena, StraightLineDef&& from) noexcept
+      : StraightLineDef(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kTitleFieldNumber = 1,
+    kValueFieldNumber = 2,
+    kVerticalFieldNumber = 3,
+  };
+  // string title = 1;
+  void clear_title() ;
+  const std::string& title() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_title(Arg_&& arg, Args_... args);
+  std::string* mutable_title();
+  PROTOBUF_NODISCARD std::string* release_title();
+  void set_allocated_title(std::string* value);
+
+  private:
+  const std::string& _internal_title() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_title(
+      const std::string& value);
+  std::string* _internal_mutable_title();
+
+  public:
+  // double value = 2;
+  void clear_value() ;
+  double value() const;
+  void set_value(double value);
+
+  private:
+  double _internal_value() const;
+  void _internal_set_value(double value);
+
+  public:
+  // bool vertical = 3;
+  void clear_vertical() ;
+  bool vertical() const;
+  void set_vertical(bool value);
+
+  private:
+  bool _internal_vertical() const;
+  void _internal_set_vertical(bool value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:epoch_proto.StraightLineDef)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      2, 3, 0,
+      41, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const StraightLineDef& from_msg);
+    ::google::protobuf::internal::ArenaStringPtr title_;
+    double value_;
+    bool vertical_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_chart_5fdef_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Point final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.Point) */ {
+ public:
+  inline Point() : Point(nullptr) {}
+  ~Point() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Point* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Point));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR Point(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline Point(const Point& from) : Point(nullptr, from) {}
+  inline Point(Point&& from) noexcept
+      : Point(nullptr, std::move(from)) {}
+  inline Point& operator=(const Point& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Point& operator=(Point&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const Point& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const Point* internal_default_instance() {
+    return reinterpret_cast<const Point*>(
+        &_Point_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 4;
+  friend void swap(Point& a, Point& b) { a.Swap(&b); }
+  inline void Swap(Point* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Point* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  Point* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<Point>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const Point& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const Point& from) { Point::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(Point* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "epoch_proto.Point"; }
+
+ protected:
+  explicit Point(::google::protobuf::Arena* arena);
+  Point(::google::protobuf::Arena* arena, const Point& from);
+  Point(::google::protobuf::Arena* arena, Point&& from) noexcept
+      : Point(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kXFieldNumber = 1,
+    kYFieldNumber = 2,
+  };
+  // int64 x = 1;
+  void clear_x() ;
+  ::int64_t x() const;
+  void set_x(::int64_t value);
+
+  private:
+  ::int64_t _internal_x() const;
+  void _internal_set_x(::int64_t value);
+
+  public:
+  // double y = 2;
+  void clear_y() ;
+  double y() const;
+  void set_y(double value);
+
+  private:
+  double _internal_y() const;
+  void _internal_set_y(double value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:epoch_proto.Point)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 0,
+      0, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const Point& from_msg);
+    ::int64_t x_;
+    double y_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_chart_5fdef_2eproto;
+};
+// -------------------------------------------------------------------
+
+class PieData final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.PieData) */ {
+ public:
+  inline PieData() : PieData(nullptr) {}
+  ~PieData() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(PieData* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(PieData));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR PieData(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline PieData(const PieData& from) : PieData(nullptr, from) {}
+  inline PieData(PieData&& from) noexcept
+      : PieData(nullptr, std::move(from)) {}
+  inline PieData& operator=(const PieData& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline PieData& operator=(PieData&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const PieData& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const PieData* internal_default_instance() {
+    return reinterpret_cast<const PieData*>(
+        &_PieData_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 17;
+  friend void swap(PieData& a, PieData& b) { a.Swap(&b); }
+  inline void Swap(PieData* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(PieData* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  PieData* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<PieData>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const PieData& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const PieData& from) { PieData::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(PieData* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "epoch_proto.PieData"; }
+
+ protected:
+  explicit PieData(::google::protobuf::Arena* arena);
+  PieData(::google::protobuf::Arena* arena, const PieData& from);
+  PieData(::google::protobuf::Arena* arena, PieData&& from) noexcept
+      : PieData(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kNameFieldNumber = 1,
+    kYFieldNumber = 2,
+  };
+  // string name = 1;
+  void clear_name() ;
+  const std::string& name() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
+  std::string* mutable_name();
+  PROTOBUF_NODISCARD std::string* release_name();
+  void set_allocated_name(std::string* value);
+
+  private:
+  const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
+  std::string* _internal_mutable_name();
+
+  public:
+  // double y = 2;
+  void clear_y() ;
+  double y() const;
+  void set_y(double value);
+
+  private:
+  double _internal_y() const;
+  void _internal_set_y(double value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:epoch_proto.PieData)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 0,
+      32, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const PieData& from_msg);
+    ::google::protobuf::internal::ArenaStringPtr name_;
+    double y_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_chart_5fdef_2eproto;
+};
+// -------------------------------------------------------------------
+
+class HeatMapPoint final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.HeatMapPoint) */ {
+ public:
+  inline HeatMapPoint() : HeatMapPoint(nullptr) {}
+  ~HeatMapPoint() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(HeatMapPoint* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(HeatMapPoint));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR HeatMapPoint(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline HeatMapPoint(const HeatMapPoint& from) : HeatMapPoint(nullptr, from) {}
+  inline HeatMapPoint(HeatMapPoint&& from) noexcept
+      : HeatMapPoint(nullptr, std::move(from)) {}
+  inline HeatMapPoint& operator=(const HeatMapPoint& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline HeatMapPoint& operator=(HeatMapPoint&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const HeatMapPoint& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const HeatMapPoint* internal_default_instance() {
+    return reinterpret_cast<const HeatMapPoint*>(
+        &_HeatMapPoint_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 7;
+  friend void swap(HeatMapPoint& a, HeatMapPoint& b) { a.Swap(&b); }
+  inline void Swap(HeatMapPoint* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(HeatMapPoint* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  HeatMapPoint* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<HeatMapPoint>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const HeatMapPoint& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const HeatMapPoint& from) { HeatMapPoint::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(HeatMapPoint* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "epoch_proto.HeatMapPoint"; }
+
+ protected:
+  explicit HeatMapPoint(::google::protobuf::Arena* arena);
+  HeatMapPoint(::google::protobuf::Arena* arena, const HeatMapPoint& from);
+  HeatMapPoint(::google::protobuf::Arena* arena, HeatMapPoint&& from) noexcept
+      : HeatMapPoint(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kXFieldNumber = 1,
+    kYFieldNumber = 2,
+    kValueFieldNumber = 3,
+  };
+  // uint64 x = 1;
+  void clear_x() ;
+  ::uint64_t x() const;
+  void set_x(::uint64_t value);
+
+  private:
+  ::uint64_t _internal_x() const;
+  void _internal_set_x(::uint64_t value);
+
+  public:
+  // uint64 y = 2;
+  void clear_y() ;
+  ::uint64_t y() const;
+  void set_y(::uint64_t value);
+
+  private:
+  ::uint64_t _internal_y() const;
+  void _internal_set_y(::uint64_t value);
+
+  public:
+  // double value = 3;
+  void clear_value() ;
+  double value() const;
+  void set_value(double value);
+
+  private:
+  double _internal_value() const;
+  void _internal_set_value(double value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:epoch_proto.HeatMapPoint)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      2, 3, 0,
+      0, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const HeatMapPoint& from_msg);
+    ::uint64_t x_;
+    ::uint64_t y_;
+    double value_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_chart_5fdef_2eproto;
+};
+// -------------------------------------------------------------------
+
 class BoxPlotOutlier final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:epoch_proto.BoxPlotOutlier) */ {
  public:
@@ -804,31 +1874,31 @@ class AxisDef final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class XRangePoint final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.XRangePoint) */ {
+class PieDataDef final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.PieDataDef) */ {
  public:
-  inline XRangePoint() : XRangePoint(nullptr) {}
-  ~XRangePoint() PROTOBUF_FINAL;
+  inline PieDataDef() : PieDataDef(nullptr) {}
+  ~PieDataDef() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(XRangePoint* msg, std::destroying_delete_t) {
+  void operator delete(PieDataDef* msg, std::destroying_delete_t) {
     SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(XRangePoint));
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(PieDataDef));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR XRangePoint(
+  explicit PROTOBUF_CONSTEXPR PieDataDef(
       ::google::protobuf::internal::ConstantInitialized);
 
-  inline XRangePoint(const XRangePoint& from) : XRangePoint(nullptr, from) {}
-  inline XRangePoint(XRangePoint&& from) noexcept
-      : XRangePoint(nullptr, std::move(from)) {}
-  inline XRangePoint& operator=(const XRangePoint& from) {
+  inline PieDataDef(const PieDataDef& from) : PieDataDef(nullptr, from) {}
+  inline PieDataDef(PieDataDef&& from) noexcept
+      : PieDataDef(nullptr, std::move(from)) {}
+  inline PieDataDef& operator=(const PieDataDef& from) {
     CopyFrom(from);
     return *this;
   }
-  inline XRangePoint& operator=(XRangePoint&& from) noexcept {
+  inline PieDataDef& operator=(PieDataDef&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
@@ -856,16 +1926,16 @@ class XRangePoint final : public ::google::protobuf::Message
   static const ::google::protobuf::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const XRangePoint& default_instance() {
+  static const PieDataDef& default_instance() {
     return *internal_default_instance();
   }
-  static inline const XRangePoint* internal_default_instance() {
-    return reinterpret_cast<const XRangePoint*>(
-        &_XRangePoint_default_instance_);
+  static inline const PieDataDef* internal_default_instance() {
+    return reinterpret_cast<const PieDataDef*>(
+        &_PieDataDef_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 15;
-  friend void swap(XRangePoint& a, XRangePoint& b) { a.Swap(&b); }
-  inline void Swap(XRangePoint* other) {
+  static constexpr int kIndexInFileMessages = 18;
+  friend void swap(PieDataDef& a, PieDataDef& b) { a.Swap(&b); }
+  inline void Swap(PieDataDef* other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -873,7 +1943,7 @@ class XRangePoint final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(XRangePoint* other) {
+  void UnsafeArenaSwap(PieDataDef* other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -881,13 +1951,13 @@ class XRangePoint final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  XRangePoint* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<XRangePoint>(arena);
+  PieDataDef* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<PieDataDef>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const XRangePoint& from);
+  void CopyFrom(const PieDataDef& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const XRangePoint& from) { XRangePoint::MergeImpl(*this, from); }
+  void MergeFrom(const PieDataDef& from) { PieDataDef::MergeImpl(*this, from); }
 
   private:
   static void MergeImpl(
@@ -924,18 +1994,18 @@ class XRangePoint final : public ::google::protobuf::Message
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(XRangePoint* other);
+  void InternalSwap(PieDataDef* other);
  private:
   template <typename T>
   friend ::absl::string_view(
       ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.XRangePoint"; }
+  static ::absl::string_view FullMessageName() { return "epoch_proto.PieDataDef"; }
 
  protected:
-  explicit XRangePoint(::google::protobuf::Arena* arena);
-  XRangePoint(::google::protobuf::Arena* arena, const XRangePoint& from);
-  XRangePoint(::google::protobuf::Arena* arena, XRangePoint&& from) noexcept
-      : XRangePoint(arena) {
+  explicit PieDataDef(::google::protobuf::Arena* arena);
+  PieDataDef(::google::protobuf::Arena* arena, const PieDataDef& from);
+  PieDataDef(::google::protobuf::Arena* arena, PieDataDef&& from) noexcept
+      : PieDataDef(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
@@ -950,685 +2020,28 @@ class XRangePoint final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kXFieldNumber = 1,
-    kX2FieldNumber = 2,
-    kYFieldNumber = 3,
-    kIsLongFieldNumber = 4,
-  };
-  // .epoch_proto.Scalar x = 1;
-  bool has_x() const;
-  void clear_x() ;
-  const ::epoch_proto::Scalar& x() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Scalar* release_x();
-  ::epoch_proto::Scalar* mutable_x();
-  void set_allocated_x(::epoch_proto::Scalar* value);
-  void unsafe_arena_set_allocated_x(::epoch_proto::Scalar* value);
-  ::epoch_proto::Scalar* unsafe_arena_release_x();
-
-  private:
-  const ::epoch_proto::Scalar& _internal_x() const;
-  ::epoch_proto::Scalar* _internal_mutable_x();
-
-  public:
-  // .epoch_proto.Scalar x2 = 2;
-  bool has_x2() const;
-  void clear_x2() ;
-  const ::epoch_proto::Scalar& x2() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Scalar* release_x2();
-  ::epoch_proto::Scalar* mutable_x2();
-  void set_allocated_x2(::epoch_proto::Scalar* value);
-  void unsafe_arena_set_allocated_x2(::epoch_proto::Scalar* value);
-  ::epoch_proto::Scalar* unsafe_arena_release_x2();
-
-  private:
-  const ::epoch_proto::Scalar& _internal_x2() const;
-  ::epoch_proto::Scalar* _internal_mutable_x2();
-
-  public:
-  // uint64 y = 3;
-  void clear_y() ;
-  ::uint64_t y() const;
-  void set_y(::uint64_t value);
-
-  private:
-  ::uint64_t _internal_y() const;
-  void _internal_set_y(::uint64_t value);
-
-  public:
-  // bool is_long = 4;
-  void clear_is_long() ;
-  bool is_long() const;
-  void set_is_long(bool value);
-
-  private:
-  bool _internal_is_long() const;
-  void _internal_set_is_long(bool value);
-
-  public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.XRangePoint)
- private:
-  class _Internal;
-  friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      2, 4, 2,
-      0, 2>
-      _table_;
-
-  friend class ::google::protobuf::MessageLite;
-  friend class ::google::protobuf::Arena;
-  template <typename T>
-  friend class ::google::protobuf::Arena::InternalHelper;
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-  struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const XRangePoint& from_msg);
-    ::google::protobuf::internal::HasBits<1> _has_bits_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
-    ::epoch_proto::Scalar* x_;
-    ::epoch_proto::Scalar* x2_;
-    ::uint64_t y_;
-    bool is_long_;
-    PROTOBUF_TSAN_DECLARE_MEMBER
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_chart_5fdef_2eproto;
-};
-// -------------------------------------------------------------------
-
-class StraightLineDef final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.StraightLineDef) */ {
- public:
-  inline StraightLineDef() : StraightLineDef(nullptr) {}
-  ~StraightLineDef() PROTOBUF_FINAL;
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(StraightLineDef* msg, std::destroying_delete_t) {
-    SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(StraightLineDef));
-  }
-#endif
-
-  template <typename = void>
-  explicit PROTOBUF_CONSTEXPR StraightLineDef(
-      ::google::protobuf::internal::ConstantInitialized);
-
-  inline StraightLineDef(const StraightLineDef& from) : StraightLineDef(nullptr, from) {}
-  inline StraightLineDef(StraightLineDef&& from) noexcept
-      : StraightLineDef(nullptr, std::move(from)) {}
-  inline StraightLineDef& operator=(const StraightLineDef& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline StraightLineDef& operator=(StraightLineDef&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::google::protobuf::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const StraightLineDef& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const StraightLineDef* internal_default_instance() {
-    return reinterpret_cast<const StraightLineDef*>(
-        &_StraightLineDef_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages = 2;
-  friend void swap(StraightLineDef& a, StraightLineDef& b) { a.Swap(&b); }
-  inline void Swap(StraightLineDef* other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(StraightLineDef* other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  StraightLineDef* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<StraightLineDef>(arena);
-  }
-  using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const StraightLineDef& from);
-  using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const StraightLineDef& from) { StraightLineDef::MergeImpl(*this, from); }
-
-  private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
-
-  public:
-  bool IsInitialized() const {
-    return true;
-  }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
-
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
-  #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::google::protobuf::Arena* arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(StraightLineDef* other);
- private:
-  template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.StraightLineDef"; }
-
- protected:
-  explicit StraightLineDef(::google::protobuf::Arena* arena);
-  StraightLineDef(::google::protobuf::Arena* arena, const StraightLineDef& from);
-  StraightLineDef(::google::protobuf::Arena* arena, StraightLineDef&& from) noexcept
-      : StraightLineDef(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
-
- public:
-  ::google::protobuf::Metadata GetMetadata() const;
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-  enum : int {
-    kTitleFieldNumber = 1,
-    kValueFieldNumber = 2,
-    kVerticalFieldNumber = 3,
-  };
-  // string title = 1;
-  void clear_title() ;
-  const std::string& title() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_title(Arg_&& arg, Args_... args);
-  std::string* mutable_title();
-  PROTOBUF_NODISCARD std::string* release_title();
-  void set_allocated_title(std::string* value);
-
-  private:
-  const std::string& _internal_title() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_title(
-      const std::string& value);
-  std::string* _internal_mutable_title();
-
-  public:
-  // .epoch_proto.Scalar value = 2;
-  bool has_value() const;
-  void clear_value() ;
-  const ::epoch_proto::Scalar& value() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Scalar* release_value();
-  ::epoch_proto::Scalar* mutable_value();
-  void set_allocated_value(::epoch_proto::Scalar* value);
-  void unsafe_arena_set_allocated_value(::epoch_proto::Scalar* value);
-  ::epoch_proto::Scalar* unsafe_arena_release_value();
-
-  private:
-  const ::epoch_proto::Scalar& _internal_value() const;
-  ::epoch_proto::Scalar* _internal_mutable_value();
-
-  public:
-  // bool vertical = 3;
-  void clear_vertical() ;
-  bool vertical() const;
-  void set_vertical(bool value);
-
-  private:
-  bool _internal_vertical() const;
-  void _internal_set_vertical(bool value);
-
-  public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.StraightLineDef)
- private:
-  class _Internal;
-  friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 1,
-      41, 2>
-      _table_;
-
-  friend class ::google::protobuf::MessageLite;
-  friend class ::google::protobuf::Arena;
-  template <typename T>
-  friend class ::google::protobuf::Arena::InternalHelper;
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-  struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const StraightLineDef& from_msg);
-    ::google::protobuf::internal::HasBits<1> _has_bits_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::internal::ArenaStringPtr title_;
-    ::epoch_proto::Scalar* value_;
-    bool vertical_;
-    PROTOBUF_TSAN_DECLARE_MEMBER
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_chart_5fdef_2eproto;
-};
-// -------------------------------------------------------------------
-
-class Point final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.Point) */ {
- public:
-  inline Point() : Point(nullptr) {}
-  ~Point() PROTOBUF_FINAL;
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Point* msg, std::destroying_delete_t) {
-    SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(Point));
-  }
-#endif
-
-  template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Point(
-      ::google::protobuf::internal::ConstantInitialized);
-
-  inline Point(const Point& from) : Point(nullptr, from) {}
-  inline Point(Point&& from) noexcept
-      : Point(nullptr, std::move(from)) {}
-  inline Point& operator=(const Point& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline Point& operator=(Point&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::google::protobuf::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const Point& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const Point* internal_default_instance() {
-    return reinterpret_cast<const Point*>(
-        &_Point_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages = 4;
-  friend void swap(Point& a, Point& b) { a.Swap(&b); }
-  inline void Swap(Point* other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(Point* other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  Point* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Point>(arena);
-  }
-  using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const Point& from);
-  using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const Point& from) { Point::MergeImpl(*this, from); }
-
-  private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
-
-  public:
-  bool IsInitialized() const {
-    return true;
-  }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
-
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
-  #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::google::protobuf::Arena* arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(Point* other);
- private:
-  template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.Point"; }
-
- protected:
-  explicit Point(::google::protobuf::Arena* arena);
-  Point(::google::protobuf::Arena* arena, const Point& from);
-  Point(::google::protobuf::Arena* arena, Point&& from) noexcept
-      : Point(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
-
- public:
-  ::google::protobuf::Metadata GetMetadata() const;
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-  enum : int {
-    kXFieldNumber = 1,
-    kYFieldNumber = 2,
-  };
-  // .epoch_proto.Scalar x = 1;
-  bool has_x() const;
-  void clear_x() ;
-  const ::epoch_proto::Scalar& x() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Scalar* release_x();
-  ::epoch_proto::Scalar* mutable_x();
-  void set_allocated_x(::epoch_proto::Scalar* value);
-  void unsafe_arena_set_allocated_x(::epoch_proto::Scalar* value);
-  ::epoch_proto::Scalar* unsafe_arena_release_x();
-
-  private:
-  const ::epoch_proto::Scalar& _internal_x() const;
-  ::epoch_proto::Scalar* _internal_mutable_x();
-
-  public:
-  // .epoch_proto.Scalar y = 2;
-  bool has_y() const;
-  void clear_y() ;
-  const ::epoch_proto::Scalar& y() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Scalar* release_y();
-  ::epoch_proto::Scalar* mutable_y();
-  void set_allocated_y(::epoch_proto::Scalar* value);
-  void unsafe_arena_set_allocated_y(::epoch_proto::Scalar* value);
-  ::epoch_proto::Scalar* unsafe_arena_release_y();
-
-  private:
-  const ::epoch_proto::Scalar& _internal_y() const;
-  ::epoch_proto::Scalar* _internal_mutable_y();
-
-  public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.Point)
- private:
-  class _Internal;
-  friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 2,
-      0, 2>
-      _table_;
-
-  friend class ::google::protobuf::MessageLite;
-  friend class ::google::protobuf::Arena;
-  template <typename T>
-  friend class ::google::protobuf::Arena::InternalHelper;
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-  struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const Point& from_msg);
-    ::google::protobuf::internal::HasBits<1> _has_bits_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
-    ::epoch_proto::Scalar* x_;
-    ::epoch_proto::Scalar* y_;
-    PROTOBUF_TSAN_DECLARE_MEMBER
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_chart_5fdef_2eproto;
-};
-// -------------------------------------------------------------------
-
-class PieData final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.PieData) */ {
- public:
-  inline PieData() : PieData(nullptr) {}
-  ~PieData() PROTOBUF_FINAL;
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(PieData* msg, std::destroying_delete_t) {
-    SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(PieData));
-  }
-#endif
-
-  template <typename = void>
-  explicit PROTOBUF_CONSTEXPR PieData(
-      ::google::protobuf::internal::ConstantInitialized);
-
-  inline PieData(const PieData& from) : PieData(nullptr, from) {}
-  inline PieData(PieData&& from) noexcept
-      : PieData(nullptr, std::move(from)) {}
-  inline PieData& operator=(const PieData& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline PieData& operator=(PieData&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::google::protobuf::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const PieData& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const PieData* internal_default_instance() {
-    return reinterpret_cast<const PieData*>(
-        &_PieData_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages = 17;
-  friend void swap(PieData& a, PieData& b) { a.Swap(&b); }
-  inline void Swap(PieData* other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(PieData* other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  PieData* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<PieData>(arena);
-  }
-  using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const PieData& from);
-  using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const PieData& from) { PieData::MergeImpl(*this, from); }
-
-  private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
-
-  public:
-  bool IsInitialized() const {
-    return true;
-  }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
-
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
-  #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::google::protobuf::Arena* arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(PieData* other);
- private:
-  template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.PieData"; }
-
- protected:
-  explicit PieData(::google::protobuf::Arena* arena);
-  PieData(::google::protobuf::Arena* arena, const PieData& from);
-  PieData(::google::protobuf::Arena* arena, PieData&& from) noexcept
-      : PieData(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
-
- public:
-  ::google::protobuf::Metadata GetMetadata() const;
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-  enum : int {
+    kPointsFieldNumber = 2,
     kNameFieldNumber = 1,
-    kYFieldNumber = 2,
+    kSizeFieldNumber = 3,
+    kInnerSizeFieldNumber = 4,
   };
+  // repeated .epoch_proto.PieData points = 2;
+  int points_size() const;
+  private:
+  int _internal_points_size() const;
+
+  public:
+  void clear_points() ;
+  ::epoch_proto::PieData* mutable_points(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::PieData>* mutable_points();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::PieData>& _internal_points() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::PieData>* _internal_mutable_points();
+  public:
+  const ::epoch_proto::PieData& points(int index) const;
+  ::epoch_proto::PieData* add_points();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::PieData>& points() const;
   // string name = 1;
   void clear_name() ;
   const std::string& name() const;
@@ -1645,28 +2058,46 @@ class PieData final : public ::google::protobuf::Message
   std::string* _internal_mutable_name();
 
   public:
-  // .epoch_proto.Scalar y = 2;
-  bool has_y() const;
-  void clear_y() ;
-  const ::epoch_proto::Scalar& y() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Scalar* release_y();
-  ::epoch_proto::Scalar* mutable_y();
-  void set_allocated_y(::epoch_proto::Scalar* value);
-  void unsafe_arena_set_allocated_y(::epoch_proto::Scalar* value);
-  ::epoch_proto::Scalar* unsafe_arena_release_y();
+  // string size = 3;
+  void clear_size() ;
+  const std::string& size() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_size(Arg_&& arg, Args_... args);
+  std::string* mutable_size();
+  PROTOBUF_NODISCARD std::string* release_size();
+  void set_allocated_size(std::string* value);
 
   private:
-  const ::epoch_proto::Scalar& _internal_y() const;
-  ::epoch_proto::Scalar* _internal_mutable_y();
+  const std::string& _internal_size() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_size(
+      const std::string& value);
+  std::string* _internal_mutable_size();
 
   public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.PieData)
+  // optional string inner_size = 4;
+  bool has_inner_size() const;
+  void clear_inner_size() ;
+  const std::string& inner_size() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_inner_size(Arg_&& arg, Args_... args);
+  std::string* mutable_inner_size();
+  PROTOBUF_NODISCARD std::string* release_inner_size();
+  void set_allocated_inner_size(std::string* value);
+
+  private:
+  const std::string& _internal_inner_size() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_inner_size(
+      const std::string& value);
+  std::string* _internal_mutable_inner_size();
+
+  public:
+  // @@protoc_insertion_point(class_scope:epoch_proto.PieDataDef)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 1,
-      32, 2>
+      2, 4, 1,
+      49, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -1682,11 +2113,13 @@ class PieData final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
-                          const PieData& from_msg);
+                          const PieDataDef& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::PieData > points_;
     ::google::protobuf::internal::ArenaStringPtr name_;
-    ::epoch_proto::Scalar* y_;
+    ::google::protobuf::internal::ArenaStringPtr size_;
+    ::google::protobuf::internal::ArenaStringPtr inner_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -1694,31 +2127,31 @@ class PieData final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class HeatMapPoint final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.HeatMapPoint) */ {
+class Line final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.Line) */ {
  public:
-  inline HeatMapPoint() : HeatMapPoint(nullptr) {}
-  ~HeatMapPoint() PROTOBUF_FINAL;
+  inline Line() : Line(nullptr) {}
+  ~Line() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(HeatMapPoint* msg, std::destroying_delete_t) {
+  void operator delete(Line* msg, std::destroying_delete_t) {
     SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(HeatMapPoint));
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Line));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR HeatMapPoint(
+  explicit PROTOBUF_CONSTEXPR Line(
       ::google::protobuf::internal::ConstantInitialized);
 
-  inline HeatMapPoint(const HeatMapPoint& from) : HeatMapPoint(nullptr, from) {}
-  inline HeatMapPoint(HeatMapPoint&& from) noexcept
-      : HeatMapPoint(nullptr, std::move(from)) {}
-  inline HeatMapPoint& operator=(const HeatMapPoint& from) {
+  inline Line(const Line& from) : Line(nullptr, from) {}
+  inline Line(Line&& from) noexcept
+      : Line(nullptr, std::move(from)) {}
+  inline Line& operator=(const Line& from) {
     CopyFrom(from);
     return *this;
   }
-  inline HeatMapPoint& operator=(HeatMapPoint&& from) noexcept {
+  inline Line& operator=(Line&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
@@ -1746,16 +2179,16 @@ class HeatMapPoint final : public ::google::protobuf::Message
   static const ::google::protobuf::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const HeatMapPoint& default_instance() {
+  static const Line& default_instance() {
     return *internal_default_instance();
   }
-  static inline const HeatMapPoint* internal_default_instance() {
-    return reinterpret_cast<const HeatMapPoint*>(
-        &_HeatMapPoint_default_instance_);
+  static inline const Line* internal_default_instance() {
+    return reinterpret_cast<const Line*>(
+        &_Line_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 7;
-  friend void swap(HeatMapPoint& a, HeatMapPoint& b) { a.Swap(&b); }
-  inline void Swap(HeatMapPoint* other) {
+  static constexpr int kIndexInFileMessages = 5;
+  friend void swap(Line& a, Line& b) { a.Swap(&b); }
+  inline void Swap(Line* other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -1763,7 +2196,7 @@ class HeatMapPoint final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(HeatMapPoint* other) {
+  void UnsafeArenaSwap(Line* other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -1771,13 +2204,13 @@ class HeatMapPoint final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  HeatMapPoint* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<HeatMapPoint>(arena);
+  Line* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<Line>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const HeatMapPoint& from);
+  void CopyFrom(const Line& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const HeatMapPoint& from) { HeatMapPoint::MergeImpl(*this, from); }
+  void MergeFrom(const Line& from) { Line::MergeImpl(*this, from); }
 
   private:
   static void MergeImpl(
@@ -1814,18 +2247,18 @@ class HeatMapPoint final : public ::google::protobuf::Message
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(HeatMapPoint* other);
+  void InternalSwap(Line* other);
  private:
   template <typename T>
   friend ::absl::string_view(
       ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.HeatMapPoint"; }
+  static ::absl::string_view FullMessageName() { return "epoch_proto.Line"; }
 
  protected:
-  explicit HeatMapPoint(::google::protobuf::Arena* arena);
-  HeatMapPoint(::google::protobuf::Arena* arena, const HeatMapPoint& from);
-  HeatMapPoint(::google::protobuf::Arena* arena, HeatMapPoint&& from) noexcept
-      : HeatMapPoint(arena) {
+  explicit Line(::google::protobuf::Arena* arena);
+  Line(::google::protobuf::Arena* arena, const Line& from);
+  Line(::google::protobuf::Arena* arena, Line&& from) noexcept
+      : Line(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
@@ -1840,62 +2273,79 @@ class HeatMapPoint final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kXFieldNumber = 1,
-    kYFieldNumber = 2,
-    kValueFieldNumber = 3,
+    kDataFieldNumber = 1,
+    kNameFieldNumber = 2,
+    kDashStyleFieldNumber = 3,
+    kLineWidthFieldNumber = 4,
   };
-  // .epoch_proto.Scalar x = 1;
-  bool has_x() const;
-  void clear_x() ;
-  const ::epoch_proto::Scalar& x() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Scalar* release_x();
-  ::epoch_proto::Scalar* mutable_x();
-  void set_allocated_x(::epoch_proto::Scalar* value);
-  void unsafe_arena_set_allocated_x(::epoch_proto::Scalar* value);
-  ::epoch_proto::Scalar* unsafe_arena_release_x();
-
+  // repeated .epoch_proto.Point data = 1;
+  int data_size() const;
   private:
-  const ::epoch_proto::Scalar& _internal_x() const;
-  ::epoch_proto::Scalar* _internal_mutable_x();
+  int _internal_data_size() const;
 
   public:
-  // .epoch_proto.Scalar y = 2;
-  bool has_y() const;
-  void clear_y() ;
-  const ::epoch_proto::Scalar& y() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Scalar* release_y();
-  ::epoch_proto::Scalar* mutable_y();
-  void set_allocated_y(::epoch_proto::Scalar* value);
-  void unsafe_arena_set_allocated_y(::epoch_proto::Scalar* value);
-  ::epoch_proto::Scalar* unsafe_arena_release_y();
+  void clear_data() ;
+  ::epoch_proto::Point* mutable_data(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Point>* mutable_data();
 
   private:
-  const ::epoch_proto::Scalar& _internal_y() const;
-  ::epoch_proto::Scalar* _internal_mutable_y();
-
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Point>& _internal_data() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Point>* _internal_mutable_data();
   public:
-  // .epoch_proto.Scalar value = 3;
-  bool has_value() const;
-  void clear_value() ;
-  const ::epoch_proto::Scalar& value() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Scalar* release_value();
-  ::epoch_proto::Scalar* mutable_value();
-  void set_allocated_value(::epoch_proto::Scalar* value);
-  void unsafe_arena_set_allocated_value(::epoch_proto::Scalar* value);
-  ::epoch_proto::Scalar* unsafe_arena_release_value();
+  const ::epoch_proto::Point& data(int index) const;
+  ::epoch_proto::Point* add_data();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Point>& data() const;
+  // string name = 2;
+  void clear_name() ;
+  const std::string& name() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
+  std::string* mutable_name();
+  PROTOBUF_NODISCARD std::string* release_name();
+  void set_allocated_name(std::string* value);
 
   private:
-  const ::epoch_proto::Scalar& _internal_value() const;
-  ::epoch_proto::Scalar* _internal_mutable_value();
+  const std::string& _internal_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
+      const std::string& value);
+  std::string* _internal_mutable_name();
 
   public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.HeatMapPoint)
+  // optional string dash_style = 3;
+  bool has_dash_style() const;
+  void clear_dash_style() ;
+  const std::string& dash_style() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_dash_style(Arg_&& arg, Args_... args);
+  std::string* mutable_dash_style();
+  PROTOBUF_NODISCARD std::string* release_dash_style();
+  void set_allocated_dash_style(std::string* value);
+
+  private:
+  const std::string& _internal_dash_style() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_dash_style(
+      const std::string& value);
+  std::string* _internal_mutable_dash_style();
+
+  public:
+  // optional uint32 line_width = 4;
+  bool has_line_width() const;
+  void clear_line_width() ;
+  ::uint32_t line_width() const;
+  void set_line_width(::uint32_t value);
+
+  private:
+  ::uint32_t _internal_line_width() const;
+  void _internal_set_line_width(::uint32_t value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:epoch_proto.Line)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 3, 3,
-      0, 2>
+      2, 4, 1,
+      39, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -1911,12 +2361,13 @@ class HeatMapPoint final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
-                          const HeatMapPoint& from_msg);
+                          const Line& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::epoch_proto::Scalar* x_;
-    ::epoch_proto::Scalar* y_;
-    ::epoch_proto::Scalar* value_;
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Point > data_;
+    ::google::protobuf::internal::ArenaStringPtr name_;
+    ::google::protobuf::internal::ArenaStringPtr dash_style_;
+    ::uint32_t line_width_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -2871,31 +3322,31 @@ class XRangeDef final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PieDataDef final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.PieDataDef) */ {
+class PieDef final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.PieDef) */ {
  public:
-  inline PieDataDef() : PieDataDef(nullptr) {}
-  ~PieDataDef() PROTOBUF_FINAL;
+  inline PieDef() : PieDef(nullptr) {}
+  ~PieDef() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(PieDataDef* msg, std::destroying_delete_t) {
+  void operator delete(PieDef* msg, std::destroying_delete_t) {
     SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(PieDataDef));
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(PieDef));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR PieDataDef(
+  explicit PROTOBUF_CONSTEXPR PieDef(
       ::google::protobuf::internal::ConstantInitialized);
 
-  inline PieDataDef(const PieDataDef& from) : PieDataDef(nullptr, from) {}
-  inline PieDataDef(PieDataDef&& from) noexcept
-      : PieDataDef(nullptr, std::move(from)) {}
-  inline PieDataDef& operator=(const PieDataDef& from) {
+  inline PieDef(const PieDef& from) : PieDef(nullptr, from) {}
+  inline PieDef(PieDef&& from) noexcept
+      : PieDef(nullptr, std::move(from)) {}
+  inline PieDef& operator=(const PieDef& from) {
     CopyFrom(from);
     return *this;
   }
-  inline PieDataDef& operator=(PieDataDef&& from) noexcept {
+  inline PieDef& operator=(PieDef&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
@@ -2923,16 +3374,16 @@ class PieDataDef final : public ::google::protobuf::Message
   static const ::google::protobuf::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const PieDataDef& default_instance() {
+  static const PieDef& default_instance() {
     return *internal_default_instance();
   }
-  static inline const PieDataDef* internal_default_instance() {
-    return reinterpret_cast<const PieDataDef*>(
-        &_PieDataDef_default_instance_);
+  static inline const PieDef* internal_default_instance() {
+    return reinterpret_cast<const PieDef*>(
+        &_PieDef_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 18;
-  friend void swap(PieDataDef& a, PieDataDef& b) { a.Swap(&b); }
-  inline void Swap(PieDataDef* other) {
+  static constexpr int kIndexInFileMessages = 19;
+  friend void swap(PieDef& a, PieDef& b) { a.Swap(&b); }
+  inline void Swap(PieDef* other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -2940,7 +3391,7 @@ class PieDataDef final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(PieDataDef* other) {
+  void UnsafeArenaSwap(PieDef* other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -2948,13 +3399,13 @@ class PieDataDef final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  PieDataDef* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<PieDataDef>(arena);
+  PieDef* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<PieDef>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const PieDataDef& from);
+  void CopyFrom(const PieDef& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const PieDataDef& from) { PieDataDef::MergeImpl(*this, from); }
+  void MergeFrom(const PieDef& from) { PieDef::MergeImpl(*this, from); }
 
   private:
   static void MergeImpl(
@@ -2991,18 +3442,18 @@ class PieDataDef final : public ::google::protobuf::Message
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(PieDataDef* other);
+  void InternalSwap(PieDef* other);
  private:
   template <typename T>
   friend ::absl::string_view(
       ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.PieDataDef"; }
+  static ::absl::string_view FullMessageName() { return "epoch_proto.PieDef"; }
 
  protected:
-  explicit PieDataDef(::google::protobuf::Arena* arena);
-  PieDataDef(::google::protobuf::Arena* arena, const PieDataDef& from);
-  PieDataDef(::google::protobuf::Arena* arena, PieDataDef&& from) noexcept
-      : PieDataDef(arena) {
+  explicit PieDef(::google::protobuf::Arena* arena);
+  PieDef(::google::protobuf::Arena* arena, const PieDef& from);
+  PieDef(::google::protobuf::Arena* arena, PieDef&& from) noexcept
+      : PieDef(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
@@ -3017,84 +3468,48 @@ class PieDataDef final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kPointsFieldNumber = 2,
-    kNameFieldNumber = 1,
-    kSizeFieldNumber = 3,
-    kInnerSizeFieldNumber = 4,
+    kDataFieldNumber = 2,
+    kChartDefFieldNumber = 1,
   };
-  // repeated .epoch_proto.PieData points = 2;
-  int points_size() const;
+  // repeated .epoch_proto.PieDataDef data = 2;
+  int data_size() const;
   private:
-  int _internal_points_size() const;
+  int _internal_data_size() const;
 
   public:
-  void clear_points() ;
-  ::epoch_proto::PieData* mutable_points(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::PieData>* mutable_points();
+  void clear_data() ;
+  ::epoch_proto::PieDataDef* mutable_data(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::PieDataDef>* mutable_data();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::PieData>& _internal_points() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::PieData>* _internal_mutable_points();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::PieDataDef>& _internal_data() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::PieDataDef>* _internal_mutable_data();
   public:
-  const ::epoch_proto::PieData& points(int index) const;
-  ::epoch_proto::PieData* add_points();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::PieData>& points() const;
-  // string name = 1;
-  void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* value);
+  const ::epoch_proto::PieDataDef& data(int index) const;
+  ::epoch_proto::PieDataDef* add_data();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::PieDataDef>& data() const;
+  // .epoch_proto.ChartDef chart_def = 1;
+  bool has_chart_def() const;
+  void clear_chart_def() ;
+  const ::epoch_proto::ChartDef& chart_def() const;
+  PROTOBUF_NODISCARD ::epoch_proto::ChartDef* release_chart_def();
+  ::epoch_proto::ChartDef* mutable_chart_def();
+  void set_allocated_chart_def(::epoch_proto::ChartDef* value);
+  void unsafe_arena_set_allocated_chart_def(::epoch_proto::ChartDef* value);
+  ::epoch_proto::ChartDef* unsafe_arena_release_chart_def();
 
   private:
-  const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
-  std::string* _internal_mutable_name();
+  const ::epoch_proto::ChartDef& _internal_chart_def() const;
+  ::epoch_proto::ChartDef* _internal_mutable_chart_def();
 
   public:
-  // string size = 3;
-  void clear_size() ;
-  const std::string& size() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_size(Arg_&& arg, Args_... args);
-  std::string* mutable_size();
-  PROTOBUF_NODISCARD std::string* release_size();
-  void set_allocated_size(std::string* value);
-
-  private:
-  const std::string& _internal_size() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_size(
-      const std::string& value);
-  std::string* _internal_mutable_size();
-
-  public:
-  // optional string inner_size = 4;
-  bool has_inner_size() const;
-  void clear_inner_size() ;
-  const std::string& inner_size() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_inner_size(Arg_&& arg, Args_... args);
-  std::string* mutable_inner_size();
-  PROTOBUF_NODISCARD std::string* release_inner_size();
-  void set_allocated_inner_size(std::string* value);
-
-  private:
-  const std::string& _internal_inner_size() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_inner_size(
-      const std::string& value);
-  std::string* _internal_mutable_inner_size();
-
-  public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.PieDataDef)
+  // @@protoc_insertion_point(class_scope:epoch_proto.PieDef)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 4, 1,
-      49, 2>
+      1, 2, 2,
+      0, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -3110,13 +3525,11 @@ class PieDataDef final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
-                          const PieDataDef& from_msg);
+                          const PieDef& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::PieData > points_;
-    ::google::protobuf::internal::ArenaStringPtr name_;
-    ::google::protobuf::internal::ArenaStringPtr size_;
-    ::google::protobuf::internal::ArenaStringPtr inner_size_;
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::PieDataDef > data_;
+    ::epoch_proto::ChartDef* chart_def_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -3124,31 +3537,31 @@ class PieDataDef final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class Line final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.Line) */ {
+class LinesDef final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:epoch_proto.LinesDef) */ {
  public:
-  inline Line() : Line(nullptr) {}
-  ~Line() PROTOBUF_FINAL;
+  inline LinesDef() : LinesDef(nullptr) {}
+  ~LinesDef() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Line* msg, std::destroying_delete_t) {
+  void operator delete(LinesDef* msg, std::destroying_delete_t) {
     SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(Line));
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(LinesDef));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR Line(
+  explicit PROTOBUF_CONSTEXPR LinesDef(
       ::google::protobuf::internal::ConstantInitialized);
 
-  inline Line(const Line& from) : Line(nullptr, from) {}
-  inline Line(Line&& from) noexcept
-      : Line(nullptr, std::move(from)) {}
-  inline Line& operator=(const Line& from) {
+  inline LinesDef(const LinesDef& from) : LinesDef(nullptr, from) {}
+  inline LinesDef(LinesDef&& from) noexcept
+      : LinesDef(nullptr, std::move(from)) {}
+  inline LinesDef& operator=(const LinesDef& from) {
     CopyFrom(from);
     return *this;
   }
-  inline Line& operator=(Line&& from) noexcept {
+  inline LinesDef& operator=(LinesDef&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
@@ -3176,16 +3589,16 @@ class Line final : public ::google::protobuf::Message
   static const ::google::protobuf::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const Line& default_instance() {
+  static const LinesDef& default_instance() {
     return *internal_default_instance();
   }
-  static inline const Line* internal_default_instance() {
-    return reinterpret_cast<const Line*>(
-        &_Line_default_instance_);
+  static inline const LinesDef* internal_default_instance() {
+    return reinterpret_cast<const LinesDef*>(
+        &_LinesDef_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 5;
-  friend void swap(Line& a, Line& b) { a.Swap(&b); }
-  inline void Swap(Line* other) {
+  static constexpr int kIndexInFileMessages = 6;
+  friend void swap(LinesDef& a, LinesDef& b) { a.Swap(&b); }
+  inline void Swap(LinesDef* other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -3193,7 +3606,7 @@ class Line final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(Line* other) {
+  void UnsafeArenaSwap(LinesDef* other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -3201,13 +3614,13 @@ class Line final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Line* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Line>(arena);
+  LinesDef* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<LinesDef>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const Line& from);
+  void CopyFrom(const LinesDef& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const Line& from) { Line::MergeImpl(*this, from); }
+  void MergeFrom(const LinesDef& from) { LinesDef::MergeImpl(*this, from); }
 
   private:
   static void MergeImpl(
@@ -3244,18 +3657,18 @@ class Line final : public ::google::protobuf::Message
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(Line* other);
+  void InternalSwap(LinesDef* other);
  private:
   template <typename T>
   friend ::absl::string_view(
       ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.Line"; }
+  static ::absl::string_view FullMessageName() { return "epoch_proto.LinesDef"; }
 
  protected:
-  explicit Line(::google::protobuf::Arena* arena);
-  Line(::google::protobuf::Arena* arena, const Line& from);
-  Line(::google::protobuf::Arena* arena, Line&& from) noexcept
-      : Line(arena) {
+  explicit LinesDef(::google::protobuf::Arena* arena);
+  LinesDef(::google::protobuf::Arena* arena, const LinesDef& from);
+  LinesDef(::google::protobuf::Arena* arena, LinesDef&& from) noexcept
+      : LinesDef(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
@@ -3270,79 +3683,129 @@ class Line final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kDataFieldNumber = 1,
-    kNameFieldNumber = 2,
-    kDashStyleFieldNumber = 3,
-    kLineWidthFieldNumber = 4,
+    kLinesFieldNumber = 2,
+    kStraightLinesFieldNumber = 3,
+    kYPlotBandsFieldNumber = 4,
+    kXPlotBandsFieldNumber = 5,
+    kChartDefFieldNumber = 1,
+    kOverlayFieldNumber = 6,
+    kStackedFieldNumber = 7,
   };
-  // repeated .epoch_proto.Point data = 1;
-  int data_size() const;
+  // repeated .epoch_proto.Line lines = 2;
+  int lines_size() const;
   private:
-  int _internal_data_size() const;
+  int _internal_lines_size() const;
 
   public:
-  void clear_data() ;
-  ::epoch_proto::Point* mutable_data(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Point>* mutable_data();
+  void clear_lines() ;
+  ::epoch_proto::Line* mutable_lines(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Line>* mutable_lines();
 
   private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Point>& _internal_data() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Point>* _internal_mutable_data();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Line>& _internal_lines() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Line>* _internal_mutable_lines();
   public:
-  const ::epoch_proto::Point& data(int index) const;
-  ::epoch_proto::Point* add_data();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Point>& data() const;
-  // string name = 2;
-  void clear_name() ;
-  const std::string& name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_name(Arg_&& arg, Args_... args);
-  std::string* mutable_name();
-  PROTOBUF_NODISCARD std::string* release_name();
-  void set_allocated_name(std::string* value);
+  const ::epoch_proto::Line& lines(int index) const;
+  ::epoch_proto::Line* add_lines();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Line>& lines() const;
+  // repeated .epoch_proto.StraightLineDef straight_lines = 3;
+  int straight_lines_size() const;
+  private:
+  int _internal_straight_lines_size() const;
+
+  public:
+  void clear_straight_lines() ;
+  ::epoch_proto::StraightLineDef* mutable_straight_lines(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::StraightLineDef>* mutable_straight_lines();
 
   private:
-  const std::string& _internal_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(
-      const std::string& value);
-  std::string* _internal_mutable_name();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::StraightLineDef>& _internal_straight_lines() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::StraightLineDef>* _internal_mutable_straight_lines();
+  public:
+  const ::epoch_proto::StraightLineDef& straight_lines(int index) const;
+  ::epoch_proto::StraightLineDef* add_straight_lines();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::StraightLineDef>& straight_lines() const;
+  // repeated .epoch_proto.Band y_plot_bands = 4;
+  int y_plot_bands_size() const;
+  private:
+  int _internal_y_plot_bands_size() const;
 
   public:
-  // optional string dash_style = 3;
-  bool has_dash_style() const;
-  void clear_dash_style() ;
-  const std::string& dash_style() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_dash_style(Arg_&& arg, Args_... args);
-  std::string* mutable_dash_style();
-  PROTOBUF_NODISCARD std::string* release_dash_style();
-  void set_allocated_dash_style(std::string* value);
+  void clear_y_plot_bands() ;
+  ::epoch_proto::Band* mutable_y_plot_bands(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>* mutable_y_plot_bands();
 
   private:
-  const std::string& _internal_dash_style() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_dash_style(
-      const std::string& value);
-  std::string* _internal_mutable_dash_style();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>& _internal_y_plot_bands() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>* _internal_mutable_y_plot_bands();
+  public:
+  const ::epoch_proto::Band& y_plot_bands(int index) const;
+  ::epoch_proto::Band* add_y_plot_bands();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>& y_plot_bands() const;
+  // repeated .epoch_proto.Band x_plot_bands = 5;
+  int x_plot_bands_size() const;
+  private:
+  int _internal_x_plot_bands_size() const;
 
   public:
-  // optional uint32 line_width = 4;
-  bool has_line_width() const;
-  void clear_line_width() ;
-  ::uint32_t line_width() const;
-  void set_line_width(::uint32_t value);
+  void clear_x_plot_bands() ;
+  ::epoch_proto::Band* mutable_x_plot_bands(int index);
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>* mutable_x_plot_bands();
 
   private:
-  ::uint32_t _internal_line_width() const;
-  void _internal_set_line_width(::uint32_t value);
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>& _internal_x_plot_bands() const;
+  ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>* _internal_mutable_x_plot_bands();
+  public:
+  const ::epoch_proto::Band& x_plot_bands(int index) const;
+  ::epoch_proto::Band* add_x_plot_bands();
+  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>& x_plot_bands() const;
+  // .epoch_proto.ChartDef chart_def = 1;
+  bool has_chart_def() const;
+  void clear_chart_def() ;
+  const ::epoch_proto::ChartDef& chart_def() const;
+  PROTOBUF_NODISCARD ::epoch_proto::ChartDef* release_chart_def();
+  ::epoch_proto::ChartDef* mutable_chart_def();
+  void set_allocated_chart_def(::epoch_proto::ChartDef* value);
+  void unsafe_arena_set_allocated_chart_def(::epoch_proto::ChartDef* value);
+  ::epoch_proto::ChartDef* unsafe_arena_release_chart_def();
+
+  private:
+  const ::epoch_proto::ChartDef& _internal_chart_def() const;
+  ::epoch_proto::ChartDef* _internal_mutable_chart_def();
 
   public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.Line)
+  // optional .epoch_proto.Line overlay = 6;
+  bool has_overlay() const;
+  void clear_overlay() ;
+  const ::epoch_proto::Line& overlay() const;
+  PROTOBUF_NODISCARD ::epoch_proto::Line* release_overlay();
+  ::epoch_proto::Line* mutable_overlay();
+  void set_allocated_overlay(::epoch_proto::Line* value);
+  void unsafe_arena_set_allocated_overlay(::epoch_proto::Line* value);
+  ::epoch_proto::Line* unsafe_arena_release_overlay();
+
+  private:
+  const ::epoch_proto::Line& _internal_overlay() const;
+  ::epoch_proto::Line* _internal_mutable_overlay();
+
+  public:
+  // bool stacked = 7;
+  void clear_stacked() ;
+  bool stacked() const;
+  void set_stacked(bool value);
+
+  private:
+  bool _internal_stacked() const;
+  void _internal_set_stacked(bool value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:epoch_proto.LinesDef)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      2, 4, 1,
-      39, 2>
+      3, 7, 6,
+      0, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -3358,13 +3821,16 @@ class Line final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
-                          const Line& from_msg);
+                          const LinesDef& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Point > data_;
-    ::google::protobuf::internal::ArenaStringPtr name_;
-    ::google::protobuf::internal::ArenaStringPtr dash_style_;
-    ::uint32_t line_width_;
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Line > lines_;
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::StraightLineDef > straight_lines_;
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Band > y_plot_bands_;
+    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Band > x_plot_bands_;
+    ::epoch_proto::ChartDef* chart_def_;
+    ::epoch_proto::Line* overlay_;
+    bool stacked_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -4283,522 +4749,6 @@ class BarDef final : public ::google::protobuf::Message
     ::epoch_proto::ChartDef* chart_def_;
     ::epoch_proto::Array* data_;
     ::uint32_t bar_width_;
-    PROTOBUF_TSAN_DECLARE_MEMBER
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_chart_5fdef_2eproto;
-};
-// -------------------------------------------------------------------
-
-class PieDef final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.PieDef) */ {
- public:
-  inline PieDef() : PieDef(nullptr) {}
-  ~PieDef() PROTOBUF_FINAL;
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(PieDef* msg, std::destroying_delete_t) {
-    SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(PieDef));
-  }
-#endif
-
-  template <typename = void>
-  explicit PROTOBUF_CONSTEXPR PieDef(
-      ::google::protobuf::internal::ConstantInitialized);
-
-  inline PieDef(const PieDef& from) : PieDef(nullptr, from) {}
-  inline PieDef(PieDef&& from) noexcept
-      : PieDef(nullptr, std::move(from)) {}
-  inline PieDef& operator=(const PieDef& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline PieDef& operator=(PieDef&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::google::protobuf::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const PieDef& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const PieDef* internal_default_instance() {
-    return reinterpret_cast<const PieDef*>(
-        &_PieDef_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages = 19;
-  friend void swap(PieDef& a, PieDef& b) { a.Swap(&b); }
-  inline void Swap(PieDef* other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(PieDef* other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  PieDef* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<PieDef>(arena);
-  }
-  using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const PieDef& from);
-  using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const PieDef& from) { PieDef::MergeImpl(*this, from); }
-
-  private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
-
-  public:
-  bool IsInitialized() const {
-    return true;
-  }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
-
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
-  #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::google::protobuf::Arena* arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(PieDef* other);
- private:
-  template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.PieDef"; }
-
- protected:
-  explicit PieDef(::google::protobuf::Arena* arena);
-  PieDef(::google::protobuf::Arena* arena, const PieDef& from);
-  PieDef(::google::protobuf::Arena* arena, PieDef&& from) noexcept
-      : PieDef(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
-
- public:
-  ::google::protobuf::Metadata GetMetadata() const;
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-  enum : int {
-    kDataFieldNumber = 2,
-    kChartDefFieldNumber = 1,
-  };
-  // repeated .epoch_proto.PieDataDef data = 2;
-  int data_size() const;
-  private:
-  int _internal_data_size() const;
-
-  public:
-  void clear_data() ;
-  ::epoch_proto::PieDataDef* mutable_data(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::PieDataDef>* mutable_data();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::PieDataDef>& _internal_data() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::PieDataDef>* _internal_mutable_data();
-  public:
-  const ::epoch_proto::PieDataDef& data(int index) const;
-  ::epoch_proto::PieDataDef* add_data();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::PieDataDef>& data() const;
-  // .epoch_proto.ChartDef chart_def = 1;
-  bool has_chart_def() const;
-  void clear_chart_def() ;
-  const ::epoch_proto::ChartDef& chart_def() const;
-  PROTOBUF_NODISCARD ::epoch_proto::ChartDef* release_chart_def();
-  ::epoch_proto::ChartDef* mutable_chart_def();
-  void set_allocated_chart_def(::epoch_proto::ChartDef* value);
-  void unsafe_arena_set_allocated_chart_def(::epoch_proto::ChartDef* value);
-  ::epoch_proto::ChartDef* unsafe_arena_release_chart_def();
-
-  private:
-  const ::epoch_proto::ChartDef& _internal_chart_def() const;
-  ::epoch_proto::ChartDef* _internal_mutable_chart_def();
-
-  public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.PieDef)
- private:
-  class _Internal;
-  friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      1, 2, 2,
-      0, 2>
-      _table_;
-
-  friend class ::google::protobuf::MessageLite;
-  friend class ::google::protobuf::Arena;
-  template <typename T>
-  friend class ::google::protobuf::Arena::InternalHelper;
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-  struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const PieDef& from_msg);
-    ::google::protobuf::internal::HasBits<1> _has_bits_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::PieDataDef > data_;
-    ::epoch_proto::ChartDef* chart_def_;
-    PROTOBUF_TSAN_DECLARE_MEMBER
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_chart_5fdef_2eproto;
-};
-// -------------------------------------------------------------------
-
-class LinesDef final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:epoch_proto.LinesDef) */ {
- public:
-  inline LinesDef() : LinesDef(nullptr) {}
-  ~LinesDef() PROTOBUF_FINAL;
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(LinesDef* msg, std::destroying_delete_t) {
-    SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(LinesDef));
-  }
-#endif
-
-  template <typename = void>
-  explicit PROTOBUF_CONSTEXPR LinesDef(
-      ::google::protobuf::internal::ConstantInitialized);
-
-  inline LinesDef(const LinesDef& from) : LinesDef(nullptr, from) {}
-  inline LinesDef(LinesDef&& from) noexcept
-      : LinesDef(nullptr, std::move(from)) {}
-  inline LinesDef& operator=(const LinesDef& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline LinesDef& operator=(LinesDef&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::google::protobuf::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::google::protobuf::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const LinesDef& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const LinesDef* internal_default_instance() {
-    return reinterpret_cast<const LinesDef*>(
-        &_LinesDef_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages = 6;
-  friend void swap(LinesDef& a, LinesDef& b) { a.Swap(&b); }
-  inline void Swap(LinesDef* other) {
-    if (other == this) return;
-    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
-    } else {
-      ::google::protobuf::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(LinesDef* other) {
-    if (other == this) return;
-    ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  LinesDef* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<LinesDef>(arena);
-  }
-  using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const LinesDef& from);
-  using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const LinesDef& from) { LinesDef::MergeImpl(*this, from); }
-
-  private:
-  static void MergeImpl(
-      ::google::protobuf::MessageLite& to_msg,
-      const ::google::protobuf::MessageLite& from_msg);
-
-  public:
-  bool IsInitialized() const {
-    return true;
-  }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
-
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
-  #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
-  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::google::protobuf::Arena* arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(LinesDef* other);
- private:
-  template <typename T>
-  friend ::absl::string_view(
-      ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "epoch_proto.LinesDef"; }
-
- protected:
-  explicit LinesDef(::google::protobuf::Arena* arena);
-  LinesDef(::google::protobuf::Arena* arena, const LinesDef& from);
-  LinesDef(::google::protobuf::Arena* arena, LinesDef&& from) noexcept
-      : LinesDef(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
-
- public:
-  ::google::protobuf::Metadata GetMetadata() const;
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-  enum : int {
-    kLinesFieldNumber = 2,
-    kStraightLinesFieldNumber = 3,
-    kYPlotBandsFieldNumber = 4,
-    kXPlotBandsFieldNumber = 5,
-    kChartDefFieldNumber = 1,
-    kOverlayFieldNumber = 6,
-    kStackedFieldNumber = 7,
-  };
-  // repeated .epoch_proto.Line lines = 2;
-  int lines_size() const;
-  private:
-  int _internal_lines_size() const;
-
-  public:
-  void clear_lines() ;
-  ::epoch_proto::Line* mutable_lines(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Line>* mutable_lines();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Line>& _internal_lines() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Line>* _internal_mutable_lines();
-  public:
-  const ::epoch_proto::Line& lines(int index) const;
-  ::epoch_proto::Line* add_lines();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Line>& lines() const;
-  // repeated .epoch_proto.StraightLineDef straight_lines = 3;
-  int straight_lines_size() const;
-  private:
-  int _internal_straight_lines_size() const;
-
-  public:
-  void clear_straight_lines() ;
-  ::epoch_proto::StraightLineDef* mutable_straight_lines(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::StraightLineDef>* mutable_straight_lines();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::StraightLineDef>& _internal_straight_lines() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::StraightLineDef>* _internal_mutable_straight_lines();
-  public:
-  const ::epoch_proto::StraightLineDef& straight_lines(int index) const;
-  ::epoch_proto::StraightLineDef* add_straight_lines();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::StraightLineDef>& straight_lines() const;
-  // repeated .epoch_proto.Band y_plot_bands = 4;
-  int y_plot_bands_size() const;
-  private:
-  int _internal_y_plot_bands_size() const;
-
-  public:
-  void clear_y_plot_bands() ;
-  ::epoch_proto::Band* mutable_y_plot_bands(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>* mutable_y_plot_bands();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>& _internal_y_plot_bands() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>* _internal_mutable_y_plot_bands();
-  public:
-  const ::epoch_proto::Band& y_plot_bands(int index) const;
-  ::epoch_proto::Band* add_y_plot_bands();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>& y_plot_bands() const;
-  // repeated .epoch_proto.Band x_plot_bands = 5;
-  int x_plot_bands_size() const;
-  private:
-  int _internal_x_plot_bands_size() const;
-
-  public:
-  void clear_x_plot_bands() ;
-  ::epoch_proto::Band* mutable_x_plot_bands(int index);
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>* mutable_x_plot_bands();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>& _internal_x_plot_bands() const;
-  ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>* _internal_mutable_x_plot_bands();
-  public:
-  const ::epoch_proto::Band& x_plot_bands(int index) const;
-  ::epoch_proto::Band* add_x_plot_bands();
-  const ::google::protobuf::RepeatedPtrField<::epoch_proto::Band>& x_plot_bands() const;
-  // .epoch_proto.ChartDef chart_def = 1;
-  bool has_chart_def() const;
-  void clear_chart_def() ;
-  const ::epoch_proto::ChartDef& chart_def() const;
-  PROTOBUF_NODISCARD ::epoch_proto::ChartDef* release_chart_def();
-  ::epoch_proto::ChartDef* mutable_chart_def();
-  void set_allocated_chart_def(::epoch_proto::ChartDef* value);
-  void unsafe_arena_set_allocated_chart_def(::epoch_proto::ChartDef* value);
-  ::epoch_proto::ChartDef* unsafe_arena_release_chart_def();
-
-  private:
-  const ::epoch_proto::ChartDef& _internal_chart_def() const;
-  ::epoch_proto::ChartDef* _internal_mutable_chart_def();
-
-  public:
-  // optional .epoch_proto.Line overlay = 6;
-  bool has_overlay() const;
-  void clear_overlay() ;
-  const ::epoch_proto::Line& overlay() const;
-  PROTOBUF_NODISCARD ::epoch_proto::Line* release_overlay();
-  ::epoch_proto::Line* mutable_overlay();
-  void set_allocated_overlay(::epoch_proto::Line* value);
-  void unsafe_arena_set_allocated_overlay(::epoch_proto::Line* value);
-  ::epoch_proto::Line* unsafe_arena_release_overlay();
-
-  private:
-  const ::epoch_proto::Line& _internal_overlay() const;
-  ::epoch_proto::Line* _internal_mutable_overlay();
-
-  public:
-  // bool stacked = 7;
-  void clear_stacked() ;
-  bool stacked() const;
-  void set_stacked(bool value);
-
-  private:
-  bool _internal_stacked() const;
-  void _internal_set_stacked(bool value);
-
-  public:
-  // @@protoc_insertion_point(class_scope:epoch_proto.LinesDef)
- private:
-  class _Internal;
-  friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<
-      3, 7, 6,
-      0, 2>
-      _table_;
-
-  friend class ::google::protobuf::MessageLite;
-  friend class ::google::protobuf::Arena;
-  template <typename T>
-  friend class ::google::protobuf::Arena::InternalHelper;
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-  struct Impl_ {
-    inline explicit constexpr Impl_(
-        ::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena);
-    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
-                          ::google::protobuf::Arena* arena, const Impl_& from,
-                          const LinesDef& from_msg);
-    ::google::protobuf::internal::HasBits<1> _has_bits_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Line > lines_;
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::StraightLineDef > straight_lines_;
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Band > y_plot_bands_;
-    ::google::protobuf::RepeatedPtrField< ::epoch_proto::Band > x_plot_bands_;
-    ::epoch_proto::ChartDef* chart_def_;
-    ::epoch_proto::Line* overlay_;
-    bool stacked_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -5747,95 +5697,26 @@ inline void StraightLineDef::set_allocated_title(std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:epoch_proto.StraightLineDef.title)
 }
 
-// .epoch_proto.Scalar value = 2;
-inline bool StraightLineDef::has_value() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.value_ != nullptr);
-  return value;
+// double value = 2;
+inline void StraightLineDef::clear_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.value_ = 0;
 }
-inline const ::epoch_proto::Scalar& StraightLineDef::_internal_value() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::Scalar* p = _impl_.value_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::Scalar&>(::epoch_proto::_Scalar_default_instance_);
-}
-inline const ::epoch_proto::Scalar& StraightLineDef::value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline double StraightLineDef::value() const {
   // @@protoc_insertion_point(field_get:epoch_proto.StraightLineDef.value)
   return _internal_value();
 }
-inline void StraightLineDef::unsafe_arena_set_allocated_value(::epoch_proto::Scalar* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.value_);
-  }
-  _impl_.value_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.StraightLineDef.value)
+inline void StraightLineDef::set_value(double value) {
+  _internal_set_value(value);
+  // @@protoc_insertion_point(field_set:epoch_proto.StraightLineDef.value)
 }
-inline ::epoch_proto::Scalar* StraightLineDef::release_value() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* released = _impl_.value_;
-  _impl_.value_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::Scalar* StraightLineDef::unsafe_arena_release_value() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.StraightLineDef.value)
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* temp = _impl_.value_;
-  _impl_.value_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::Scalar* StraightLineDef::_internal_mutable_value() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.value_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::Scalar>(GetArena());
-    _impl_.value_ = reinterpret_cast<::epoch_proto::Scalar*>(p);
-  }
+inline double StraightLineDef::_internal_value() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
-inline ::epoch_proto::Scalar* StraightLineDef::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  ::epoch_proto::Scalar* _msg = _internal_mutable_value();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.StraightLineDef.value)
-  return _msg;
-}
-inline void StraightLineDef::set_allocated_value(::epoch_proto::Scalar* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
+inline void StraightLineDef::_internal_set_value(double value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.value_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-
-  _impl_.value_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.StraightLineDef.value)
+  _impl_.value_ = value;
 }
 
 // bool vertical = 3;
@@ -6050,186 +5931,48 @@ inline void Band::set_allocated_to(::epoch_proto::Scalar* value) {
 
 // Point
 
-// .epoch_proto.Scalar x = 1;
-inline bool Point::has_x() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.x_ != nullptr);
-  return value;
+// int64 x = 1;
+inline void Point::clear_x() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.x_ = ::int64_t{0};
 }
-inline const ::epoch_proto::Scalar& Point::_internal_x() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::Scalar* p = _impl_.x_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::Scalar&>(::epoch_proto::_Scalar_default_instance_);
-}
-inline const ::epoch_proto::Scalar& Point::x() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::int64_t Point::x() const {
   // @@protoc_insertion_point(field_get:epoch_proto.Point.x)
   return _internal_x();
 }
-inline void Point::unsafe_arena_set_allocated_x(::epoch_proto::Scalar* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.x_);
-  }
-  _impl_.x_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.Point.x)
+inline void Point::set_x(::int64_t value) {
+  _internal_set_x(value);
+  // @@protoc_insertion_point(field_set:epoch_proto.Point.x)
 }
-inline ::epoch_proto::Scalar* Point::release_x() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* released = _impl_.x_;
-  _impl_.x_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::Scalar* Point::unsafe_arena_release_x() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.Point.x)
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* temp = _impl_.x_;
-  _impl_.x_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::Scalar* Point::_internal_mutable_x() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.x_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::Scalar>(GetArena());
-    _impl_.x_ = reinterpret_cast<::epoch_proto::Scalar*>(p);
-  }
+inline ::int64_t Point::_internal_x() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.x_;
 }
-inline ::epoch_proto::Scalar* Point::mutable_x() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  ::epoch_proto::Scalar* _msg = _internal_mutable_x();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.Point.x)
-  return _msg;
-}
-inline void Point::set_allocated_x(::epoch_proto::Scalar* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
+inline void Point::_internal_set_x(::int64_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.x_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-
-  _impl_.x_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.Point.x)
+  _impl_.x_ = value;
 }
 
-// .epoch_proto.Scalar y = 2;
-inline bool Point::has_y() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.y_ != nullptr);
-  return value;
+// double y = 2;
+inline void Point::clear_y() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.y_ = 0;
 }
-inline const ::epoch_proto::Scalar& Point::_internal_y() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::Scalar* p = _impl_.y_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::Scalar&>(::epoch_proto::_Scalar_default_instance_);
-}
-inline const ::epoch_proto::Scalar& Point::y() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline double Point::y() const {
   // @@protoc_insertion_point(field_get:epoch_proto.Point.y)
   return _internal_y();
 }
-inline void Point::unsafe_arena_set_allocated_y(::epoch_proto::Scalar* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.y_);
-  }
-  _impl_.y_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000002u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000002u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.Point.y)
+inline void Point::set_y(double value) {
+  _internal_set_y(value);
+  // @@protoc_insertion_point(field_set:epoch_proto.Point.y)
 }
-inline ::epoch_proto::Scalar* Point::release_y() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000002u;
-  ::epoch_proto::Scalar* released = _impl_.y_;
-  _impl_.y_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::Scalar* Point::unsafe_arena_release_y() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.Point.y)
-
-  _impl_._has_bits_[0] &= ~0x00000002u;
-  ::epoch_proto::Scalar* temp = _impl_.y_;
-  _impl_.y_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::Scalar* Point::_internal_mutable_y() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.y_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::Scalar>(GetArena());
-    _impl_.y_ = reinterpret_cast<::epoch_proto::Scalar*>(p);
-  }
+inline double Point::_internal_y() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.y_;
 }
-inline ::epoch_proto::Scalar* Point::mutable_y() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000002u;
-  ::epoch_proto::Scalar* _msg = _internal_mutable_y();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.Point.y)
-  return _msg;
-}
-inline void Point::set_allocated_y(::epoch_proto::Scalar* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
+inline void Point::_internal_set_y(double value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.y_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000002u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000002u;
-  }
-
-  _impl_.y_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.Point.y)
+  _impl_.y_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -6848,277 +6591,70 @@ inline void LinesDef::_internal_set_stacked(bool value) {
 
 // HeatMapPoint
 
-// .epoch_proto.Scalar x = 1;
-inline bool HeatMapPoint::has_x() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.x_ != nullptr);
-  return value;
+// uint64 x = 1;
+inline void HeatMapPoint::clear_x() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.x_ = ::uint64_t{0u};
 }
-inline const ::epoch_proto::Scalar& HeatMapPoint::_internal_x() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::Scalar* p = _impl_.x_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::Scalar&>(::epoch_proto::_Scalar_default_instance_);
-}
-inline const ::epoch_proto::Scalar& HeatMapPoint::x() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::uint64_t HeatMapPoint::x() const {
   // @@protoc_insertion_point(field_get:epoch_proto.HeatMapPoint.x)
   return _internal_x();
 }
-inline void HeatMapPoint::unsafe_arena_set_allocated_x(::epoch_proto::Scalar* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.x_);
-  }
-  _impl_.x_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.HeatMapPoint.x)
+inline void HeatMapPoint::set_x(::uint64_t value) {
+  _internal_set_x(value);
+  // @@protoc_insertion_point(field_set:epoch_proto.HeatMapPoint.x)
 }
-inline ::epoch_proto::Scalar* HeatMapPoint::release_x() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* released = _impl_.x_;
-  _impl_.x_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::Scalar* HeatMapPoint::unsafe_arena_release_x() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.HeatMapPoint.x)
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* temp = _impl_.x_;
-  _impl_.x_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::Scalar* HeatMapPoint::_internal_mutable_x() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.x_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::Scalar>(GetArena());
-    _impl_.x_ = reinterpret_cast<::epoch_proto::Scalar*>(p);
-  }
+inline ::uint64_t HeatMapPoint::_internal_x() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.x_;
 }
-inline ::epoch_proto::Scalar* HeatMapPoint::mutable_x() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  ::epoch_proto::Scalar* _msg = _internal_mutable_x();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.HeatMapPoint.x)
-  return _msg;
-}
-inline void HeatMapPoint::set_allocated_x(::epoch_proto::Scalar* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
+inline void HeatMapPoint::_internal_set_x(::uint64_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.x_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-
-  _impl_.x_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.HeatMapPoint.x)
+  _impl_.x_ = value;
 }
 
-// .epoch_proto.Scalar y = 2;
-inline bool HeatMapPoint::has_y() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.y_ != nullptr);
-  return value;
+// uint64 y = 2;
+inline void HeatMapPoint::clear_y() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.y_ = ::uint64_t{0u};
 }
-inline const ::epoch_proto::Scalar& HeatMapPoint::_internal_y() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::Scalar* p = _impl_.y_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::Scalar&>(::epoch_proto::_Scalar_default_instance_);
-}
-inline const ::epoch_proto::Scalar& HeatMapPoint::y() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::uint64_t HeatMapPoint::y() const {
   // @@protoc_insertion_point(field_get:epoch_proto.HeatMapPoint.y)
   return _internal_y();
 }
-inline void HeatMapPoint::unsafe_arena_set_allocated_y(::epoch_proto::Scalar* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.y_);
-  }
-  _impl_.y_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000002u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000002u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.HeatMapPoint.y)
+inline void HeatMapPoint::set_y(::uint64_t value) {
+  _internal_set_y(value);
+  // @@protoc_insertion_point(field_set:epoch_proto.HeatMapPoint.y)
 }
-inline ::epoch_proto::Scalar* HeatMapPoint::release_y() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000002u;
-  ::epoch_proto::Scalar* released = _impl_.y_;
-  _impl_.y_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::Scalar* HeatMapPoint::unsafe_arena_release_y() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.HeatMapPoint.y)
-
-  _impl_._has_bits_[0] &= ~0x00000002u;
-  ::epoch_proto::Scalar* temp = _impl_.y_;
-  _impl_.y_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::Scalar* HeatMapPoint::_internal_mutable_y() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.y_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::Scalar>(GetArena());
-    _impl_.y_ = reinterpret_cast<::epoch_proto::Scalar*>(p);
-  }
+inline ::uint64_t HeatMapPoint::_internal_y() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.y_;
 }
-inline ::epoch_proto::Scalar* HeatMapPoint::mutable_y() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000002u;
-  ::epoch_proto::Scalar* _msg = _internal_mutable_y();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.HeatMapPoint.y)
-  return _msg;
-}
-inline void HeatMapPoint::set_allocated_y(::epoch_proto::Scalar* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
+inline void HeatMapPoint::_internal_set_y(::uint64_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.y_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000002u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000002u;
-  }
-
-  _impl_.y_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.HeatMapPoint.y)
+  _impl_.y_ = value;
 }
 
-// .epoch_proto.Scalar value = 3;
-inline bool HeatMapPoint::has_value() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.value_ != nullptr);
-  return value;
+// double value = 3;
+inline void HeatMapPoint::clear_value() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.value_ = 0;
 }
-inline const ::epoch_proto::Scalar& HeatMapPoint::_internal_value() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::Scalar* p = _impl_.value_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::Scalar&>(::epoch_proto::_Scalar_default_instance_);
-}
-inline const ::epoch_proto::Scalar& HeatMapPoint::value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline double HeatMapPoint::value() const {
   // @@protoc_insertion_point(field_get:epoch_proto.HeatMapPoint.value)
   return _internal_value();
 }
-inline void HeatMapPoint::unsafe_arena_set_allocated_value(::epoch_proto::Scalar* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.value_);
-  }
-  _impl_.value_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000004u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000004u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.HeatMapPoint.value)
+inline void HeatMapPoint::set_value(double value) {
+  _internal_set_value(value);
+  // @@protoc_insertion_point(field_set:epoch_proto.HeatMapPoint.value)
 }
-inline ::epoch_proto::Scalar* HeatMapPoint::release_value() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000004u;
-  ::epoch_proto::Scalar* released = _impl_.value_;
-  _impl_.value_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::Scalar* HeatMapPoint::unsafe_arena_release_value() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.HeatMapPoint.value)
-
-  _impl_._has_bits_[0] &= ~0x00000004u;
-  ::epoch_proto::Scalar* temp = _impl_.value_;
-  _impl_.value_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::Scalar* HeatMapPoint::_internal_mutable_value() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.value_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::Scalar>(GetArena());
-    _impl_.value_ = reinterpret_cast<::epoch_proto::Scalar*>(p);
-  }
+inline double HeatMapPoint::_internal_value() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.value_;
 }
-inline ::epoch_proto::Scalar* HeatMapPoint::mutable_value() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000004u;
-  ::epoch_proto::Scalar* _msg = _internal_mutable_value();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.HeatMapPoint.value)
-  return _msg;
-}
-inline void HeatMapPoint::set_allocated_value(::epoch_proto::Scalar* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
+inline void HeatMapPoint::_internal_set_value(double value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.value_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000004u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000004u;
-  }
-
-  _impl_.value_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.HeatMapPoint.value)
+  _impl_.value_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -8270,186 +7806,48 @@ inline void BoxPlotDef::set_allocated_data(::epoch_proto::BoxPlotDataPointDef* v
 
 // XRangePoint
 
-// .epoch_proto.Scalar x = 1;
-inline bool XRangePoint::has_x() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.x_ != nullptr);
-  return value;
+// int64 x = 1;
+inline void XRangePoint::clear_x() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.x_ = ::int64_t{0};
 }
-inline const ::epoch_proto::Scalar& XRangePoint::_internal_x() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::Scalar* p = _impl_.x_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::Scalar&>(::epoch_proto::_Scalar_default_instance_);
-}
-inline const ::epoch_proto::Scalar& XRangePoint::x() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::int64_t XRangePoint::x() const {
   // @@protoc_insertion_point(field_get:epoch_proto.XRangePoint.x)
   return _internal_x();
 }
-inline void XRangePoint::unsafe_arena_set_allocated_x(::epoch_proto::Scalar* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.x_);
-  }
-  _impl_.x_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.XRangePoint.x)
+inline void XRangePoint::set_x(::int64_t value) {
+  _internal_set_x(value);
+  // @@protoc_insertion_point(field_set:epoch_proto.XRangePoint.x)
 }
-inline ::epoch_proto::Scalar* XRangePoint::release_x() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* released = _impl_.x_;
-  _impl_.x_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::Scalar* XRangePoint::unsafe_arena_release_x() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.XRangePoint.x)
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* temp = _impl_.x_;
-  _impl_.x_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::Scalar* XRangePoint::_internal_mutable_x() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.x_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::Scalar>(GetArena());
-    _impl_.x_ = reinterpret_cast<::epoch_proto::Scalar*>(p);
-  }
+inline ::int64_t XRangePoint::_internal_x() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.x_;
 }
-inline ::epoch_proto::Scalar* XRangePoint::mutable_x() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  ::epoch_proto::Scalar* _msg = _internal_mutable_x();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.XRangePoint.x)
-  return _msg;
-}
-inline void XRangePoint::set_allocated_x(::epoch_proto::Scalar* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
+inline void XRangePoint::_internal_set_x(::int64_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.x_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-
-  _impl_.x_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.XRangePoint.x)
+  _impl_.x_ = value;
 }
 
-// .epoch_proto.Scalar x2 = 2;
-inline bool XRangePoint::has_x2() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.x2_ != nullptr);
-  return value;
+// int64 x2 = 2;
+inline void XRangePoint::clear_x2() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.x2_ = ::int64_t{0};
 }
-inline const ::epoch_proto::Scalar& XRangePoint::_internal_x2() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::Scalar* p = _impl_.x2_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::Scalar&>(::epoch_proto::_Scalar_default_instance_);
-}
-inline const ::epoch_proto::Scalar& XRangePoint::x2() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline ::int64_t XRangePoint::x2() const {
   // @@protoc_insertion_point(field_get:epoch_proto.XRangePoint.x2)
   return _internal_x2();
 }
-inline void XRangePoint::unsafe_arena_set_allocated_x2(::epoch_proto::Scalar* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.x2_);
-  }
-  _impl_.x2_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000002u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000002u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.XRangePoint.x2)
+inline void XRangePoint::set_x2(::int64_t value) {
+  _internal_set_x2(value);
+  // @@protoc_insertion_point(field_set:epoch_proto.XRangePoint.x2)
 }
-inline ::epoch_proto::Scalar* XRangePoint::release_x2() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000002u;
-  ::epoch_proto::Scalar* released = _impl_.x2_;
-  _impl_.x2_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::Scalar* XRangePoint::unsafe_arena_release_x2() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.XRangePoint.x2)
-
-  _impl_._has_bits_[0] &= ~0x00000002u;
-  ::epoch_proto::Scalar* temp = _impl_.x2_;
-  _impl_.x2_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::Scalar* XRangePoint::_internal_mutable_x2() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.x2_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::Scalar>(GetArena());
-    _impl_.x2_ = reinterpret_cast<::epoch_proto::Scalar*>(p);
-  }
+inline ::int64_t XRangePoint::_internal_x2() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.x2_;
 }
-inline ::epoch_proto::Scalar* XRangePoint::mutable_x2() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000002u;
-  ::epoch_proto::Scalar* _msg = _internal_mutable_x2();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.XRangePoint.x2)
-  return _msg;
-}
-inline void XRangePoint::set_allocated_x2(::epoch_proto::Scalar* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
+inline void XRangePoint::_internal_set_x2(::int64_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.x2_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000002u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000002u;
-  }
-
-  _impl_.x2_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.XRangePoint.x2)
+  _impl_.x2_ = value;
 }
 
 // uint64 y = 3;
@@ -8761,95 +8159,26 @@ inline void PieData::set_allocated_name(std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:epoch_proto.PieData.name)
 }
 
-// .epoch_proto.Scalar y = 2;
-inline bool PieData::has_y() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  PROTOBUF_ASSUME(!value || _impl_.y_ != nullptr);
-  return value;
+// double y = 2;
+inline void PieData::clear_y() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.y_ = 0;
 }
-inline const ::epoch_proto::Scalar& PieData::_internal_y() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::epoch_proto::Scalar* p = _impl_.y_;
-  return p != nullptr ? *p : reinterpret_cast<const ::epoch_proto::Scalar&>(::epoch_proto::_Scalar_default_instance_);
-}
-inline const ::epoch_proto::Scalar& PieData::y() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline double PieData::y() const {
   // @@protoc_insertion_point(field_get:epoch_proto.PieData.y)
   return _internal_y();
 }
-inline void PieData::unsafe_arena_set_allocated_y(::epoch_proto::Scalar* value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.y_);
-  }
-  _impl_.y_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:epoch_proto.PieData.y)
+inline void PieData::set_y(double value) {
+  _internal_set_y(value);
+  // @@protoc_insertion_point(field_set:epoch_proto.PieData.y)
 }
-inline ::epoch_proto::Scalar* PieData::release_y() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* released = _impl_.y_;
-  _impl_.y_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::epoch_proto::Scalar* PieData::unsafe_arena_release_y() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:epoch_proto.PieData.y)
-
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  ::epoch_proto::Scalar* temp = _impl_.y_;
-  _impl_.y_ = nullptr;
-  return temp;
-}
-inline ::epoch_proto::Scalar* PieData::_internal_mutable_y() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.y_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::epoch_proto::Scalar>(GetArena());
-    _impl_.y_ = reinterpret_cast<::epoch_proto::Scalar*>(p);
-  }
+inline double PieData::_internal_y() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.y_;
 }
-inline ::epoch_proto::Scalar* PieData::mutable_y() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  ::epoch_proto::Scalar* _msg = _internal_mutable_y();
-  // @@protoc_insertion_point(field_mutable:epoch_proto.PieData.y)
-  return _msg;
-}
-inline void PieData::set_allocated_y(::epoch_proto::Scalar* value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
+inline void PieData::_internal_set_y(double value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.y_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = reinterpret_cast<::google::protobuf::MessageLite*>(value)->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-
-  _impl_.y_ = reinterpret_cast<::epoch_proto::Scalar*>(value);
-  // @@protoc_insertion_point(field_set_allocated:epoch_proto.PieData.y)
+  _impl_.y_ = value;
 }
 
 // -------------------------------------------------------------------

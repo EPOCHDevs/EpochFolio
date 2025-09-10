@@ -71,12 +71,12 @@ endif ()
 # Include the EpochCore dependency
 include(${PROJECT_SOURCE_DIR}/cmake/EpochMetadata.cmake)
 
-
+set(EPOCH_FOLIO_LIBRARY_NAME "epoch_folio")
 add_library(epoch_folio "")
 add_library(epoch::folio ALIAS epoch_folio)
 
 # Configure version for shared libraries
-set_target_properties(epoch_folio PROPERTIES
+set_target_properties(${EPOCH_FOLIO_LIBRARY_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
 )

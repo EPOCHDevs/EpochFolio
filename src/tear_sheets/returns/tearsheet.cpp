@@ -651,9 +651,9 @@ HeatMapDef TearSheetFactory::BuildMonthlyReturnsHeatMap() const {
 
     auto value = monthlyReturns.iloc(i);
     auto *point = out.add_points();
-    point->mutable_x()->set_uint64_value(x);
-    point->mutable_y()->set_uint64_value(y);
-    *point->mutable_value() = ToProtoScalar(value * hundred_percent);
+    point->set_x(x);
+    point->set_y(y);
+    point->set_value((value * hundred_percent).as_double());
   }
 
   return out;

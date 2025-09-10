@@ -8,3 +8,4 @@ empyrical-reloaded>=0.5.9
 ipython>=3.2.3
 scipy>=0.14.0
 scikit-learn>=0.16.1
+epoch-protos

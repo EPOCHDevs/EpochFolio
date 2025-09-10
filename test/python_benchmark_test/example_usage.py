@@ -14,8 +14,8 @@ def main():
     
     # Example 1: Create a Scalar value
     scalar = common.Scalar()
-    scalar.double_value = 123.45
-    print(f"📊 Scalar value: {scalar.double_value}")
+    scalar.decimal_value = 123.45
+    print(f"📊 Scalar value: {scalar.decimal_value}")
     
     # Example 2: Create a Chart Definition
     chart = chart_def.ChartDef()

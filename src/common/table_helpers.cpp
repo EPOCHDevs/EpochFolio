@@ -60,7 +60,8 @@ MakeScalarFromArrow(const std::shared_ptr<arrow::Array> &array, int64_t row) {
   }
   case arrow::Type::TIMESTAMP: {
     auto a = std::static_pointer_cast<arrow::TimestampArray>(array);
-    return ToProtoScalarValue(a->Value(row));
+    // Convert ns timestamp to ms
+    return ToProtoScalarValue(a->Value(row) / 1000000);
   }
   default: {
     // Fallback: use ToString

@@ -49,12 +49,12 @@ class TestRealDataComparison:
         # Check charts in the main data structure
         charts_to_check = []
         if hasattr(pb_data, 'charts'):
-            charts_to_check.extend(pb_data.charts)
+            charts_to_check.extend(pb_data.charts.charts)
             
         # For FullTearSheet, also check strategy_benchmark section
         if hasattr(pb_data, 'strategy_benchmark') and pb_data.strategy_benchmark:
             if hasattr(pb_data.strategy_benchmark, 'charts'):
-                charts_to_check.extend(pb_data.strategy_benchmark.charts)
+                charts_to_check.extend(pb_data.strategy_benchmark.charts.charts)
         
         for chart in charts_to_check:
             # Look for cumulative returns chart
@@ -68,17 +68,18 @@ class TestRealDataComparison:
                         if hasattr(line, 'data') and len(line.data) > 0:
                             
                             cum_returns_values = []
+                            dates = []
                             for i, data_point in enumerate(line.data):
-                                if hasattr(data_point, 'y') and hasattr(data_point.y, 'double_value'):
-                                    cum_returns_values.append(data_point.y.double_value)
+                                if hasattr(data_point, 'y') and hasattr(data_point, 'x'):
+                                    # y is direct double, x is timestamp_ms
+                                    cum_returns_values.append(data_point.y)
+                                    # Convert timestamp from milliseconds to pandas timestamp
+                                    dates.append(pd.Timestamp.fromtimestamp(data_point.x / 1000.0))
                             
-                            if len(cum_returns_values) > 10:  # Need substantial data
-                                # Create date index (since x values are null, create daily dates)
-                                start_date = pd.Timestamp('2020-01-01')
-                                dates = pd.date_range(start=start_date, periods=len(cum_returns_values), freq='D')
-                                
+                            if len(cum_returns_values) > 10 and len(dates) == len(cum_returns_values):  # Need substantial data
                                 print(f"📊 Extracted {len(cum_returns_values)} cumulative return data points")
                                 print(f"   Range: {min(cum_returns_values):.6f} to {max(cum_returns_values):.6f}")
+                                print(f"   Date range: {min(dates)} to {max(dates)}")
                                 
                                 return pd.Series(cum_returns_values, index=dates, name='cumulative_returns')
         

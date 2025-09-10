@@ -83,6 +83,19 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
 
   auto date_range =
       trades[std::vector<std::string>{"open_dt", "close_dt", "long"}];
+
+  // Check that open_dt and close_dt are timestamps once before the loop
+  auto open_dt_type = date_range["open_dt"].dtype();
+  auto close_dt_type = date_range["close_dt"].dtype();
+  if (open_dt_type->id() != arrow::Type::TIMESTAMP) {
+    throw std::runtime_error("XRange open_dt must be timestamp type, got: " +
+                             open_dt_type->ToString());
+  }
+  if (close_dt_type->id() != arrow::Type::TIMESTAMP) {
+    throw std::runtime_error("XRange close_dt must be timestamp type, got: " +
+                             close_dt_type->ToString());
+  }
+
   tbb::parallel_for(
       tbb::blocked_range<size_t>(0, categories.size()), [&](auto const &range) {
         for (auto i = range.begin(); i != range.end(); ++i) {
@@ -96,8 +109,14 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
             auto index = trades_in_sector.index()->at(j);
 
             XRangePoint point;
-            *point.mutable_x() = ToProtoScalar(open_dt);
-            *point.mutable_x2() = ToProtoScalar(close_dt);
+            // Convert timestamps to ms (we know they are timestamps from the
+            // check above)
+            auto open_ts = std::static_pointer_cast<arrow::TimestampScalar>(
+                open_dt.value());
+            auto close_ts = std::static_pointer_cast<arrow::TimestampScalar>(
+                close_dt.value());
+            point.set_x(open_ts->value / 1000000);   // Convert ns to ms
+            point.set_x2(close_ts->value / 1000000); // Convert ns to ms
             point.set_y(i);
             point.set_is_long(long_.as_bool());
             points_vec[index.value<uint64_t>().value()] = std::move(point);
@@ -151,14 +170,12 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
 
   auto *straight_line1 = prob_profit_chart.add_straight_lines();
   straight_line1->set_title("2.5%");
-  *straight_line1->mutable_value() =
-      ToProtoScalar(Scalar{quantile(dist, 0.025) * 100.0});
+  straight_line1->set_value(quantile(dist, 0.025) * 100.0);
   straight_line1->set_vertical(true);
 
   auto *straight_line2 = prob_profit_chart.add_straight_lines();
   straight_line2->set_title("97.5%");
-  *straight_line2->mutable_value() =
-      ToProtoScalar(Scalar{quantile(dist, 0.975) * 100.0});
+  straight_line2->set_value(quantile(dist, 0.975) * 100.0);
   straight_line2->set_vertical(true);
 
   return prob_profit_chart;
@@ -389,7 +406,7 @@ PieDef TearSheetFactory::MakeProfitabilityPieChart(
 
     auto *point = profit_attr_data.add_points();
     point->set_name(asset.repr());
-    *point->mutable_y() = ToProtoScalar(profit);
+    point->set_y(profit.as_double());
   }
 
   PieDataDef sector_profit_attr_data;
@@ -403,7 +420,7 @@ PieDef TearSheetFactory::MakeProfitabilityPieChart(
 
     auto *point = sector_profit_attr_data.add_points();
     point->set_name(sector.repr());
-    *point->mutable_y() = ToProtoScalar(profit);
+    point->set_y(profit.as_double());
   }
 
   PieDef pie_def;

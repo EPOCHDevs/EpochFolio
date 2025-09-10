@@ -8,6 +8,7 @@
 #include <epoch_protos/chart_def.pb.h>
 #include <epoch_protos/common.pb.h>
 #include <epoch_protos/table_def.pb.h>
+#include <ranges>
 #include <string>
 #include <string_view>
 
@@ -53,37 +54,37 @@ epoch_proto::Scalar ToProtoScalar(const epoch_frame::Scalar &s);
 // constructing epoch_frame::Scalar first
 inline epoch_proto::Scalar ToProtoScalarValue(double v) {
   epoch_proto::Scalar s;
-  s.set_double_value(v);
+  s.set_decimal_value(v);
   return s;
 }
 inline epoch_proto::Scalar ToProtoScalarValue(float v) {
   epoch_proto::Scalar s;
-  s.set_double_value(static_cast<double>(v));
+  s.set_decimal_value(static_cast<double>(v));
   return s;
 }
 inline epoch_proto::Scalar ToProtoScalarValue(int64_t v) {
   epoch_proto::Scalar s;
-  s.set_int64_value(v);
+  s.set_integer_value(v);
   return s;
 }
 inline epoch_proto::Scalar ToProtoScalarValue(int32_t v) {
   epoch_proto::Scalar s;
-  s.set_int64_value(static_cast<int64_t>(v));
+  s.set_integer_value(static_cast<int64_t>(v));
   return s;
 }
 inline epoch_proto::Scalar ToProtoScalarValue(uint64_t v) {
   epoch_proto::Scalar s;
-  s.set_uint64_value(v);
+  s.set_integer_value(static_cast<int64_t>(v));
   return s;
 }
 inline epoch_proto::Scalar ToProtoScalarValue(uint32_t v) {
   epoch_proto::Scalar s;
-  s.set_uint64_value(static_cast<uint64_t>(v));
+  s.set_integer_value(static_cast<int64_t>(v));
   return s;
 }
 inline epoch_proto::Scalar ToProtoScalarValue(bool v) {
   epoch_proto::Scalar s;
-  s.set_bool_value(v);
+  s.set_boolean_value(v);
   return s;
 }
 inline epoch_proto::Scalar ToProtoScalarValue(const std::string &v) {
@@ -107,7 +108,7 @@ inline StraightLineDef MakeStraightLine(const std::string &title,
                                         bool vertical) {
   StraightLineDef out;
   out.set_title(title);
-  *out.mutable_value() = ToProtoScalar(value);
+  out.set_value(value.as_double());
   out.set_vertical(vertical);
   return out;
 }
@@ -152,10 +153,10 @@ Line MakeSeriesLine(std::vector<X> x, std::vector<Y> y,
     line.set_name(*name);
   auto n = x.size();
   line.mutable_data()->Reserve(static_cast<int>(n));
-  for (size_t i = 0; i < n; ++i) {
+  for (auto const &[x_val, y_val] : std::views::zip(x, y)) {
     auto *p = line.add_data();
-    *p->mutable_x() = ToProtoScalarValue(x[i]);
-    *p->mutable_y() = ToProtoScalarValue(y[i]);
+    p->set_x(static_cast<int64_t>(x_val));
+    p->set_y(static_cast<double>(y_val));
   }
   return line;
 }
