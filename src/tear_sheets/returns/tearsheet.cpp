@@ -36,30 +36,6 @@ const StraightLineDef kStraightLineAtZero = MakeStraightLine("", ZERO, false);
 constexpr const char *kBenchmarkColumnName = "benchmark";
 constexpr const char *kStrategyColumnName = "strategy";
 
-// Helper function to convert timestamp from nanoseconds to milliseconds
-inline Scalar ConvertDateToMilliseconds(const Scalar &dateNanos) {
-  // If the scalar is already a timestamp, extract its value
-  if (dateNanos.value()->type_id() == arrow::Type::TIMESTAMP) {
-    auto ts =
-        std::static_pointer_cast<arrow::TimestampScalar>(dateNanos.value());
-    auto unit =
-        std::static_pointer_cast<arrow::TimestampType>(ts->type)->unit();
-
-    if (unit == arrow::TimeUnit::NANO) {
-      // Convert nanoseconds to milliseconds
-      int64_t nanos = ts->value;
-      int64_t millis = nanos / 1000000;
-      return Scalar{
-          arrow::MakeScalar(arrow::timestamp(arrow::TimeUnit::MILLI), millis)};
-    } else if (unit == arrow::TimeUnit::MILLI) {
-      // Already in milliseconds
-      return dateNanos;
-    }
-  }
-  // Return as-is if not a timestamp or already in correct format
-  return dateNanos;
-}
-
 void TearSheetFactory::SetStrategyReturns(
     epoch_frame::Series const &strategyReturns) {
   m_strategy = strategyReturns;
@@ -454,13 +430,16 @@ Table TearSheetFactory::MakeStressEventTable() const {
     *row->add_values() = ToProtoScalarValue(event);
 
     // Mean percentage (use percent_value field)
-    *row->add_values() = ToProtoScalarPercent((strategy.mean() * hundred).as_double());
+    *row->add_values() =
+        ToProtoScalarPercent((strategy.mean() * hundred).as_double());
 
     // Min percentage (use percent_value field)
-    *row->add_values() = ToProtoScalarPercent((strategy.min() * hundred).as_double());
+    *row->add_values() =
+        ToProtoScalarPercent((strategy.min() * hundred).as_double());
 
     // Max percentage (use percent_value field)
-    *row->add_values() = ToProtoScalarPercent((strategy.max() * hundred).as_double());
+    *row->add_values() =
+        ToProtoScalarPercent((strategy.max() * hundred).as_double());
   }
 
   return out;
@@ -511,24 +490,32 @@ Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
     *pb_row->add_values() = ToProtoScalarValue(static_cast<int64_t>(row.index));
 
     // Net drawdown as percentage (use percent_value field)
-    *pb_row->add_values() = ToProtoScalarPercent((row.netDrawdown * hundred).as_double());
+    *pb_row->add_values() =
+        ToProtoScalarPercent((row.netDrawdown * hundred).as_double());
 
     // Peak date - properly convert to date scalar
-    *pb_row->add_values() = ToProtoScalar(ConvertDateToMilliseconds(row.peakDate));
+    *pb_row->add_values() = ToProtoScalarDate(row.peakDate);
 
     // Valley date - properly convert to date scalar
-    *pb_row->add_values() = ToProtoScalar(ConvertDateToMilliseconds(row.valleyDate));
+    *pb_row->add_values() = ToProtoScalarDate(row.valleyDate);
 
     // Recovery date (nullable) - properly convert to date scalar
     if (row.recoveryDate.has_value()) {
-      *pb_row->add_values() = ToProtoScalar(ConvertDateToMilliseconds(*row.recoveryDate));
+      *pb_row->add_values() = ToProtoScalarDate(*row.recoveryDate);
     } else {
       // Add null value for recovery date
       *pb_row->add_values() = ToProtoScalarValue(std::nullptr_t{});
     }
 
     // Duration in days (use day_duration field)
-    *pb_row->add_values() = ToProtoScalarDayDuration(static_cast<int32_t>(row.duration.as_int64()));
+    // Check if duration is valid before converting
+    if (row.duration.is_valid()) {
+      *pb_row->add_values() =
+          ToProtoScalarDayDuration(static_cast<int32_t>(row.duration.as_int64()));
+    } else {
+      // Add null value for duration if it's not valid
+      *pb_row->add_values() = ToProtoScalarValue(std::nullptr_t{});
+    }
   }
 
   return out;
