@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "epoch_frame/datetime.h"
 #include <cmath>
 #include <epoch_frame/frame_or_series.h>
 #include <epoch_protos/chart_def.pb.h>
@@ -103,12 +104,67 @@ inline epoch_proto::Scalar ToProtoScalarValue(std::nullptr_t) {
   return s;
 }
 
+// Date types - use date_value field (stores as milliseconds since epoch)
+inline epoch_proto::Scalar ToProtoScalarDate(epoch_frame::Date const &v) {
+  epoch_proto::Scalar s;
+  // Convert date to milliseconds since epoch (ordinal is days since epoch)
+  s.set_date_value(static_cast<int64_t>(v.toordinal()) * 86400000);
+  return s;
+}
+
+// DateTime/Timestamp types - use timestamp_ms field
+inline epoch_proto::Scalar
+ToProtoScalarTimestamp(epoch_frame::DateTime const &v) {
+  epoch_proto::Scalar s;
+  // Convert nanoseconds to milliseconds
+  s.set_timestamp_ms(v.m_nanoseconds.count() / 1000000);
+  return s;
+}
+
+// Duration in milliseconds - use duration_ms field
+inline epoch_proto::Scalar ToProtoScalarDurationMs(int64_t milliseconds) {
+  epoch_proto::Scalar s;
+  s.set_duration_ms(milliseconds);
+  return s;
+}
+
+// Day duration - use day_duration field (for durations measured in days)
+inline epoch_proto::Scalar ToProtoScalarDayDuration(int32_t days) {
+  epoch_proto::Scalar s;
+  s.set_day_duration(days);
+  return s;
+}
+
+// Percentage - use percent_value field
+inline epoch_proto::Scalar ToProtoScalarPercent(double percent) {
+  epoch_proto::Scalar s;
+  s.set_percent_value(percent);
+  return s;
+}
+
+// Monetary value - use monetary_value field
+inline epoch_proto::Scalar ToProtoScalarMonetary(double amount) {
+  epoch_proto::Scalar s;
+  s.set_monetary_value(amount);
+  return s;
+}
+
 inline StraightLineDef MakeStraightLine(const std::string &title,
                                         const epoch_frame::Scalar &value,
                                         bool vertical) {
   StraightLineDef out;
   out.set_title(title);
-  out.set_value(value.as_double());
+
+  // Handle both integer and double types
+  auto type_id = value.type()->id();
+  if (type_id == arrow::Type::INT64) {
+    out.set_value(static_cast<double>(value.as_int64()));
+  } else if (type_id == arrow::Type::INT32) {
+    out.set_value(static_cast<double>(value.cast_int32().as_int32()));
+  } else {
+    out.set_value(value.as_double());
+  }
+
   out.set_vertical(vertical);
   return out;
 }

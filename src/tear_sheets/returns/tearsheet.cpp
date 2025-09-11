@@ -19,6 +19,7 @@
 #include <epoch_frame/factory/index_factory.h>
 #include <epoch_frame/factory/series_factory.h>
 #include <epoch_frame/factory/table_factory.h>
+#include <optional>
 
 using namespace epoch_core;
 using namespace epoch_frame;
@@ -34,6 +35,30 @@ const StraightLineDef kStraightLineAtZero = MakeStraightLine("", ZERO, false);
 
 constexpr const char *kBenchmarkColumnName = "benchmark";
 constexpr const char *kStrategyColumnName = "strategy";
+
+// Helper function to convert timestamp from nanoseconds to milliseconds
+inline Scalar ConvertDateToMilliseconds(const Scalar &dateNanos) {
+  // If the scalar is already a timestamp, extract its value
+  if (dateNanos.value()->type_id() == arrow::Type::TIMESTAMP) {
+    auto ts =
+        std::static_pointer_cast<arrow::TimestampScalar>(dateNanos.value());
+    auto unit =
+        std::static_pointer_cast<arrow::TimestampType>(ts->type)->unit();
+
+    if (unit == arrow::TimeUnit::NANO) {
+      // Convert nanoseconds to milliseconds
+      int64_t nanos = ts->value;
+      int64_t millis = nanos / 1000000;
+      return Scalar{
+          arrow::MakeScalar(arrow::timestamp(arrow::TimeUnit::MILLI), millis)};
+    } else if (unit == arrow::TimeUnit::MILLI) {
+      // Already in milliseconds
+      return dateNanos;
+    }
+  }
+  // Return as-is if not a timestamp or already in correct format
+  return dateNanos;
+}
 
 void TearSheetFactory::SetStrategyReturns(
     epoch_frame::Series const &strategyReturns) {
@@ -396,30 +421,12 @@ CardDef TearSheetFactory::MakePerformanceStats(
 }
 
 Table TearSheetFactory::MakeStressEventTable() const {
-  std::vector<std::vector<Scalar>> stressEvents(4);
-
-  stressEvents[0].reserve(m_strategyReturnsInteresting.size());
-  stressEvents[1].reserve(m_strategyReturnsInteresting.size());
-  stressEvents[2].reserve(m_strategyReturnsInteresting.size());
-  stressEvents[3].reserve(m_strategyReturnsInteresting.size());
-
-  const Scalar hundred{100.0};
-  for (auto const &[event, strategy] : m_strategyReturnsInteresting) {
-    stressEvents[0].emplace_back(Scalar{event});
-    stressEvents[1].emplace_back(strategy.mean() * hundred);
-    stressEvents[2].emplace_back(strategy.min() * hundred);
-    stressEvents[3].emplace_back(strategy.max() * hundred);
-  }
-
-  auto data = factory::table::make_table(
-      stressEvents, {string_field("event"), float64_field("mean"),
-                     float64_field("min"), float64_field("max")});
-
   Table out;
   out.set_type(epoch_proto::WidgetDataTable);
   out.set_category(epoch_folio::categories::StrategyBenchmark);
   out.set_title("Stress Events Analysis");
 
+  // Define columns
   auto *event_col = out.add_columns();
   event_col->set_name("event");
   event_col->set_type(epoch_proto::TypeString);
@@ -436,40 +443,39 @@ Table TearSheetFactory::MakeStressEventTable() const {
   max_col->set_name("max");
   max_col->set_type(epoch_proto::TypePercent);
 
-  *out.mutable_data() = MakeTableDataFromArrow(data);
+  // Build data directly in protobuf format
+  auto *table_data = out.mutable_data();
+  const Scalar hundred{100.0};
+
+  for (auto const &[event, strategy] : m_strategyReturnsInteresting) {
+    auto *row = table_data->add_rows();
+
+    // Event name (string)
+    *row->add_values() = ToProtoScalarValue(event);
+
+    // Mean percentage (use percent_value field)
+    *row->add_values() = ToProtoScalarPercent((strategy.mean() * hundred).as_double());
+
+    // Min percentage (use percent_value field)
+    *row->add_values() = ToProtoScalarPercent((strategy.min() * hundred).as_double());
+
+    // Max percentage (use percent_value field)
+    *row->add_values() = ToProtoScalarPercent((strategy.max() * hundred).as_double());
+  }
+
   return out;
 }
 
 Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
                                                DrawDownTable &data) const {
   data = GenerateDrawDownTable(m_strategy, top);
-  std::vector<std::vector<Scalar>> tableData(6);
-  tableData[0].reserve(data.size());
-  tableData[1].reserve(data.size());
-  tableData[2].reserve(data.size());
-  tableData[3].reserve(data.size());
-  tableData[4].reserve(data.size());
-  tableData[5].reserve(data.size());
-
-  for (auto &&row : data) {
-    tableData[0].emplace_back(std::move(row.index));
-    tableData[1].emplace_back(std::move(row.peakDate));
-    tableData[2].emplace_back(std::move(row.valleyDate));
-    if (row.recoveryDate.has_value()) {
-      tableData[3].emplace_back(std::move(*row.recoveryDate));
-    } else {
-      tableData[3].emplace_back(
-          arrow::MakeNullScalar(arrow::timestamp(arrow::TimeUnit::NANO)));
-    }
-    tableData[4].emplace_back(std::move(row.duration));
-    tableData[5].emplace_back(std::move(row.netDrawdown));
-  }
 
   Table out;
   out.set_type(epoch_proto::WidgetDataTable);
   out.set_category(epoch_folio::categories::RiskAnalysis);
   out.set_title("Worst Drawdown Periods");
 
+  // Define columns in order
   auto *index_col = out.add_columns();
   index_col->set_name("index");
   index_col->set_type(epoch_proto::TypeInteger);
@@ -482,10 +488,6 @@ Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
   peak_col->set_name("peakDate");
   peak_col->set_type(epoch_proto::TypeDate);
 
-  auto *duration_col = out.add_columns();
-  duration_col->set_name("duration");
-  duration_col->set_type(epoch_proto::TypeDayDuration);
-
   auto *valley_col = out.add_columns();
   valley_col->set_name("valleyDate");
   valley_col->set_type(epoch_proto::TypeDate);
@@ -494,10 +496,41 @@ Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
   recovery_col->set_name("recoveryDate");
   recovery_col->set_type(epoch_proto::TypeDate);
 
-  *out.mutable_data() = MakeTableDataFromArrow(factory::table::make_table(
-      tableData, {int64_field("index"), datetime_field("peakDate"),
-                  datetime_field("valleyDate"), datetime_field("recoveryDate"),
-                  uint64_field("duration"), float64_field("netDrawdown")}));
+  auto *duration_col = out.add_columns();
+  duration_col->set_name("duration");
+  duration_col->set_type(epoch_proto::TypeDayDuration);
+
+  // Build data directly in protobuf format
+  auto *table_data = out.mutable_data();
+  const Scalar hundred{100.0};
+
+  for (auto const &row : data) {
+    auto *pb_row = table_data->add_rows();
+
+    // Index (integer)
+    *pb_row->add_values() = ToProtoScalarValue(static_cast<int64_t>(row.index));
+
+    // Net drawdown as percentage (use percent_value field)
+    *pb_row->add_values() = ToProtoScalarPercent((row.netDrawdown * hundred).as_double());
+
+    // Peak date - properly convert to date scalar
+    *pb_row->add_values() = ToProtoScalar(ConvertDateToMilliseconds(row.peakDate));
+
+    // Valley date - properly convert to date scalar
+    *pb_row->add_values() = ToProtoScalar(ConvertDateToMilliseconds(row.valleyDate));
+
+    // Recovery date (nullable) - properly convert to date scalar
+    if (row.recoveryDate.has_value()) {
+      *pb_row->add_values() = ToProtoScalar(ConvertDateToMilliseconds(*row.recoveryDate));
+    } else {
+      // Add null value for recovery date
+      *pb_row->add_values() = ToProtoScalarValue(std::nullptr_t{});
+    }
+
+    // Duration in days (use day_duration field)
+    *pb_row->add_values() = ToProtoScalarDayDuration(static_cast<int32_t>(row.duration.as_int64()));
+  }
+
   return out;
 }
 
