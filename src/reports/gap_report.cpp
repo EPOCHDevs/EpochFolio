@@ -8,6 +8,7 @@
 #include <epoch_metadata/metadata_options.h>
 #include <spdlog/spdlog.h>
 
+#include "common/card_helpers.h"
 #include "common/chart_def.h"
 #include "common/table_helpers.h"
 
@@ -339,11 +340,8 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   card1.set_type(epoch_proto::WidgetCard);
   card1.set_category(epoch_folio::categories::RiskAnalysis);
   card1.set_group_size(1);
-  auto *data1 = card1.add_data();
-  data1->set_title("Total Gaps");
-  *data1->mutable_value() =
-      ToProtoScalar(epoch_frame::Scalar{static_cast<int64_t>(gaps.num_rows())});
-  data1->set_type(epoch_proto::TypeInteger);
+  CardDataHelper::AddIntegerField(card1, "Total Gaps",
+      epoch_frame::Scalar{static_cast<int64_t>(gaps.num_rows())});
   cards.push_back(std::move(card1));
 
   // Count gap types using boolean columns
@@ -365,17 +363,10 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   card2.set_category(epoch_folio::categories::RiskAnalysis);
   card2.set_group_size(2);
 
-  auto *data2a = card2.add_data();
-  data2a->set_title("Gap Up");
-  *data2a->mutable_value() = ToProtoScalar(epoch_frame::Scalar{gap_up_count});
-  data2a->set_type(epoch_proto::TypeInteger);
-  data2a->set_group(1);
-
-  auto *data2b = card2.add_data();
-  data2b->set_title("Gap Down");
-  *data2b->mutable_value() = ToProtoScalar(epoch_frame::Scalar{gap_down_count});
-  data2b->set_type(epoch_proto::TypeInteger);
-  data2b->set_group(1);
+  CardDataHelper::AddIntegerField(card2, "Gap Up",
+      epoch_frame::Scalar{gap_up_count}, 1);
+  CardDataHelper::AddIntegerField(card2, "Gap Down",
+      epoch_frame::Scalar{gap_down_count}, 1);
 
   cards.push_back(std::move(card2));
 
@@ -388,10 +379,8 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   card3.set_type(epoch_proto::WidgetCard);
   card3.set_category(epoch_folio::categories::RiskAnalysis);
   card3.set_group_size(1);
-  auto *data3 = card3.add_data();
-  data3->set_title("Overall Fill Rate");
-  *data3->mutable_value() = ToProtoScalar(epoch_frame::Scalar{fill_rate});
-  data3->set_type(epoch_proto::TypePercent);
+  CardDataHelper::AddPercentField(card3, "Overall Fill Rate",
+      epoch_frame::Scalar{fill_rate});
   cards.push_back(std::move(card3));
 
   // Average and max gap size
@@ -403,17 +392,10 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   card4.set_category(epoch_folio::categories::RiskAnalysis);
   card4.set_group_size(2);
 
-  auto *data4a = card4.add_data();
-  data4a->set_title("Avg Gap %");
-  *data4a->mutable_value() = ToProtoScalar(epoch_frame::Scalar{avg_gap_pct});
-  data4a->set_type(epoch_proto::TypePercent);
-  data4a->set_group(2);
-
-  auto *data4b = card4.add_data();
-  data4b->set_title("Max Gap %");
-  *data4b->mutable_value() = ToProtoScalar(epoch_frame::Scalar{max_gap_pct});
-  data4b->set_type(epoch_proto::TypePercent);
-  data4b->set_group(2);
+  CardDataHelper::AddPercentField(card4, "Avg Gap %",
+      epoch_frame::Scalar{avg_gap_pct}, 2);
+  CardDataHelper::AddPercentField(card4, "Max Gap %",
+      epoch_frame::Scalar{max_gap_pct}, 2);
 
   cards.push_back(std::move(card4));
 
@@ -519,21 +501,10 @@ Table GapReport::create_frequency_table(const epoch_frame::DataFrame &gaps,
   result_table.set_category(epoch_proto::epoch_folio::categories::RiskAnalysis);
   result_table.set_title(title);
 
-  // Add columns
-  auto *col1 = result_table.add_columns();
-  col1->set_name("Category");
-  // col1->set_display_name("Category");
-  col1->set_type(epoch_proto::TypeString);
-
-  auto *col2 = result_table.add_columns();
-  col2->set_name("Frequency");
-  // col2->set_display_name("Frequency");
-  col2->set_type(epoch_proto::TypeInteger);
-
-  auto *col3 = result_table.add_columns();
-  col3->set_name("Percentage");
-  // col3->set_display_name("Percentage");
-  col3->set_type(epoch_proto::TypePercent);
+  // Add columns using helpers (id defaults to name if not provided)
+  TableColumnHelper::AddStringColumn(result_table, "Category", "category");
+  TableColumnHelper::AddIntegerColumn(result_table, "Frequency", "frequency");
+  TableColumnHelper::AddPercentColumn(result_table, "Percentage", "percentage");
 
   // Set data
   *result_table.mutable_data() = MakeTableDataFromArrow(table);
@@ -767,41 +738,14 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
   result_table.set_category(epoch_proto::epoch_folio::categories::RiskAnalysis);
   result_table.set_title("Recent Gap Details");
 
-  // Add columns
-  auto *col1 = result_table.add_columns();
-  col1->set_name("Date");
-  // col1->set_display_name("Date");
-  col1->set_type(epoch_proto::TypeDateTime);
-
-  auto *col2 = result_table.add_columns();
-  col2->set_name("Symbol");
-  // col2->set_display_name("Symbol");
-  col2->set_type(epoch_proto::TypeString);
-
-  auto *col3 = result_table.add_columns();
-  col3->set_name("Type");
-  // col3->set_display_name("Type");
-  col3->set_type(epoch_proto::TypeString);
-
-  auto *col4 = result_table.add_columns();
-  col4->set_name("Gap %");
-  // col4->set_display_name("Gap %");
-  col4->set_type(epoch_proto::TypePercent);
-
-  auto *col5 = result_table.add_columns();
-  col5->set_name("Filled");
-  // col5->set_display_name("Filled");
-  col5->set_type(epoch_proto::TypeString);
-
-  auto *col6 = result_table.add_columns();
-  col6->set_name("Fill %");
-  // col6->set_display_name("Fill %");
-  col6->set_type(epoch_proto::TypePercent);
-
-  auto *col7 = result_table.add_columns();
-  col7->set_name("Performance");
-  // col7->set_display_name("Performance");
-  col7->set_type(epoch_proto::TypeString);
+  // Add columns using helpers
+  TableColumnHelper::AddTimestampColumn(result_table, "Date", "date");
+  TableColumnHelper::AddStringColumn(result_table, "Symbol", "symbol");
+  TableColumnHelper::AddStringColumn(result_table, "Type", "type");
+  TableColumnHelper::AddPercentColumn(result_table, "Gap %", "gap_percent");
+  TableColumnHelper::AddStringColumn(result_table, "Filled", "filled");
+  TableColumnHelper::AddPercentColumn(result_table, "Fill %", "fill_percent");
+  TableColumnHelper::AddStringColumn(result_table, "Performance", "performance");
 
   // Set data
   *result_table.mutable_data() = MakeTableDataFromArrow(table);

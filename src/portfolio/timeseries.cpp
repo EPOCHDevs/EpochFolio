@@ -8,6 +8,7 @@
 #include <epoch_frame/factory/index_factory.h>
 #include <epoch_frame/factory/series_factory.h>
 #include <oneapi/tbb/parallel_for.h>
+#include <spdlog/spdlog.h>
 
 #include "empyrical/alpha_beta.h"
 #include "interesting_periods.h"

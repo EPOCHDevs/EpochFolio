@@ -4,6 +4,7 @@
 
 #include "tearsheet.h"
 
+#include "common/card_helpers.h"
 #include "common/chart_def.h"
 #include "common/table_helpers.h"
 #include "common/type_helper.h"
@@ -11,6 +12,7 @@
 #include <common/methods_helper.h>
 #include <common/python_utils.h>
 
+#include "epoch_frame/scalar.h"
 #include "portfolio/timeseries.h"
 #include "portfolio/txn.h"
 #include <epoch_folio/empyrical_all.h>
@@ -301,39 +303,27 @@ CardDef TearSheetFactory::MakePerformanceStats(
     auto start = m_strategy.index()->at(0);
     auto end = m_strategy.index()->at(-1);
 
-    auto *data_start = card.add_data();
-    data_start->set_title("Start date");
-    *data_start->mutable_value() = ToProtoScalar(start);
-    data_start->set_type(epoch_proto::TypeDate);
-    data_start->set_group(kGroup0);
-
-    auto *data_end = card.add_data();
-    data_end->set_title("End date");
-    *data_end->mutable_value() = ToProtoScalar(end);
-    data_end->set_type(epoch_proto::TypeDate);
-    data_end->set_group(kGroup0);
+    // Use helper to correctly handle date conversion (seconds, not
+    // milliseconds)
+    CardDataHelper::AddDateField(card, "Start date", start, kGroup0);
+    CardDataHelper::AddDateField(card, "End date", end, kGroup0);
 
     auto months = start.dt().months_between(end).cast_int32();
-    auto *data_months = card.add_data();
-    data_months->set_title("Total months");
-    *data_months->mutable_value() = ToProtoScalar(months);
-    data_months->set_type(epoch_proto::TypeInteger);
-    data_months->set_group(kGroup0);
+    CardDataHelper::AddIntegerField(card, "Total months", months, kGroup0);
 
     for (auto const &[stat, func] : ep::get_simple_stats()) {
       try {
         auto scalar = func(m_strategy);
-        auto type = epoch_proto::TypeDecimal;
         if (pct_fns.contains(ep::get_stat_name(stat))) {
-          scalar *= 100;
-          type = epoch_proto::TypePercent;
+          // Use helper for percentage fields
+          CardDataHelper::AddPercentField(card, ep::get_stat_name(stat),
+                                          Scalar{std::move(scalar)}, kGroup1,
+                                          true);
+        } else {
+          // Use helper for decimal fields
+          CardDataHelper::AddDecimalField(card, ep::get_stat_name(stat),
+                                          Scalar{std::move(scalar)}, kGroup1);
         }
-
-        auto *data_stat = card.add_data();
-        data_stat->set_title(ep::get_stat_name(stat));
-        *data_stat->mutable_value() = ToProtoScalar(Scalar{std::move(scalar)});
-        data_stat->set_type(type);
-        data_stat->set_group(kGroup1);
       } catch (const std::exception &e) {
         // Skip this stat if it fails
         SPDLOG_WARN("Failed to compute stat {}: {}", ep::get_stat_name(stat),
@@ -344,25 +334,18 @@ CardDef TearSheetFactory::MakePerformanceStats(
 
   if (!positions.empty()) {
     try {
-      auto *data_leverage = card.add_data();
-      data_leverage->set_title("Gross Leverage");
-      *data_leverage->mutable_value() =
-          ToProtoScalar(GrossLeverage(positions).mean());
-      data_leverage->set_type(epoch_proto::TypeDecimal);
-      data_leverage->set_group(kGroup2);
+      CardDataHelper::AddDecimalField(card, "Gross Leverage",
+                                      GrossLeverage(positions).mean(), kGroup2);
     } catch (const std::exception &e) {
       SPDLOG_WARN("Failed to compute gross leverage: {}", e.what());
     }
 
     if (!m_transactions.empty()) {
       try {
-        auto *data_turnover = card.add_data();
-        data_turnover->set_title("Daily Turnover");
-        *data_turnover->mutable_value() = ToProtoScalar(
-            GetTurnover(positions, m_transactions, turnoverDenominator).mean() *
-            100.0_scalar);
-        data_turnover->set_type(epoch_proto::TypePercent);
-        data_turnover->set_group(kGroup2);
+        auto turnover =
+            GetTurnover(positions, m_transactions, turnoverDenominator).mean();
+        CardDataHelper::AddPercentField(card, "Daily Turnover", turnover,
+                                        kGroup2, true);
       } catch (const std::exception &e) {
         SPDLOG_WARN("Failed to compute daily turnover: {}", e.what());
       }
@@ -376,12 +359,9 @@ CardDef TearSheetFactory::MakePerformanceStats(
           {kStrategyColumnName, kBenchmarkColumnName});
       for (auto const &[stat, func] : ep::get_factor_stats()) {
         try {
-          auto *data_factor = card.add_data();
-          data_factor->set_title(ep::get_stat_name(stat));
-          *data_factor->mutable_value() =
-              ToProtoScalar(epoch_frame::Scalar{func(merged_returns)});
-          data_factor->set_type(epoch_proto::TypeDecimal);
-          data_factor->set_group(kGroup3);
+          CardDataHelper::AddDecimalField(
+              card, ep::get_stat_name(stat),
+              epoch_frame::Scalar{func(merged_returns)}, kGroup3);
         } catch (const std::exception &e) {
           SPDLOG_WARN("Failed to compute factor stat {}: {}",
                       ep::get_stat_name(stat), e.what());
@@ -402,22 +382,11 @@ Table TearSheetFactory::MakeStressEventTable() const {
   out.set_category(epoch_folio::categories::StrategyBenchmark);
   out.set_title("Stress Events Analysis");
 
-  // Define columns
-  auto *event_col = out.add_columns();
-  event_col->set_name("event");
-  event_col->set_type(epoch_proto::TypeString);
-
-  auto *mean_col = out.add_columns();
-  mean_col->set_name("mean");
-  mean_col->set_type(epoch_proto::TypePercent);
-
-  auto *min_col = out.add_columns();
-  min_col->set_name("min");
-  min_col->set_type(epoch_proto::TypePercent);
-
-  auto *max_col = out.add_columns();
-  max_col->set_name("max");
-  max_col->set_type(epoch_proto::TypePercent);
+  // Define columns using helpers (display name, id)
+  TableColumnHelper::AddStringColumn(out, "Event", "event");
+  TableColumnHelper::AddPercentColumn(out, "Mean", "mean");
+  TableColumnHelper::AddPercentColumn(out, "Min", "min");
+  TableColumnHelper::AddPercentColumn(out, "Max", "max");
 
   // Build data directly in protobuf format
   auto *table_data = out.mutable_data();
@@ -426,20 +395,20 @@ Table TearSheetFactory::MakeStressEventTable() const {
   for (auto const &[event, strategy] : m_strategyReturnsInteresting) {
     auto *row = table_data->add_rows();
 
-    // Event name (string)
+    // Event name (string) - direct conversion is fine for strings
     *row->add_values() = ToProtoScalarValue(event);
 
-    // Mean percentage (use percent_value field)
-    *row->add_values() =
-        ToProtoScalarPercent((strategy.mean() * hundred).as_double());
+    // Mean percentage - use helper for proper percent conversion
+    *row->add_values() = TableRowHelper::AddTypedValue(
+        strategy.mean(), epoch_proto::TypePercent);
 
-    // Min percentage (use percent_value field)
-    *row->add_values() =
-        ToProtoScalarPercent((strategy.min() * hundred).as_double());
+    // Min percentage - use helper for proper percent conversion
+    *row->add_values() = TableRowHelper::AddTypedValue(
+        strategy.min(), epoch_proto::TypePercent);
 
-    // Max percentage (use percent_value field)
-    *row->add_values() =
-        ToProtoScalarPercent((strategy.max() * hundred).as_double());
+    // Max percentage - use helper for proper percent conversion
+    *row->add_values() = TableRowHelper::AddTypedValue(
+        strategy.max(), epoch_proto::TypePercent);
   }
 
   return out;
@@ -454,30 +423,13 @@ Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
   out.set_category(epoch_folio::categories::RiskAnalysis);
   out.set_title("Worst Drawdown Periods");
 
-  // Define columns in order
-  auto *index_col = out.add_columns();
-  index_col->set_name("index");
-  index_col->set_type(epoch_proto::TypeInteger);
-
-  auto *net_col = out.add_columns();
-  net_col->set_name("netDrawdown");
-  net_col->set_type(epoch_proto::TypePercent);
-
-  auto *peak_col = out.add_columns();
-  peak_col->set_name("peakDate");
-  peak_col->set_type(epoch_proto::TypeDate);
-
-  auto *valley_col = out.add_columns();
-  valley_col->set_name("valleyDate");
-  valley_col->set_type(epoch_proto::TypeDate);
-
-  auto *recovery_col = out.add_columns();
-  recovery_col->set_name("recoveryDate");
-  recovery_col->set_type(epoch_proto::TypeDate);
-
-  auto *duration_col = out.add_columns();
-  duration_col->set_name("duration");
-  duration_col->set_type(epoch_proto::TypeDayDuration);
+  // Define columns in order (display name, id)
+  TableColumnHelper::AddIntegerColumn(out, "Index", "index");
+  TableColumnHelper::AddPercentColumn(out, "Net Drawdown", "netDrawdown");
+  TableColumnHelper::AddDateColumn(out, "Peak Date", "peakDate");
+  TableColumnHelper::AddDateColumn(out, "Valley Date", "valleyDate");
+  TableColumnHelper::AddDateColumn(out, "Recovery Date", "recoveryDate");
+  TableColumnHelper::AddDayDurationColumn(out, "Duration", "duration");
 
   // Build data directly in protobuf format
   auto *table_data = out.mutable_data();
@@ -486,36 +438,34 @@ Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
   for (auto const &row : data) {
     auto *pb_row = table_data->add_rows();
 
-    // Index (integer)
-    *pb_row->add_values() = ToProtoScalarValue(static_cast<int64_t>(row.index));
+    // Index (integer) - use helper for proper type conversion
+    *pb_row->add_values() = TableRowHelper::AddTypedValue(
+        Scalar{static_cast<int64_t>(row.index)}, epoch_proto::TypeInteger);
 
-    // Net drawdown as percentage (use percent_value field)
-    *pb_row->add_values() =
-        ToProtoScalarPercent((row.netDrawdown * hundred).as_double());
+    // Net drawdown as percentage - use helper for proper type conversion
+    *pb_row->add_values() = TableRowHelper::AddTypedValue(
+        row.netDrawdown, epoch_proto::TypePercent);
 
-    // Peak date - properly convert to date scalar
-    *pb_row->add_values() = ToProtoScalarDate(row.peakDate);
+    // Peak date - use helper for proper date conversion
+    *pb_row->add_values() = TableRowHelper::AddDateValue(
+        Scalar{row.peakDate});
 
-    // Valley date - properly convert to date scalar
-    *pb_row->add_values() = ToProtoScalarDate(row.valleyDate);
+    // Valley date - use helper for proper date conversion
+    *pb_row->add_values() = TableRowHelper::AddDateValue(
+        Scalar{row.valleyDate});
 
-    // Recovery date (nullable) - properly convert to date scalar
+    // Recovery date (nullable) - use helper for proper date conversion
     if (row.recoveryDate.has_value()) {
-      *pb_row->add_values() = ToProtoScalarDate(*row.recoveryDate);
+      *pb_row->add_values() = TableRowHelper::AddDateValue(
+          Scalar{*row.recoveryDate});
     } else {
       // Add null value for recovery date
       *pb_row->add_values() = ToProtoScalarValue(std::nullptr_t{});
     }
 
-    // Duration in days (use day_duration field)
-    // Check if duration is valid before converting
-    if (row.duration.is_valid()) {
-      *pb_row->add_values() =
-          ToProtoScalarDayDuration(static_cast<int32_t>(row.duration.as_int64()));
-    } else {
-      // Add null value for duration if it's not valid
-      *pb_row->add_values() = ToProtoScalarValue(std::nullptr_t{});
-    }
+    // Duration - use helper for proper type conversion
+    *pb_row->add_values() = TableRowHelper::AddTypedValue(
+        row.duration, epoch_proto::TypeDayDuration);
   }
 
   return out;
@@ -565,13 +515,17 @@ void TearSheetFactory::MakeRollingMaxDrawdownCharts(
   *ld->add_lines() = MakeSeriesLine(m_strategyCumReturns, "Strategy");
   *ld->add_straight_lines() = kStraightLineAtOne;
 
-  // TODO: Fix band method names
+  // Add bands for drawdown periods
   for (auto const &row : drawDownTable) {
     auto recovery =
         row.recoveryDate.value_or(m_strategy.index()->at(-1).to_date().date());
     auto *band = ld->add_x_plot_bands();
-    *band->mutable_from() = ToProtoScalar(Scalar{row.peakDate});
-    *band->mutable_to() = ToProtoScalar(Scalar{recovery});
+    // Convert dates to timestamp format (milliseconds) for bands
+    // The band expects timestamp in milliseconds
+    auto peak_timestamp = DateToTimestampMs(row.peakDate);
+    auto recovery_timestamp = DateToTimestampMs(recovery);
+    band->mutable_from()->set_timestamp_ms(peak_timestamp);
+    band->mutable_to()->set_timestamp_ms(recovery_timestamp);
   }
 
   lines.push_back(std::move(c));
@@ -596,21 +550,50 @@ void TearSheetFactory::MakeUnderwaterCharts(std::vector<Chart> &lines) const {
 
 epoch_proto::TearSheet
 TearSheetFactory::MakeRiskAnalysis(int64_t topKDrawDowns) const {
-  DrawDownTable drawDownTable;
-  auto table = MakeWorstDrawdownTable(topKDrawDowns, drawDownTable);
+  try {
+    DrawDownTable drawDownTable;
+    auto table = MakeWorstDrawdownTable(topKDrawDowns, drawDownTable);
 
-  std::vector<epoch_proto::Chart> lines;
-  MakeRollingVolatilityCharts(lines);
-  MakeRollingSharpeCharts(lines);
-  MakeRollingMaxDrawdownCharts(lines, drawDownTable, topKDrawDowns);
-  MakeUnderwaterCharts(lines);
+    std::vector<epoch_proto::Chart> lines;
 
-  epoch_proto::TearSheet ts;
-  for (auto &chart : lines) {
-    *ts.mutable_charts()->add_charts() = std::move(chart);
+    try {
+      MakeRollingVolatilityCharts(lines);
+    } catch (const std::exception &e) {
+      SPDLOG_ERROR("Failed in MakeRollingVolatilityCharts: {}", e.what());
+      throw;
+    }
+
+    try {
+      MakeRollingSharpeCharts(lines);
+    } catch (const std::exception &e) {
+      SPDLOG_ERROR("Failed in MakeRollingSharpeCharts: {}", e.what());
+      throw;
+    }
+
+    try {
+      MakeRollingMaxDrawdownCharts(lines, drawDownTable, topKDrawDowns);
+    } catch (const std::exception &e) {
+      SPDLOG_ERROR("Failed in MakeRollingMaxDrawdownCharts: {}", e.what());
+      throw;
+    }
+
+    try {
+      MakeUnderwaterCharts(lines);
+    } catch (const std::exception &e) {
+      SPDLOG_ERROR("Failed in MakeUnderwaterCharts: {}", e.what());
+      throw;
+    }
+
+    epoch_proto::TearSheet ts;
+    for (auto &chart : lines) {
+      *ts.mutable_charts()->add_charts() = std::move(chart);
+    }
+    *ts.mutable_tables()->add_tables() = std::move(table);
+    return ts;
+  } catch (const std::exception &e) {
+    SPDLOG_ERROR("MakeRiskAnalysis failed: {}", e.what());
+    throw;
   }
-  *ts.mutable_tables()->add_tables() = std::move(table);
-  return ts;
 }
 
 std::unordered_map<std::string, std::string> month_to_string{

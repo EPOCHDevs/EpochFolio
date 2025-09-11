@@ -104,11 +104,12 @@ inline epoch_proto::Scalar ToProtoScalarValue(std::nullptr_t) {
   return s;
 }
 
-// Date types - use date_value field (stores as milliseconds since epoch)
+// Date types - use date_value field (stores as SECONDS since epoch for TypeDate)
 inline epoch_proto::Scalar ToProtoScalarDate(epoch_frame::Date const &v) {
   epoch_proto::Scalar s;
-  // Convert date to milliseconds since epoch (ordinal is days since epoch)
-  s.set_date_value(static_cast<int64_t>(v.toordinal()) * 86400000);
+  // Convert date to SECONDS since epoch for TypeDate fields
+  // (ordinal is days since epoch)
+  s.set_date_value(static_cast<int64_t>(v.toordinal()) * 86400);
   return s;
 }
 
@@ -119,6 +120,27 @@ ToProtoScalarTimestamp(epoch_frame::DateTime const &v) {
   // Convert nanoseconds to milliseconds
   s.set_timestamp_ms(v.m_nanoseconds.count() / 1000000);
   return s;
+}
+
+// Convert scalar (which may be a timestamp) to proper timestamp format
+inline epoch_proto::Scalar ToProtoScalarTimestampFromScalar(
+    const epoch_frame::Scalar &scalar) {
+  epoch_proto::Scalar s;
+  // If it's already a timestamp type, convert properly
+  if (scalar.type()->id() == arrow::Type::TIMESTAMP) {
+    // The scalar holds nanoseconds, convert to milliseconds
+    s.set_timestamp_ms(scalar.as_int64() / 1000000);
+  } else {
+    // Try to interpret as timestamp value
+    s.set_timestamp_ms(scalar.as_int64());
+  }
+  return s;
+}
+
+// Convert Date to timestamp in milliseconds (for use in charts/bands)
+inline int64_t DateToTimestampMs(const epoch_frame::Date &date) {
+  // Convert days since epoch to milliseconds since epoch
+  return static_cast<int64_t>(date.toordinal()) * 86400000;
 }
 
 // Duration in milliseconds - use duration_ms field
