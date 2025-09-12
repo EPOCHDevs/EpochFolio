@@ -37,7 +37,7 @@ PortfolioTearSheetFactory::PortfolioTearSheetFactory(
                                  : options.equity),
       m_positions(options.positions.assign("cash", options.cash)),
       m_returnsFactory(options.positions, options.transactions, options.cash,
-                       m_returns, options.benchmark),
+                       m_returns, options.benchmark.value_or(epoch_frame::Series{})),
       m_positionsFactory(options.cash, options.positions, m_returns,
                          options.sectorMapping),
       m_transactionsFactory(m_returns, m_positions, options.transactions),

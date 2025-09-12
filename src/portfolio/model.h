@@ -11,6 +11,7 @@
 #include <epoch_protos/chart_def.pb.h>
 #include <epoch_protos/common.pb.h>
 #include <epoch_protos/table_def.pb.h>
+#include <optional>
 #include <vector>
 
 CREATE_ENUM(TurnoverDenominator, AGB, PortfolioValue);
@@ -105,7 +106,7 @@ using SectorMapping = std::unordered_map<std::string, std::string>;
 
 struct TearSheetDataOption {
   epoch_frame::Series equity;
-  epoch_frame::Series benchmark;
+  std::optional<epoch_frame::Series> benchmark;
   epoch_frame::Series cash;
   epoch_frame::DataFrame positions;
   epoch_frame::DataFrame transactions;

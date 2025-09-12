@@ -9,6 +9,7 @@
 #include "common/table_helpers.h"
 #include "common/type_helper.h"
 #include "epoch_folio/tearsheet.h"
+#include <algorithm>
 #include <common/methods_helper.h>
 #include <common/python_utils.h>
 
@@ -49,13 +50,21 @@ void TearSheetFactory::SetBenchmark(
 }
 
 DataFrame TearSheetFactory::GetStrategyAndBenchmark() const {
+  if (m_benchmark.empty()) {
+    return MakeDataFrame({m_strategyCumReturns}, {kStrategyColumnName});
+  }
   return MakeDataFrame({m_strategyCumReturns, m_benchmarkCumReturns},
                        {kStrategyColumnName, kBenchmarkColumnName});
-  ;
 }
 
 void TearSheetFactory::AlignReturnsAndBenchmark(
     epoch_frame::Series const &returns, epoch_frame::Series const &benchmark) {
+  if (benchmark.empty()) {
+    m_strategy = returns;
+    m_benchmark = epoch_frame::Series{};
+    return;
+  }
+  
   auto merged =
       epoch_frame::concat({.frames = {returns.to_frame(kStrategyColumnName),
                                       benchmark.to_frame(kBenchmarkColumnName)},
@@ -76,22 +85,34 @@ TearSheetFactory::TearSheetFactory(epoch_frame::DataFrame positions,
   AlignReturnsAndBenchmark(std::move(strategy), std::move(benchmark));
 
   m_strategyCumReturns = ep::CumReturns(m_strategy, 1.0);
-  m_benchmarkCumReturns = ep::CumReturns(m_benchmark, 1.0);
+  
+  if (!m_benchmark.empty()) {
+    m_benchmarkCumReturns = ep::CumReturns(m_benchmark, 1.0);
+    m_benchmarkReturnsInteresting = ExtractInterestingDateRanges(m_benchmark);
+  } else {
+    m_benchmarkCumReturns = epoch_frame::Series{};
+    m_benchmarkReturnsInteresting = InterestingDateRangeReturns{};
+  }
 
   m_strategyReturnsInteresting = ExtractInterestingDateRanges(m_strategy);
-  m_benchmarkReturnsInteresting = ExtractInterestingDateRanges(m_benchmark);
 }
 
 std::vector<Chart> TearSheetFactory::MakeReturnsLineCharts(
     const epoch_frame::DataFrame &df) const {
-  const auto stddevOptions = arrow::compute::VarianceOptions{1};
-  const auto bmarkVol = m_benchmark.stddev(stddevOptions);
-  const auto returns =
-      (m_strategy / m_strategy.stddev(stddevOptions)) * bmarkVol;
-  const auto volatilityMatchedCumReturns = ep::CumReturns(returns, 1.0);
-  const auto cumFactorReturns = df[kBenchmarkColumnName];
-
   std::vector<Chart> result;
+  
+  // Only calculate volatility matched returns if benchmark exists
+  epoch_frame::Series volatilityMatchedCumReturns;
+  epoch_frame::Series cumFactorReturns;
+  
+  if (!m_benchmark.empty()) {
+    const auto stddevOptions = arrow::compute::VarianceOptions{1};
+    const auto bmarkVol = m_benchmark.stddev(stddevOptions);
+    const auto returns =
+        (m_strategy / m_strategy.stddev(stddevOptions)) * bmarkVol;
+    volatilityMatchedCumReturns = ep::CumReturns(returns, 1.0);
+    cumFactorReturns = df[kBenchmarkColumnName];
+  }
 
   // Cumulative returns chart
   {
@@ -110,8 +131,8 @@ std::vector<Chart> TearSheetFactory::MakeReturnsLineCharts(
     result.push_back(std::move(c));
   }
 
-  // Volatility matched returns chart
-  {
+  // Volatility matched returns chart (only if benchmark exists)
+  if (!m_benchmark.empty()) {
     Chart c;
     auto *ld = c.mutable_lines_def();
     auto *cd = ld->mutable_chart_def();
@@ -167,6 +188,11 @@ std::vector<Chart> TearSheetFactory::MakeReturnsLineCharts(
 }
 
 void TearSheetFactory::MakeRollingBetaCharts(std::vector<Chart> &lines) const {
+  // Skip if no benchmark
+  if (m_benchmark.empty()) {
+    return;
+  }
+  
   const auto df =
       concat({.frames = {m_strategy, m_benchmark}, .axis = AxisType::Column});
   const auto rolling6MonthBeta =
@@ -201,8 +227,6 @@ void TearSheetFactory::MakeRollingSharpeCharts(
     std::vector<Chart> &lines) const {
   const auto strategySharpe =
       RollingSharpe(m_strategy, 6 * ep::APPROX_BDAYS_PER_MONTH);
-  const auto benchmarkSharpe =
-      RollingSharpe(m_benchmark, 6 * ep::APPROX_BDAYS_PER_MONTH);
 
   Chart c;
   auto *ld = c.mutable_lines_def();
@@ -211,11 +235,19 @@ void TearSheetFactory::MakeRollingSharpeCharts(
   cd->set_title("Rolling Sharpe ratio (6 Months)");
   cd->set_type(epoch_proto::WidgetLines);
   cd->set_category(epoch_folio::categories::RiskAnalysis);
-  auto seriesLines = MakeSeriesLines(strategySharpe, benchmarkSharpe, "Sharpe",
-                                     "Benchmark Sharpe");
-  for (auto &line : seriesLines) {
-    *ld->add_lines() = std::move(line);
+  
+  if (!m_benchmark.empty()) {
+    const auto benchmarkSharpe =
+        RollingSharpe(m_benchmark, 6 * ep::APPROX_BDAYS_PER_MONTH);
+    auto seriesLines = MakeSeriesLines(strategySharpe, benchmarkSharpe, "Sharpe",
+                                       "Benchmark Sharpe");
+    for (auto &line : seriesLines) {
+      *ld->add_lines() = std::move(line);
+    }
+  } else {
+    *ld->add_lines() = MakeSeriesLine(strategySharpe, "Sharpe");
   }
+  
   *ld->add_straight_lines() =
       MakeStraightLine("Average Sharpe", strategySharpe.mean(), false);
   *ld->add_straight_lines() = kStraightLineAtZero;
@@ -226,8 +258,6 @@ void TearSheetFactory::MakeRollingVolatilityCharts(
     std::vector<Chart> &lines) const {
   auto strategyVol =
       RollingVolatility(m_strategy, 6 * ep::APPROX_BDAYS_PER_MONTH);
-  auto benchmarkVol =
-      RollingVolatility(m_benchmark, 6 * ep::APPROX_BDAYS_PER_MONTH);
 
   Chart c;
   auto *ld = c.mutable_lines_def();
@@ -238,7 +268,13 @@ void TearSheetFactory::MakeRollingVolatilityCharts(
   cd->set_category(epoch_folio::categories::RiskAnalysis);
 
   *ld->add_lines() = MakeSeriesLine(strategyVol, "Volatility");
-  *ld->add_lines() = MakeSeriesLine(benchmarkVol, "Benchmark Volatility");
+  
+  if (!m_benchmark.empty()) {
+    auto benchmarkVol =
+        RollingVolatility(m_benchmark, 6 * ep::APPROX_BDAYS_PER_MONTH);
+    *ld->add_lines() = MakeSeriesLine(benchmarkVol, "Benchmark Volatility");
+  }
+  
   *ld->add_straight_lines() =
       MakeStraightLine("Average Volatility", strategyVol.mean(), false);
   *ld->add_straight_lines() = kStraightLineAtZero;
@@ -248,8 +284,8 @@ void TearSheetFactory::MakeRollingVolatilityCharts(
 
 void TearSheetFactory::MakeInterestingDateRangeLineCharts(
     std::vector<Chart> &lines) const {
-  for (auto const &[strategy, benchmark] : std::views::zip(
-           m_strategyReturnsInteresting, m_benchmarkReturnsInteresting)) {
+  // Handle strategy date ranges
+  for (auto const &strategy : m_strategyReturnsInteresting) {
     auto event = strategy.first;
 
     Chart c;
@@ -262,10 +298,22 @@ void TearSheetFactory::MakeInterestingDateRangeLineCharts(
 
     *ld->add_lines() =
         MakeSeriesLine(ep::CumReturns(strategy.second), kStrategyColumnName);
-    *ld->add_lines() =
-        MakeSeriesLine(ep::CumReturns(benchmark.second), kBenchmarkColumnName);
+    
+    // Add benchmark line if available
+    if (!m_benchmark.empty() && !m_benchmarkReturnsInteresting.empty()) {
+      // Find matching benchmark date range
+      auto benchmarkIt = std::find_if(
+          m_benchmarkReturnsInteresting.begin(), 
+          m_benchmarkReturnsInteresting.end(),
+          [&event](const auto& b) { return b.first == event; });
+      
+      if (benchmarkIt != m_benchmarkReturnsInteresting.end()) {
+        *ld->add_lines() =
+            MakeSeriesLine(ep::CumReturns(benchmarkIt->second), kBenchmarkColumnName);
+      }
+    }
+    
     *ld->add_straight_lines() = kStraightLineAtOne;
-
     lines.push_back(std::move(c));
   }
 }
