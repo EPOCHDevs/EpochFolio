@@ -3,17 +3,18 @@
 #include "ireport.h"
 #include <glaze/glaze.hpp>
 
+#include <epoch_metadata/bar_attribute.h>
+
 namespace epoch_folio {
 
-class GapReport : public IReport {
+class GapReport : public IReporter {
 public:
-  explicit GapReport(
-      const epoch_metadata::transform::TransformConfiguration *config)
-      : IReport(config) {}
-  const ReportMetadata &metadata() const override;
+  explicit GapReport(epoch_metadata::transform::TransformConfiguration config)
+      : IReporter(std::move(config)) {}
 
-  epoch_proto::TearSheet
-  generate(const epoch_frame::DataFrame &df) const override;
+protected:
+  // Implementation of IReporter's virtual method
+  void generateTearsheet(const epoch_frame::DataFrame &normalizedDf) const override;
 
 private:
   epoch_proto::TearSheet generate_impl(const epoch_frame::DataFrame &df) const;
@@ -44,12 +45,86 @@ private:
 
   // Utility
   epoch_frame::DataFrame filter_gaps(const epoch_frame::DataFrame &df) const;
+};
 
-public:
-  static ReportMetadata s_metadata;
+// Template specialization for GapReport metadata
+template<>
+struct ReportMetadata<GapReport> {
+  constexpr static const char* kReportId = "gap_report";
 
-  // Explicit registration function
-  static void register_report();
+  static epoch_metadata::transforms::TransformsMetaData Get() {
+    return {
+      .id = kReportId,
+      .category = epoch_core::TransformCategory::Executor,
+      .renderKind = epoch_core::TransformNodeRenderKind::Standard,
+      .name = "Gap Analysis Report",
+      .options = {},
+      .isCrossSectional = false,
+      .desc = "Analyzes gaps in price data and generates comprehensive statistics",
+      .inputs = {
+        {epoch_core::IODataType::Boolean, "gap_up", "Gap Up"},
+        {epoch_core::IODataType::Boolean, "gap_down", "Gap Down"},
+        {epoch_core::IODataType::Decimal, "fill_fraction", "Fill Fraction"},
+        {epoch_core::IODataType::Decimal, "gap_size", "Gap Size"},
+        {epoch_core::IODataType::Decimal, "psc", "Prior Session Close"},
+        {epoch_core::IODataType::Integer, "psc_timestamp", "PSC Timestamp"}
+      },
+      .outputs = {},
+      .tags = {"gap", "analysis", "statistics", "report", "tearsheet"},
+      .requiredDataSources = { epoch_metadata::EpochStratifyXConstants::instance().CLOSE()},
+      .isReporter = true
+    };
+  }
+
+    // Helper to create a TransformConfiguration from a gap classifier config
+    static epoch_metadata::transform::TransformConfiguration CreateConfig(
+        const std::string& instance_id,
+        const epoch_metadata::transform::TransformConfiguration& gap_classifier_config,
+        const YAML::Node& options = {}) {
+
+      YAML::Node config;
+      config["id"] = instance_id;
+      config["type"] = kReportId;
+      // Just pass timeframe as string
+      config["timeframe"] = "1D"; // Default for now, could get from gap_classifier_config if method exists
+
+      // Map the gap classifier's outputs to our inputs
+      // The gap classifier produces columns that we need
+      YAML::Node inputs;
+      std::string gap_id = gap_classifier_config.GetId();
+
+      // Map each required input to the gap classifier's output columns
+      auto metadata = Get();
+      for (const auto& input : metadata.inputs) {
+        // Map input name to gap_classifier_id#column_name format
+        inputs[input.name].push_back(gap_id + "#" + input.name);
+      }
+
+      config["inputs"] = inputs;
+      // SessionRange is optional, skip it for now
+      config["options"] = options;
+
+      return epoch_metadata::transform::TransformConfiguration{
+        epoch_metadata::TransformDefinition{config}};
+    }
+
+    // Simpler helper for testing without a preceding node
+    static epoch_metadata::transform::TransformConfiguration CreateConfig(
+        const std::string& instance_id,
+        const std::string& timeframe = "1D",
+        const YAML::Node& options = {}) {
+
+      YAML::Node config;
+      config["id"] = instance_id;
+      config["type"] = kReportId;
+      config["timeframe"] = timeframe;
+      config["inputs"] = YAML::Node();  // Empty for testing
+      config["sessionRange"] = YAML::Node();
+      config["options"] = options;
+
+      return epoch_metadata::transform::TransformConfiguration{
+        epoch_metadata::TransformDefinition{config}};
+    }
 };
 
 } // namespace epoch_folio

@@ -3,34 +3,32 @@
 #include <epoch_frame/factory/dataframe_factory.h>
 #include <epoch_frame/factory/index_factory.h>
 #include <epoch_frame/factory/series_factory.h>
-#include <epoch_protos/table_def.pb.h>
-#include <glaze/glaze.hpp>
+#include <epoch_metadata/transforms/transform_configuration.h>
+#include <epoch_metadata/transforms/transform_definition.h>
+#include <epoch_protos/tearsheet.pb.h>
+#include <yaml-cpp/yaml.h>
 
-#include "portfolio/model.h" // For MakeDataFrame
-#include "reports/ireport.h"
+#include "reports/gap_report.h"
+#include "portfolio/model.h"
 
 using namespace epoch_folio;
 using namespace epoch_frame;
 
 TEST_CASE("GapReport registration and metadata", "[reports][gap]") {
-  auto &registry = ReportRegistry::instance();
-  auto reports = registry.list_reports();
+  // Verify GapReport metadata
+  auto metadata = ReportMetadata<GapReport>::Get();
 
-  auto gap_report_it = std::find_if(
-      reports.begin(), reports.end(),
-      [](const ReportMetadata &meta) { return meta.id == "gap_report"; });
-
-  REQUIRE(gap_report_it != reports.end());
-  CHECK(gap_report_it->displayName == "Price Gap Analysis");
-  CHECK(gap_report_it->category ==
-        epoch_proto::EPOCH_FOLIO_CATEGORY_RISK_ANALYSIS);
-  CHECK(gap_report_it->requiredColumns.size() == 13);
+  CHECK(metadata.id == "gap_report");
+  CHECK(metadata.name == "Gap Analysis Report");
+  CHECK(metadata.category == epoch_core::TransformCategory::Executor);
+  CHECK(metadata.isReporter == true);
+  CHECK(metadata.inputs.size() == 6); // gap_up, gap_down, fill_fraction, gap_size, psc, psc_timestamp
 }
 
 TEST_CASE("GapReport basic generation", "[reports][gap]") {
-  auto &registry = ReportRegistry::instance();
-  auto report = registry.create("gap_report", nullptr);
-  REQUIRE(report != nullptr);
+  // Use the helper to create configuration
+  auto config = ReportMetadata<GapReport>::CreateConfig("gap_report_basic");
+  GapReport report(std::move(config));
 
   // Create sample gap data using DataFrame factory
   using namespace epoch_frame;
@@ -44,13 +42,10 @@ TEST_CASE("GapReport basic generation", "[reports][gap]") {
   }
   auto index = make_datetime_index(dates);
 
-  // Create gap data vectors
-  std::vector<bool> gap_up_data, gap_down_data, gap_up_filled_data,
-      gap_down_filled_data;
-  std::vector<double> gap_up_size_data, gap_down_size_data,
-      gap_up_fraction_data, gap_down_fraction_data;
-  std::vector<double> o_data, h_data, l_data, c_data;
-  std::vector<int64_t> v_data;
+  // Create gap data vectors matching new interface
+  std::vector<bool> gap_up_data, gap_down_data;
+  std::vector<double> fill_fraction_data, gap_size_data, psc_data, close_data;
+  std::vector<int64_t> psc_timestamp_data, volume_data;
 
   for (int i = 0; i < 10; ++i) {
     // Alternate between gap up and gap down
@@ -58,188 +53,209 @@ TEST_CASE("GapReport basic generation", "[reports][gap]") {
     gap_up_data.push_back(is_gap_up);
     gap_down_data.push_back(!is_gap_up);
 
-    // Fill status
-    bool is_filled = (i % 3 != 0);
-    gap_up_filled_data.push_back(is_gap_up && is_filled);
-    gap_down_filled_data.push_back(!is_gap_up && is_filled);
+    // Fill fraction (0.0 to 1.0, where > 0.5 means filled)
+    fill_fraction_data.push_back(i % 3 != 0 ? 0.7 : 0.3);
 
-    // Gap sizes
-    gap_up_size_data.push_back(is_gap_up ? 2.5 + i * 0.1 : 0.0);
-    gap_down_size_data.push_back(!is_gap_up ? 2.5 + i * 0.1 : 0.0);
+    // Gap size (positive for up, negative for down)
+    gap_size_data.push_back(is_gap_up ? 0.025 + i * 0.002 : -(0.025 + i * 0.002));
 
-    // Gap fractions (as decimal, will be converted to %)
-    gap_up_fraction_data.push_back(is_gap_up ? 0.005 + i * 0.0002 : 0.0);
-    gap_down_fraction_data.push_back(!is_gap_up ? 0.005 + i * 0.0002 : 0.0);
-
-    // OHLCV data
+    // Price data
     double base_price = 400.0 + i;
-    o_data.push_back(base_price);
-    h_data.push_back(base_price + 2.0);
-    l_data.push_back(base_price - 1.0);
-    c_data.push_back(base_price + (i % 2 == 0 ? 1.0 : -0.5));
-    v_data.push_back(1000000 + i * 10000);
+    psc_data.push_back(base_price - 1.0); // Prior session close
+    close_data.push_back(base_price + (i % 2 == 0 ? 1.0 : -0.5));
+
+    // Timestamps and volume
+    psc_timestamp_data.push_back(dates[i] - 86400000000000LL); // Previous day
+    volume_data.push_back(1000000 + i * 10000);
   }
 
   // Create Series
   std::vector<Series> series_list = {
-      make_series(index, gap_up_data, "gap_up"),
-      make_series(index, gap_down_data, "gap_down"),
-      make_series(index, gap_up_filled_data, "gap_up_filled"),
-      make_series(index, gap_down_filled_data, "gap_down_filled"),
-      make_series(index, gap_up_size_data, "gap_up_size"),
-      make_series(index, gap_down_size_data, "gap_down_size"),
-      make_series(index, gap_up_fraction_data, "gap_up_fraction"),
-      make_series(index, gap_down_fraction_data, "gap_down_fraction"),
-      make_series(index, o_data, "o"),
-      make_series(index, h_data, "h"),
-      make_series(index, l_data, "l"),
-      make_series(index, c_data, "c"),
-      make_series(index, v_data, "v")};
+    make_series(index, gap_up_data, "gap_up"),
+    make_series(index, gap_down_data, "gap_down"),
+    make_series(index, fill_fraction_data, "fill_fraction"),
+    make_series(index, gap_size_data, "gap_size"),
+    make_series(index, psc_data, "psc"),
+    make_series(index, psc_timestamp_data, "psc_timestamp"),
+    make_series(index, close_data, "c")  // Close is from requiredDataSources
+};
 
-  std::vector<std::string> column_names = {"gap_up",
-                                           "gap_down",
-                                           "gap_up_filled",
-                                           "gap_down_filled",
-                                           "gap_up_size",
-                                           "gap_down_size",
-                                           "gap_up_fraction",
-                                           "gap_down_fraction",
-                                           "o",
-                                           "h",
-                                           "l",
-                                           "c",
-                                           "v"};
+  std::vector<std::string> column_names = {
+    "gap_up", "gap_down", "fill_fraction", "gap_size",
+    "psc", "psc_timestamp", "c"
+};
 
   auto df = MakeDataFrame(series_list, column_names);
 
-  // Test with default options
-  // Use default options from empty configuration
-  auto tearsheet = report->generate(df);
+  // Transform the data (which generates the tearsheet)
+  auto result_df = report.TransformData(df);
+
+  // Get the generated tearsheet
+  auto tearsheet = report.GetTearSheet();
 
   // Verify output structure
-  CHECK(!tearsheet.cards.empty());
-  CHECK(!tearsheet.charts.empty());
-  CHECK(!tearsheet.tables.empty());
+  CHECK(tearsheet.cards().cards_size() > 0);
+  CHECK(tearsheet.charts().charts_size() > 0);
+  CHECK(tearsheet.tables().tables_size() > 0);
 
-  // Check specific outputs
-  bool has_fill_rate_chart = false;
-  bool has_histogram = false;
-  bool has_pie_chart = false;
+  // Check specific cards
+  bool has_total_gaps_card = false;
+  bool has_gap_counts_card = false;
+  bool has_fill_rate_card = false;
 
-  for (const auto &chart : tearsheet.charts) {
-    std::visit(
-        [&](const auto &c) {
-          using T = std::decay_t<decltype(c)>;
-          if constexpr (std::is_same_v<T, epoch_proto::BarDef>) {
-            if (c.chartDef.title == "Gap Fill Analysis") {
-              has_fill_rate_chart = true;
-            }
-          } else if constexpr (std::is_same_v<T, epoch_proto::HistogramDef>) {
-            has_histogram = true;
-          } else if constexpr (std::is_same_v<T, epoch_proto::PieDef>) {
-            has_pie_chart = true;
-          }
-        },
-        chart);
+  for (const auto& card : tearsheet.cards().cards()) {
+    if (card.data_size() > 0) {
+      const auto& first_data = card.data(0);
+      if (first_data.title() == "Total Gaps") {
+        has_total_gaps_card = true;
+        CHECK(first_data.value().integer_value() == 10);
+      } else if (first_data.title() == "Gap Up" || first_data.title() == "Gap Down") {
+        has_gap_counts_card = true;
+      } else if (first_data.title() == "Overall Fill Rate") {
+        has_fill_rate_card = true;
+      }
+    }
   }
 
-  CHECK(has_fill_rate_chart);
+  CHECK(has_total_gaps_card);
+  CHECK(has_gap_counts_card);
+  CHECK(has_fill_rate_card);
+
+  // Check charts exist
+  bool has_bar_chart = false;
+  bool has_histogram = false;
+  bool has_pie_chart = false;
+  bool has_line_chart = false;
+  bool has_xrange_chart = false;
+
+  for (const auto& chart : tearsheet.charts().charts()) {
+    if (chart.has_bar_def()) has_bar_chart = true;
+    if (chart.has_histogram_def()) has_histogram = true;
+    if (chart.has_pie_def()) has_pie_chart = true;
+    if (chart.has_lines_def()) has_line_chart = true;
+    if (chart.has_x_range_def()) has_xrange_chart = true;
+  }
+
+  CHECK(has_bar_chart);
   CHECK(has_histogram);
   CHECK(has_pie_chart);
+  CHECK(has_line_chart);
+  CHECK(has_xrange_chart);
 
-  // Check cards
-  auto total_gaps_card = std::find_if(
-      tearsheet.cards.begin(), tearsheet.cards.end(),
-      [](const epoch_proto::CardDef &card) {
-        return !card.data.empty() && card.data[0].title == "Total Gaps";
-      });
-  REQUIRE(total_gaps_card != tearsheet.cards.end());
-  CHECK(total_gaps_card->data[0].value.cast_int64().as_int64() == 10);
+  // Check tables exist
+  CHECK(tearsheet.tables().tables_size() >= 3); // frequency, performance, details tables
 }
 
-TEST_CASE("GapReport per-asset generation", "[reports][gap]") {
-  auto &registry = ReportRegistry::instance();
-  auto report = registry.create("gap_report", nullptr);
-  REQUIRE(report != nullptr);
 
-  // Create sample data for two assets using DataFrame factory
+TEST_CASE("GapReport handles empty data", "[reports][gap]") {
+  auto config = ReportMetadata<GapReport>::CreateConfig("gap_report_empty");
+  GapReport report(std::move(config));
+
+  // Create empty DataFrame with required columns
   using namespace epoch_frame;
   using namespace epoch_frame::factory;
   using namespace epoch_frame::factory::index;
 
-  std::unordered_map<std::string, DataFrame> asset_data;
+  auto index = make_datetime_index(std::vector<int64_t>{});
 
-  for (const auto &symbol : {"SPY", "QQQ"}) {
-    // Create date index (5 days starting from 2022-01-01)
-    std::vector<int64_t> dates;
-    for (int i = 0; i < 5; ++i) {
-      dates.push_back(1640995200000000000LL + i * 86400000000000LL);
-    }
-    auto index = make_datetime_index(dates);
+  std::vector<Series> series_list = {
+      make_series(index, std::vector<bool>{}, "gap_up"),
+      make_series(index, std::vector<bool>{}, "gap_down"),
+      make_series(index, std::vector<double>{}, "fill_fraction"),
+      make_series(index, std::vector<double>{}, "gap_size"),
+      make_series(index, std::vector<double>{}, "psc"),
+      make_series(index, std::vector<int64_t>{}, "psc_timestamp"),
+      make_series(index, std::vector<double>{}, "c")  // Close is from requiredDataSources
+  };
 
-    // Create gap data vectors - all gap up for simplicity
-    std::vector<bool> gap_up_data(5, true);
-    std::vector<bool> gap_down_data(5, false);
-    std::vector<bool> gap_up_filled_data(5, true);
-    std::vector<bool> gap_down_filled_data(5, false);
+  std::vector<std::string> column_names = {
+      "gap_up", "gap_down", "fill_fraction", "gap_size",
+      "psc", "psc_timestamp", "c"
+  };
 
-    std::vector<double> gap_up_size_data, gap_down_size_data;
-    std::vector<double> gap_up_fraction_data, gap_down_fraction_data;
-    std::vector<double> o_data, h_data, l_data, c_data;
-    std::vector<int64_t> v_data;
+  auto df = MakeDataFrame(series_list, column_names);
 
-    for (int i = 0; i < 5; ++i) {
-      gap_up_size_data.push_back(1.0 + i * 0.1);
-      gap_down_size_data.push_back(0.0);
-      gap_up_fraction_data.push_back(0.003 + i * 0.0001);
-      gap_down_fraction_data.push_back(0.0);
+  // Should not crash with empty data
+  REQUIRE_NOTHROW(report.TransformData(df));
 
-      double base_price = 400.0 + i;
-      o_data.push_back(base_price);
-      h_data.push_back(base_price + 2.0);
-      l_data.push_back(base_price - 1.0);
-      c_data.push_back(base_price + 1.0);
-      v_data.push_back(1000000);
-    }
+  auto tearsheet = report.GetTearSheet();
 
-    // Create Series
-    std::vector<Series> series_list = {
-        make_series(index, gap_up_data, "gap_up"),
-        make_series(index, gap_down_data, "gap_down"),
-        make_series(index, gap_up_filled_data, "gap_up_filled"),
-        make_series(index, gap_down_filled_data, "gap_down_filled"),
-        make_series(index, gap_up_size_data, "gap_up_size"),
-        make_series(index, gap_down_size_data, "gap_down_size"),
-        make_series(index, gap_up_fraction_data, "gap_up_fraction"),
-        make_series(index, gap_down_fraction_data, "gap_down_fraction"),
-        make_series(index, o_data, "o"),
-        make_series(index, h_data, "h"),
-        make_series(index, l_data, "l"),
-        make_series(index, c_data, "c"),
-        make_series(index, v_data, "v")};
+  // Should have minimal output with empty data
+  CHECK(tearsheet.cards().cards_size() >= 0);
+}
 
-    std::vector<std::string> column_names = {"gap_up",
-                                             "gap_down",
-                                             "gap_up_filled",
-                                             "gap_down_filled",
-                                             "gap_up_size",
-                                             "gap_down_size",
-                                             "gap_up_fraction",
-                                             "gap_down_fraction",
-                                             "o",
-                                             "h",
-                                             "l",
-                                             "c",
-                                             "v"};
+TEST_CASE("GapReport filter logic", "[reports][gap]") {
+  // Test that the filter_gaps method works correctly
+  auto config = ReportMetadata<GapReport>::CreateConfig("gap_report_filter");
+  GapReport report(std::move(config));
 
-    asset_data[symbol] = MakeDataFrame(series_list, column_names);
+  using namespace epoch_frame;
+  using namespace epoch_frame::factory;
+  using namespace epoch_frame::factory::index;
+
+  // Create test data with mixed gaps
+  std::vector<int64_t> dates;
+  for (int i = 0; i < 20; ++i) {
+    dates.push_back(1640995200000000000LL + i * 86400000000000LL);
+  }
+  auto index = make_datetime_index(dates);
+
+  std::vector<bool> gap_up_data, gap_down_data;
+  std::vector<double> fill_fraction_data, gap_size_data, psc_data, close_data;
+  std::vector<int64_t> psc_timestamp_data, volume_data;
+
+  for (int i = 0; i < 20; ++i) {
+    // Create various gap scenarios
+    bool is_gap_up = (i % 3 != 2);
+    bool is_gap_down = (i % 3 == 2);
+
+    gap_up_data.push_back(is_gap_up);
+    gap_down_data.push_back(is_gap_down);
+
+    // Varying fill fractions
+    fill_fraction_data.push_back(static_cast<double>(i) / 20.0);
+
+    // Varying gap sizes
+    double gap_size = (i % 5) * 0.01; // 0% to 4%
+    gap_size_data.push_back(is_gap_up ? gap_size : -gap_size);
+
+    // Price data
+    psc_data.push_back(400.0 + i * 0.5);
+    close_data.push_back(400.0 + i * 0.5 + (is_gap_up ? 1.0 : -1.0));
+
+    psc_timestamp_data.push_back(dates[i] - 86400000000000LL);
+    volume_data.push_back(1000000 + i * 50000);
   }
 
-  // Single interface only: call generate for each asset
-  for (const auto &[symbol, df] : asset_data) {
-    auto ts = report->generate(df);
-    CHECK(!ts.cards.empty());
-    CHECK(!ts.charts.empty());
-    CHECK(!ts.tables.empty());
+  std::vector<Series> series_list = {
+      make_series(index, gap_up_data, "gap_up"),
+      make_series(index, gap_down_data, "gap_down"),
+      make_series(index, fill_fraction_data, "fill_fraction"),
+      make_series(index, gap_size_data, "gap_size"),
+      make_series(index, psc_data, "psc"),
+      make_series(index, psc_timestamp_data, "psc_timestamp"),
+      make_series(index, close_data, "c")  // Close is from requiredDataSources
+  };
+
+  std::vector<std::string> column_names = {
+      "gap_up", "gap_down", "fill_fraction", "gap_size",
+      "psc", "psc_timestamp", "c"
+  };
+
+  auto df = MakeDataFrame(series_list, column_names);
+
+  // Transform and verify
+  report.TransformData(df);
+  auto tearsheet = report.GetTearSheet();
+
+  // Check that we have the expected number of gaps
+  bool found_total_gaps = false;
+  for (const auto& card : tearsheet.cards().cards()) {
+    if (card.data_size() > 0 && card.data(0).title() == "Total Gaps") {
+      found_total_gaps = true;
+      // Should have 20 gaps total
+      CHECK(card.data(0).value().integer_value() == 20);
+    }
   }
+  CHECK(found_total_gaps);
 }

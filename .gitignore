@@ -11,3 +11,4 @@ pyfolio-reloaded
 test/python_benchmark_test/*venv*
 test/python_benchmark_test/__pycache__
 test/python_benchmark_test/pyfolio-reloaded
+test_output

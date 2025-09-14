@@ -1,4 +1,4 @@
 target_sources(epoch_folio PRIVATE 
-    registry.cpp
-    # gap_report.cpp
+        gap_report.cpp
+        init_reports.cpp
 )

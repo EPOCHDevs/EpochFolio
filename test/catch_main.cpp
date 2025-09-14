@@ -2,7 +2,7 @@
 // Created by adesola on 1/13/25.
 //
 
-#include "reports/ireport.h"
+#include "epoch_folio/init_reports.h"
 #include <catch2/catch_session.hpp>
 #include <epoch_frame/serialization.h>
 
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
   epoch_frame::ScopedS3 scoped_s3;
 
   // Initialize all reports before running tests
-  epoch_folio::initialize_all_reports();
+  epoch_folio::InitializeReports();
 
   // your setup ...
   int result = Catch::Session().run(argc, argv);

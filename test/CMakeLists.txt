@@ -6,4 +6,4 @@ target_compile_definitions(epoch_folio_test PRIVATE -DEPOCH_FOLIO_S3_TEST_BUCKET
 
 add_subdirectory(empyrical)
 add_subdirectory(portfolio)
-# add_subdirectory(reports)  # Temporarily disabled - outdated gap_report_test
+add_subdirectory(reports)  # Re-enabled with updated tests
