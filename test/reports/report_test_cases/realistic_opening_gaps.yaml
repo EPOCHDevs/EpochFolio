@@ -1,0 +1,157 @@
+tests:
+  - title: "Pre-Market Gap Up - Partial Fill"
+    input:
+      type: "gap_data"
+      # Intraday timestamps for gap analysis (9:30 AM - 4:00 PM ET)
+      timestamps: [
+        "2022-01-03T09:30:00",  # Market open - gap up
+        "2022-01-03T10:15:00",  # 45 mins later - partial fill
+        "2022-01-03T11:30:00",  # 2 hours later - more filling
+        "2022-01-03T14:00:00",  # Afternoon - stalling
+        "2022-01-03T16:00:00"   # Market close - partial fill
+      ]
+      gap_up: [true, false, false, false, false]
+      gap_down: [false, false, false, false, false]
+      fill_fraction: [0.0, 0.35, 0.68, 0.72, 0.75]  # Gradual fill to 75%
+      gap_size: [0.028, 0.0, 0.0, 0.0, 0.0]  # 2.8% opening gap
+      psc: [401.50, 401.50, 401.50, 401.50, 401.50]  # Previous close
+      c: [413.25, 411.75, 408.90, 408.20, 408.50]  # Closes near gap fill level
+      psc_timestamp: [
+        "2022-01-02T16:00:00",  # Previous session close
+        "2022-01-02T16:00:00",
+        "2022-01-02T16:00:00",
+        "2022-01-02T16:00:00",
+        "2022-01-02T16:00:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 1
+          - title: "Gap Up"
+            value: 1
+          - title: "Gap Down"
+            value: 0
+          - title: "Overall Fill Rate"
+            value: 0.75
+    options:
+      report_type: "gap_report"
+      instance_id: "opening_gap_up_test"
+
+  - title: "Pre-Market Gap Down - Full Fill"
+    input:
+      type: "gap_data"
+      timestamps: [
+        "2022-01-04T09:30:00",  # Market open - gap down
+        "2022-01-04T10:00:00",  # 30 mins - quick rebound
+        "2022-01-04T11:00:00",  # 1.5 hours - approaching fill
+        "2022-01-04T12:30:00",  # Mid-day - gap filled
+        "2022-01-04T16:00:00"   # Close - above previous close
+      ]
+      gap_up: [false, false, false, false, false]
+      gap_down: [true, false, false, false, false]
+      fill_fraction: [0.0, 0.45, 0.88, 1.0, 1.0]  # Complete fill by mid-day
+      gap_size: [-0.032, 0.0, 0.0, 0.0, 0.0]  # 3.2% opening gap down
+      psc: [398.75, 398.75, 398.75, 398.75, 398.75]  # Previous close
+      c: [386.00, 392.50, 397.25, 399.10, 401.25]  # Recovers above previous close
+      psc_timestamp: [
+        "2022-01-03T16:00:00",
+        "2022-01-03T16:00:00",
+        "2022-01-03T16:00:00",
+        "2022-01-03T16:00:00",
+        "2022-01-03T16:00:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 1
+          - title: "Gap Up"
+            value: 0
+          - title: "Gap Down"
+            value: 1
+          - title: "Overall Fill Rate"
+            value: 1.0
+    options:
+      report_type: "gap_report"
+      instance_id: "opening_gap_down_test"
+
+  - title: "Small Opening Gap - Failed Fill"
+    input:
+      type: "gap_data"
+      timestamps: [
+        "2022-01-05T09:30:00",  # Small gap up at open
+        "2022-01-05T10:30:00",  # 1 hour - minimal movement
+        "2022-01-05T13:00:00",  # Mid-day - still no fill
+        "2022-01-05T15:30:00",  # Late afternoon - gap persists
+        "2022-01-05T16:00:00"   # Close - gap never filled
+      ]
+      gap_up: [true, false, false, false, false]
+      gap_down: [false, false, false, false, false]
+      fill_fraction: [0.0, 0.15, 0.08, 0.12, 0.10]  # Minimal fill attempt
+      gap_size: [0.012, 0.0, 0.0, 0.0, 0.0]  # Small 1.2% gap
+      psc: [405.80, 405.80, 405.80, 405.80, 405.80]  # Previous close
+      c: [410.67, 410.25, 409.95, 410.35, 410.42]  # Gap never fills
+      psc_timestamp: [
+        "2022-01-04T16:00:00",
+        "2022-01-04T16:00:00",
+        "2022-01-04T16:00:00",
+        "2022-01-04T16:00:00",
+        "2022-01-04T16:00:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 1
+          - title: "Gap Up"
+            value: 1
+          - title: "Gap Down"
+            value: 0
+          - title: "Overall Fill Rate"
+            value: 0.10
+    options:
+      report_type: "gap_report"
+      instance_id: "small_gap_fail_test"
+
+  - title: "Large Opening Gap - Quick Fill"
+    input:
+      type: "gap_data"
+      timestamps: [
+        "2022-01-06T09:30:00",  # Large gap down
+        "2022-01-06T09:45:00",  # 15 mins - buying interest
+        "2022-01-06T10:15:00",  # 45 mins - rapid recovery
+        "2022-01-06T11:00:00",  # 1.5 hours - gap closed
+        "2022-01-06T16:00:00"   # Close - well above previous close
+      ]
+      gap_up: [false, false, false, false, false]
+      gap_down: [true, false, false, false, false]
+      fill_fraction: [0.0, 0.25, 0.78, 1.0, 1.0]  # Fast fill within 90 minutes
+      gap_size: [-0.055, 0.0, 0.0, 0.0, 0.0]  # Large 5.5% gap down
+      psc: [425.30, 425.30, 425.30, 425.30, 425.30]  # Previous close
+      c: [401.90, 408.45, 418.85, 426.75, 429.60]  # Strong recovery
+      psc_timestamp: [
+        "2022-01-05T16:00:00",
+        "2022-01-05T16:00:00",
+        "2022-01-05T16:00:00",
+        "2022-01-05T16:00:00",
+        "2022-01-05T16:00:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 1
+          - title: "Gap Up"
+            value: 0
+          - title: "Gap Down"
+            value: 1
+          - title: "Overall Fill Rate"
+            value: 1.0
+    options:
+      report_type: "gap_report"
+      instance_id: "large_gap_quick_fill_test"

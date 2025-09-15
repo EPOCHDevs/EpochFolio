@@ -1,0 +1,188 @@
+tests:
+  - title: "Opening Hour Gap Analysis"
+    input:
+      type: "gap_data"
+      # Multiple gaps in the opening hour (9:30-10:30 AM)
+      timestamps: [
+        "2022-01-21T09:30:00",  # Market open gap
+        "2022-01-21T09:45:00",  # 15 mins - small technical gap
+        "2022-01-21T10:15:00",  # 45 mins - another small gap
+        "2022-01-21T10:30:00",  # 1 hour - end of opening hour
+        "2022-01-21T16:00:00"   # Close
+      ]
+      gap_up: [true, false, true, false, false]
+      gap_down: [false, true, false, false, false]
+      fill_fraction: [0.45, 0.88, 0.62, 0.62, 0.62]  # Various fill rates
+      gap_size: [0.032, -0.012, 0.008, 0.0, 0.0]  # Opening volatility
+      psc: [540.00, 557.28, 550.60, 555.00, 555.00]  # Each gap's reference
+      c: [557.28, 550.60, 555.00, 555.00, 558.75]  # Morning price action
+      psc_timestamp: [
+        "2022-01-20T16:00:00",  # Previous close
+        "2022-01-21T09:44:00",  # Just before 2nd gap
+        "2022-01-21T10:14:00",  # Just before 3rd gap
+        "2022-01-21T10:14:00",
+        "2022-01-21T10:14:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 3
+          - title: "Gap Up"
+            value: 2
+          - title: "Gap Down"
+            value: 1
+          - title: "Overall Fill Rate"
+            value: 0.65  # Average of 0.45, 0.88, 0.62
+    options:
+      report_type: "gap_report"
+      instance_id: "opening_hour_analysis"
+
+  - title: "Mid-Day Gap Analysis"
+    input:
+      type: "gap_data"
+      # Gaps during lunch time / mid-day (11:00 AM - 2:00 PM)
+      timestamps: [
+        "2022-01-24T11:30:00",  # Late morning gap
+        "2022-01-24T12:15:00",  # Lunch time gap
+        "2022-01-24T13:45:00",  # Early afternoon gap
+        "2022-01-24T16:00:00"   # Close
+      ]
+      gap_up: [false, true, false, false]
+      gap_down: [true, false, true, false]
+      fill_fraction: [0.75, 0.45, 0.92, 0.92]  # Mid-day typically fills well
+      gap_size: [-0.018, 0.022, -0.015, 0.0]  # Moderate gaps
+      psc: [562.30, 552.18, 564.33, 555.87]  # Reference prices
+      c: [552.18, 564.33, 555.87, 558.90]  # Mid-day price action
+      psc_timestamp: [
+        "2022-01-21T16:00:00",
+        "2022-01-24T12:14:00",
+        "2022-01-24T13:44:00",
+        "2022-01-24T13:44:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 3
+          - title: "Gap Up"
+            value: 1
+          - title: "Gap Down"
+            value: 2
+          - title: "Overall Fill Rate"
+            value: 0.71  # Average of 0.75, 0.45, 0.92
+    options:
+      report_type: "gap_report"
+      instance_id: "midday_analysis"
+
+  - title: "Power Hour Gap Analysis"
+    input:
+      type: "gap_data"
+      # Gaps in the final hour (3:00-4:00 PM)
+      timestamps: [
+        "2022-01-25T15:00:00",  # Power hour gap up
+        "2022-01-25T15:30:00",  # 30 mins - late gap down
+        "2022-01-25T16:00:00"   # Close
+      ]
+      gap_up: [true, false, false]
+      gap_down: [false, true, false]
+      fill_fraction: [0.15, 0.25, 0.25]  # Power hour gaps often don't fill
+      gap_size: [0.028, -0.020, 0.0]  # Late day volatility
+      psc: [558.90, 574.54, 563.05]  # Reference prices
+      c: [574.54, 563.05, 565.12]  # Power hour action
+      psc_timestamp: [
+        "2022-01-24T16:00:00",
+        "2022-01-25T15:29:00",
+        "2022-01-25T15:29:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 2
+          - title: "Gap Up"
+            value: 1
+          - title: "Gap Down"
+            value: 1
+          - title: "Overall Fill Rate"
+            value: 0.20  # Average of 0.15, 0.25
+    options:
+      report_type: "gap_report"
+      instance_id: "power_hour_analysis"
+
+  - title: "Day of Week Pattern - Monday"
+    input:
+      type: "gap_data"
+      # Monday gaps (often larger due to weekend news)
+      timestamps: [
+        "2022-01-31T09:30:00",  # Monday open gap
+        "2022-01-31T11:00:00",  # Mid-morning
+        "2022-01-31T16:00:00"   # Close
+      ]
+      gap_up: [true, false, false]
+      gap_down: [false, false, false]
+      fill_fraction: [0.35, 0.35, 0.35]  # Monday gaps often persist
+      gap_size: [0.038, 0.0, 0.0]  # Larger Monday gap
+      psc: [565.12, 586.60, 586.60]  # Previous Friday close
+      c: [586.60, 586.60, 587.85]  # Monday performance
+      psc_timestamp: [
+        "2022-01-28T16:00:00",  # Previous Friday
+        "2022-01-28T16:00:00",
+        "2022-01-28T16:00:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 1
+          - title: "Gap Up"
+            value: 1
+          - title: "Gap Down"
+            value: 0
+          - title: "Overall Fill Rate"
+            value: 0.35
+    options:
+      report_type: "gap_report"
+      instance_id: "monday_pattern_analysis"
+
+  - title: "Day of Week Pattern - Friday"
+    input:
+      type: "gap_data"
+      # Friday gaps (often fill due to position squaring)
+      timestamps: [
+        "2022-02-04T09:30:00",  # Friday open gap
+        "2022-02-04T10:30:00",  # 1 hour later
+        "2022-02-04T14:00:00",  # Afternoon
+        "2022-02-04T16:00:00"   # Close
+      ]
+      gap_up: [false, false, false, false]
+      gap_down: [true, false, false, false]
+      fill_fraction: [0.0, 0.65, 0.88, 0.95]  # Friday gaps tend to fill
+      gap_size: [-0.025, 0.0, 0.0, 0.0]  # Friday gap down
+      psc: [587.85, 587.85, 587.85, 587.85]  # Previous close
+      c: [573.15, 582.45, 592.50, 593.35]  # Friday recovery
+      psc_timestamp: [
+        "2022-02-03T16:00:00",  # Previous Thursday
+        "2022-02-03T16:00:00",
+        "2022-02-03T16:00:00",
+        "2022-02-03T16:00:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 1
+          - title: "Gap Up"
+            value: 0
+          - title: "Gap Down"
+            value: 1
+          - title: "Overall Fill Rate"
+            value: 0.95
+    options:
+      report_type: "gap_report"
+      instance_id: "friday_pattern_analysis"

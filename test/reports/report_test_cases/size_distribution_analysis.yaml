@@ -1,0 +1,202 @@
+tests:
+  - title: "Small Gap Distribution (0.1-0.5%)"
+    input:
+      type: "gap_data"
+      # Collection of small gaps for statistical analysis
+      timestamps: [
+        "2022-02-07T09:30:00",  # Small gap up
+        "2022-02-07T11:15:00",  # Small gap down
+        "2022-02-07T14:30:00",  # Small gap up
+        "2022-02-08T09:30:00",  # Small gap down
+        "2022-02-08T13:45:00",  # Small gap up
+        "2022-02-09T10:00:00"   # Small gap down
+      ]
+      gap_up: [true, false, true, false, true, false]
+      gap_down: [false, true, false, true, false, true]
+      fill_fraction: [0.95, 0.88, 0.92, 0.85, 0.90, 0.87]  # Small gaps fill well
+      gap_size: [0.003, -0.004, 0.005, -0.002, 0.004, -0.003]  # 0.2-0.5% gaps
+      psc: [595.00, 596.79, 594.40, 597.37, 596.15, 598.54]  # Reference prices
+      c: [596.79, 594.40, 597.37, 596.15, 598.54, 596.75]  # Small movements
+      psc_timestamp: [
+        "2022-02-04T16:00:00",
+        "2022-02-07T11:14:00",
+        "2022-02-07T14:29:00",
+        "2022-02-07T16:00:00",
+        "2022-02-08T13:44:00",
+        "2022-02-08T16:00:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 6
+          - title: "Gap Up"
+            value: 3
+          - title: "Gap Down"
+            value: 3
+          - title: "Overall Fill Rate"
+            value: 0.895  # Average of all fill fractions
+    options:
+      report_type: "gap_report"
+      instance_id: "small_gap_distribution"
+
+  - title: "Medium Gap Distribution (0.5-2.0%)"
+    input:
+      type: "gap_data"
+      # Medium-sized gaps with moderate fill rates
+      timestamps: [
+        "2022-02-10T09:30:00",  # Medium gap up
+        "2022-02-10T15:00:00",  # Medium gap down
+        "2022-02-11T09:30:00",  # Medium gap up
+        "2022-02-14T09:30:00",  # Medium gap down
+        "2022-02-14T13:30:00"   # Medium gap up
+      ]
+      gap_up: [true, false, true, false, true]
+      gap_down: [false, true, false, true, false]
+      fill_fraction: [0.68, 0.72, 0.45, 0.81, 0.59]  # Moderate fill rates
+      gap_size: [0.015, -0.018, 0.012, -0.019, 0.014]  # 1.2-1.9% gaps
+      psc: [596.75, 606.71, 595.79, 602.95, 591.49]  # Reference prices
+      c: [606.71, 595.79, 602.95, 591.49, 599.78]  # Medium movements
+      psc_timestamp: [
+        "2022-02-09T16:00:00",
+        "2022-02-10T14:59:00",
+        "2022-02-10T16:00:00",
+        "2022-02-11T16:00:00",
+        "2022-02-14T13:29:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 5
+          - title: "Gap Up"
+            value: 3
+          - title: "Gap Down"
+            value: 2
+          - title: "Overall Fill Rate"
+            value: 0.65  # Average of all fill fractions
+    options:
+      report_type: "gap_report"
+      instance_id: "medium_gap_distribution"
+
+  - title: "Large Gap Distribution (2.0%+)"
+    input:
+      type: "gap_data"
+      # Large gaps with variable fill behavior
+      timestamps: [
+        "2022-02-15T09:30:00",  # Large gap down
+        "2022-02-16T09:30:00",  # Large gap up
+        "2022-02-17T09:30:00",  # Large gap down
+        "2022-02-18T09:30:00"   # Large gap up
+      ]
+      gap_up: [false, true, false, true]
+      gap_down: [true, false, true, false]
+      fill_fraction: [0.25, 0.15, 0.82, 0.35]  # Variable fill rates for large gaps
+      gap_size: [-0.032, 0.028, -0.025, 0.041]  # 2.5-4.1% gaps
+      psc: [599.78, 580.58, 594.83, 579.95]  # Reference prices
+      c: [580.58, 594.83, 579.95, 603.71]  # Large movements
+      psc_timestamp: [
+        "2022-02-14T16:00:00",
+        "2022-02-15T16:00:00",
+        "2022-02-16T16:00:00",
+        "2022-02-17T16:00:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 4
+          - title: "Gap Up"
+            value: 2
+          - title: "Gap Down"
+            value: 2
+          - title: "Overall Fill Rate"
+            value: 0.3925  # Average of all fill fractions
+    options:
+      report_type: "gap_report"
+      instance_id: "large_gap_distribution"
+
+  - title: "Mixed Size Distribution Analysis"
+    input:
+      type: "gap_data"
+      # Mix of all gap sizes for comprehensive distribution testing
+      timestamps: [
+        "2022-02-22T09:30:00",  # Large gap up
+        "2022-02-22T11:00:00",  # Small gap down
+        "2022-02-22T14:15:00",  # Medium gap up
+        "2022-02-23T09:30:00",  # Medium gap down
+        "2022-02-23T12:30:00",  # Small gap up
+        "2022-02-23T15:45:00",  # Large gap down
+        "2022-02-24T09:30:00",  # Small gap up
+        "2022-02-24T13:00:00"   # Medium gap down
+      ]
+      gap_up: [true, false, true, false, true, false, true, false]
+      gap_down: [false, true, false, true, false, true, false, true]
+      fill_fraction: [0.22, 0.95, 0.67, 0.74, 0.89, 0.18, 0.93, 0.61]  # Size-dependent fills
+      gap_size: [0.034, -0.003, 0.016, -0.013, 0.004, -0.029, 0.005, -0.017]  # Mixed sizes
+      psc: [603.71, 624.22, 622.35, 632.30, 624.08, 626.57, 608.41, 611.45]  # Reference prices
+      c: [624.22, 622.35, 632.30, 624.08, 626.57, 608.41, 611.45, 600.95]  # Mixed performance
+      psc_timestamp: [
+        "2022-02-18T16:00:00",
+        "2022-02-22T10:59:00",
+        "2022-02-22T14:14:00",
+        "2022-02-22T16:00:00",
+        "2022-02-23T12:29:00",
+        "2022-02-23T15:44:00",
+        "2022-02-23T16:00:00",
+        "2022-02-24T12:59:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 8
+          - title: "Gap Up"
+            value: 4
+          - title: "Gap Down"
+            value: 4
+          - title: "Overall Fill Rate"
+            value: 0.64875  # Average of all fill fractions
+    options:
+      report_type: "gap_report"
+      instance_id: "mixed_size_distribution"
+
+  - title: "Extreme Gap Analysis (3.0%+)"
+    input:
+      type: "gap_data"
+      # Very large gaps for outlier analysis
+      timestamps: [
+        "2022-02-25T09:30:00",  # Extreme gap down
+        "2022-02-28T09:30:00",  # Extreme gap up
+        "2022-03-01T09:30:00"   # Extreme gap down
+      ]
+      gap_up: [false, true, false]
+      gap_down: [true, false, true]
+      fill_fraction: [0.12, 0.08, 0.35]  # Extreme gaps rarely fill
+      gap_size: [-0.055, 0.048, -0.062]  # 4.8-6.2% extreme gaps
+      psc: [600.95, 567.89, 596.12]  # Reference prices
+      c: [567.89, 596.12, 559.15]  # Extreme movements
+      psc_timestamp: [
+        "2022-02-24T16:00:00",
+        "2022-02-25T16:00:00",
+        "2022-02-28T16:00:00"
+      ]
+    expect:
+      type: "tearsheet"
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 3
+          - title: "Gap Up"
+            value: 1
+          - title: "Gap Down"
+            value: 2
+          - title: "Overall Fill Rate"
+            value: 0.183  # Average of extreme gap fills
+    options:
+      report_type: "gap_report"
+      instance_id: "extreme_gap_analysis"
