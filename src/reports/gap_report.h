@@ -16,7 +16,7 @@ protected:
   // Implementation of IReporter's virtual method
   void generateTearsheet(const epoch_frame::DataFrame &normalizedDf) const override;
 
-private:
+public:
   epoch_proto::TearSheet generate_impl(const epoch_frame::DataFrame &df) const;
 
   // Analysis helpers
@@ -58,7 +58,59 @@ struct ReportMetadata<GapReport> {
       .category = epoch_core::TransformCategory::Executor,
       .renderKind = epoch_core::TransformNodeRenderKind::Standard,
       .name = "Gap Analysis Report",
-      .options = {},
+      .options = {
+        {
+          .id = "show_fill_analysis",
+          .name = "Show Fill Analysis",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false
+        },
+        {
+          .id = "show_day_of_week_analysis",
+          .name = "Show Day of Week Analysis",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false
+        },
+        {
+          .id = "show_fill_time_analysis",
+          .name = "Show Fill Time Analysis",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false
+        },
+        {
+          .id = "show_performance_analysis",
+          .name = "Show Performance Analysis",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false
+        },
+        {
+          .id = "show_streak_analysis",
+          .name = "Show Streak Analysis",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false
+        },
+        {
+          .id = "show_distribution_histogram",
+          .name = "Show Distribution Histogram",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false
+        },
+        {
+          .id = "histogram_bins",
+          .name = "Histogram Bins",
+          .type = epoch_core::MetaDataOptionType::Integer,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{20.0},
+          .isRequired = false,
+          .min = 5,
+          .max = 100
+        }
+      },
       .isCrossSectional = false,
       .desc = "Analyzes gaps in price data and generates comprehensive statistics",
       .inputs = {

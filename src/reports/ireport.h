@@ -58,6 +58,11 @@ public:
     return m_tearsheet;
   }
 
+  // Public method for testing that bypasses transform input validation
+  void generateTearsheetForTesting(const epoch_frame::DataFrame &normalizedDf) const {
+    generateTearsheet(normalizedDf);
+  }
+
   virtual ~IReporter() = default;
 
 protected:

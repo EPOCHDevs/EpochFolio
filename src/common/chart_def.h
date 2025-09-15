@@ -239,4 +239,59 @@ Line MakeSeriesLine(std::vector<X> x, std::vector<Y> y,
   return line;
 }
 
+// Chart-specific data helpers for proper timestamp formatting
+// XRange chart helpers
+inline XRangePoint MakeXRangePoint(const epoch_frame::Scalar &timestamp_scalar,
+                                   size_t category_y, bool is_long = false) {
+  XRangePoint point;
+  int64_t timestamp_ms = timestamp_scalar.timestamp().value / 1000000;  // nanoseconds to milliseconds
+  point.set_x(timestamp_ms);
+  point.set_x2(timestamp_ms);  // For point-like ranges
+  point.set_y(category_y);
+  point.set_is_long(is_long);
+  return point;
+}
+
+inline XRangePoint MakeXRangePoint(const epoch_frame::DateTime &datetime,
+                                   size_t category_y, bool is_long = false) {
+  XRangePoint point;
+  int64_t timestamp_ms = datetime.m_nanoseconds.count() / 1000000;  // nanoseconds to milliseconds
+  point.set_x(timestamp_ms);
+  point.set_x2(timestamp_ms);  // For point-like ranges
+  point.set_y(category_y);
+  point.set_is_long(is_long);
+  return point;
+}
+
+// Line chart data helpers
+inline Point MakeLinePoint(const epoch_frame::Scalar &timestamp_scalar, double y_value) {
+  Point point;
+  int64_t timestamp_ms = timestamp_scalar.timestamp().value / 1000000;  // nanoseconds to milliseconds
+  point.set_x(timestamp_ms);
+  point.set_y(y_value);
+  return point;
+}
+
+inline Point MakeLinePoint(const epoch_frame::DateTime &datetime, double y_value) {
+  Point point;
+  int64_t timestamp_ms = datetime.m_nanoseconds.count() / 1000000;  // nanoseconds to milliseconds
+  point.set_x(timestamp_ms);
+  point.set_y(y_value);
+  return point;
+}
+
+inline Point MakeLinePoint(int64_t timestamp_ms, double y_value) {
+  Point point;
+  point.set_x(timestamp_ms);
+  point.set_y(y_value);
+  return point;
+}
+
+// Helper to convert month string (YYYY-MM) to mid-month timestamp in milliseconds
+inline int64_t MonthStringToTimestampMs(const std::string &month_str) {
+  std::string date_str = month_str + "-15T12:00:00";  // Mid-month timestamp
+  auto datetime = epoch_frame::DateTime::from_str(date_str, "UTC", "%Y-%m-%dT%H:%M:%S");
+  return datetime.m_nanoseconds.count() / 1000000;  // Convert to milliseconds
+}
+
 } // namespace epoch_folio

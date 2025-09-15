@@ -4,6 +4,7 @@
 #include <arrow/compute/api_scalar.h>
 #include <arrow/table.h>
 #include <ctime>
+#include <limits>
 #include <epoch_frame/factory/series_factory.h>
 #include <epoch_metadata/metadata_options.h>
 #include <spdlog/spdlog.h>
@@ -13,6 +14,7 @@
 #include "common/table_helpers.h"
 
 namespace epoch_folio {
+  const auto closeLiteral = epoch_metadata::EpochStratifyXConstants::instance().CLOSE();
 
 void GapReport::generateTearsheet(const epoch_frame::DataFrame &normalizedDf) const {
   // Clear any previous tearsheet data
@@ -30,6 +32,13 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
   if (filtered_gaps.num_rows() == 0) {
     SPDLOG_WARN("No gaps found after filtering");
     return result;
+  }
+
+  // Debug: Check what columns are available
+  SPDLOG_INFO("Filtered gaps DataFrame has {} columns:", filtered_gaps.num_cols());
+  for (size_t i = 0; i < static_cast<size_t>(filtered_gaps.num_cols()); ++i) {
+    auto col_name = filtered_gaps.table()->field(i)->name();
+    SPDLOG_INFO("  Column {}: {}", i, col_name);
   }
 
   // 1. Summary cards
@@ -64,8 +73,6 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
   bool show_distribution_histogram =
       getBoolOpt("show_distribution_histogram", true);
   int histogram_bins = getIntOpt("histogram_bins", 20);
-  int max_table_rows = getIntOpt("max_table_rows", 100);
-  int max_streaks = getIntOpt("max_streaks", 5);
 
   // 2. Fill rate analysis bar chart
   if (show_fill_analysis) {
@@ -91,7 +98,7 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
   if (show_streak_analysis) {
     Chart chart;
     *chart.mutable_x_range_def() =
-        create_streak_chart(filtered_gaps, static_cast<uint32_t>(max_streaks));
+        create_streak_chart(filtered_gaps, std::numeric_limits<uint32_t>::max()); // No limit
     *result.mutable_charts()->add_charts() = std::move(chart);
   }
 
@@ -106,7 +113,7 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
   // 7. Performance analysis
   if (show_performance_analysis) {
     *result.mutable_tables()->add_tables() = create_frequency_table(
-        filtered_gaps, "ClosePerformance", "Gap Fill vs Close Performance");
+        filtered_gaps, "close_performance", "Gap Fill vs Close Performance");
   }
 
   // 8. Time distribution pie chart
@@ -116,7 +123,7 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
 
   // 9. Gap details table
   *result.mutable_tables()->add_tables() = create_gap_details_table(
-      filtered_gaps, static_cast<uint32_t>(max_table_rows));
+      filtered_gaps, std::numeric_limits<uint32_t>::max()); // No limit
 
   // 10. Trend analysis
   Chart chart2;
@@ -221,33 +228,30 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
   std::vector<std::string> time_bucket_data;
   std::vector<std::string> close_performance_data;
 
-  SPDLOG_INFO("Starting derived column computation loop...");
+  SPDLOG_INFO("Starting derived column computation loop for {} rows...", filtered.num_rows());
   for (size_t i = 0; i < static_cast<size_t>(filtered.num_rows()); ++i) {
-    bool hasGap = gap_up.iloc(i).as_bool() || gap_down.iloc(i).as_bool();
-    if (!hasGap) {
-      continue;
-    }
+    // Extract day of week from timestamp for all rows
+    auto datetime = filtered.index()->at(i).to_datetime();
 
-    // Extract day of week from timestamp
-    auto timestamp_ns = filtered.index()->at(i).as_int64();
-    time_t time_seconds = timestamp_ns / 1000000000LL;
-    std::tm *tm_info = std::gmtime(&time_seconds);
-
-    // Day of week (0=Sunday, 1=Monday, etc.)
-    const char *days[] = {"Sunday",   "Monday", "Tuesday", "Wednesday",
-                          "Thursday", "Friday", "Saturday"};
-    day_of_week_data.push_back(days[tm_info->tm_wday]);
+    // Day of week (0=Monday, 1=Tuesday, ..., 6=Sunday) - Python style
+    const char *days[] = {"Monday", "Tuesday", "Wednesday",
+                          "Thursday", "Friday", "Saturday", "Sunday"};
+    day_of_week_data.push_back(days[datetime.weekday()]);
 
     // Time bucket (simplified - based on hour)
+    auto time = datetime.time();
     time_bucket_data.push_back(
-        std::format("{}:{}", tm_info->tm_hour, tm_info->tm_min));
+        std::format("{}:{:02d}", time.hour.count(), time.minute.count()));
 
     // Close performance (green if close > prior session close, red otherwise)
-    auto close_val = filtered["close"].iloc(i).as_double();
+    auto close_val = filtered[closeLiteral].iloc(i).as_double();
     auto prior_close = filtered["psc"].iloc(i).as_double();
 
     close_performance_data.push_back(close_val > prior_close ? "green" : "red");
   }
+
+  SPDLOG_INFO("Created {} day_of_week entries, {} time_bucket entries, {} close_performance entries",
+              day_of_week_data.size(), time_bucket_data.size(), close_performance_data.size());
 
   // Add the derived columns to the DataFrame
   auto day_of_week_series =
@@ -411,15 +415,31 @@ BarDef GapReport::create_fill_rate_chart(const epoch_frame::DataFrame &gaps,
 Table GapReport::create_frequency_table(const epoch_frame::DataFrame &gaps,
                                         const std::string &category_col,
                                         const std::string &title) const {
-  // Use group_by_agg for frequency counting
-  auto grouped = gaps[std::vector<std::string>{category_col}]
-                     .group_by_agg(category_col)
-                     .count();
+  SPDLOG_INFO("Creating frequency table for column: {}", category_col);
+  SPDLOG_INFO("Available columns in gaps DataFrame:");
+  for (size_t i = 0; i < static_cast<size_t>(gaps.num_cols()); ++i) {
+    auto col_name = gaps.table()->field(i)->name();
+    SPDLOG_INFO("  Column {}: {}", i, col_name);
+  }
+
+  // Test if we can access the column directly first
+  try {
+    auto test_column = gaps[category_col];
+    SPDLOG_INFO("Successfully accessed column: {}", category_col);
+  } catch (const std::exception& e) {
+    SPDLOG_ERROR("Failed to access column {}: {}", category_col, e.what());
+    throw;
+  }
+
+  auto dow = gaps[category_col];
+
+  auto grouped = dow.contiguous_array().value_counts();
+  SPDLOG_INFO("Successfully performed group_by_agg");
 
   std::unordered_map<std::string, int64_t> counts;
-  for (size_t i = 0; i < static_cast<size_t>(grouped.num_rows()); ++i) {
-    auto category = grouped[category_col].iloc(i).repr();
-    auto count = grouped["count"].iloc(i).as_int64();
+  for (size_t i = 0; i < static_cast<size_t>(grouped.first.length()); ++i) {
+    auto category = grouped.first[i].repr();
+    auto count = grouped.second[i].as_int64();
     counts[category] = count;
   }
 
@@ -488,19 +508,14 @@ XRangeDef GapReport::create_streak_chart(const epoch_frame::DataFrame &gaps,
     }
   }
 
-  // Take last N of each type
+  // Take all or last N of each type (no artificial limit if max_streaks is very large)
   auto add_points = [&](const std::vector<std::pair<int64_t, bool>> &list,
                         size_t category_idx) {
-    size_t start = list.size() > max_streaks ? list.size() - max_streaks : 0;
+    size_t start = (max_streaks < list.size()) ? list.size() - max_streaks : 0;
     for (size_t j = start; j < list.size(); ++j) {
       auto [idx, is_filled] = list[j];
       auto date = gaps.index()->at(idx);
-
-      XRangePoint point;
-      point.set_x(date.as_int64());
-      point.set_x2(date.as_int64());
-      point.set_y(category_idx);
-      point.set_is_long(is_filled);
+      auto point = MakeXRangePoint(date, category_idx, is_filled);
       points.push_back(std::move(point));
     }
   };
@@ -577,8 +592,8 @@ GapReport::create_time_distribution(const epoch_frame::DataFrame &gaps) const {
 
   // For now, create simple AM/PM buckets based on gaps
   // In practice, you'd derive this from the DataFrame index timestamps
-  auto gap_up_count = gaps["gap_up"].sum().as_int64();
-  auto gap_down_count = gaps["gap_down"].sum().as_int64();
+  auto gap_up_count = static_cast<int64_t>(gaps["gap_up"].sum().value<uint64_t>().value());
+  auto gap_down_count = static_cast<int64_t>(gaps["gap_down"].sum().value<uint64_t>().value());
 
   // Simplified time distribution for demo
   time_counts["Morning"] = gap_up_count / 2 + gap_down_count / 3;
@@ -655,7 +670,7 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
     ARROW_UNUSED(fill_pct_builder.Append(fill_pct));
 
     // Derive close performance from close vs psc
-    auto close_val = gaps["close"].iloc(i).as_double();
+    auto close_val = gaps[closeLiteral].iloc(i).as_double();
     auto psc_val = gaps["psc"].iloc(i).as_double();
     auto performance_str = close_val > psc_val ? "green" : "red";
     ARROW_UNUSED(performance_builder.Append(performance_str));
@@ -714,17 +729,13 @@ GapReport::create_gap_trend_chart(const epoch_frame::DataFrame &gaps) const {
 
   // Extract month-year key from each date and count
   for (size_t i = 0; i < static_cast<size_t>(gaps.num_rows()); ++i) {
-    auto timestamp = gaps.index()->at(i);
-    // Extract year and month from timestamp
-    // Extract year and month from timestamp (nanoseconds since epoch)
-    auto timestamp_ns = timestamp.as_int64();
-    // Convert to seconds and create time_t
-    time_t time_seconds = timestamp_ns / 1000000000LL;
-    std::tm *tm_info = std::gmtime(&time_seconds);
-    auto year = tm_info->tm_year + 1900;
-    auto month = tm_info->tm_mon + 1;
-    auto month_key = std::to_string(year) + "-" + (month < 10 ? "0" : "") +
-                     std::to_string(month);
+    auto datetime = gaps.index()->at(i).to_datetime();
+    auto date = datetime.date();
+
+    // Use DateTime object to get year and month directly
+    auto year = static_cast<int>(date.year);
+    auto month = static_cast<unsigned>(date.month);
+    auto month_key = std::format("{}-{:02d}", year, month);
     monthly_counts[month_key]++;
   }
 
@@ -736,12 +747,11 @@ GapReport::create_gap_trend_chart(const epoch_frame::DataFrame &gaps) const {
   Line line;
   line.set_name("Gap Frequency");
 
-  int64_t x_index = 0;
   for (const auto &[month_str, count] : sorted_counts) {
-    // Use sequential index for x-axis since we have month strings
-    auto *point = line.add_data();
-    point->set_x(x_index++);
-    point->set_y(static_cast<double>(count));
+    // Use helper to convert month string to proper timestamp
+    auto timestamp_ms = MonthStringToTimestampMs(month_str);
+    auto point = MakeLinePoint(timestamp_ms, static_cast<double>(count));
+    *line.add_data() = std::move(point);
   }
 
   LinesDef lines_def;
@@ -762,5 +772,6 @@ GapReport::create_gap_trend_chart(const epoch_frame::DataFrame &gaps) const {
 
   return lines_def;
 }
+
 
 } // namespace epoch_folio
