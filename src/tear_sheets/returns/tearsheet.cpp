@@ -471,7 +471,6 @@ Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
   out.set_title("Worst Drawdown Periods");
 
   // Define columns in order (display name, id)
-  TableColumnHelper::AddIntegerColumn(out, "Index", "index");
   TableColumnHelper::AddPercentColumn(out, "Net Drawdown", "netDrawdown");
   TableColumnHelper::AddDateColumn(out, "Peak Date", "peakDate");
   TableColumnHelper::AddDateColumn(out, "Valley Date", "valleyDate");
@@ -483,10 +482,6 @@ Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
 
   for (auto const &row : data) {
     auto *pb_row = table_data->add_rows();
-
-    // Index (integer) - use helper for proper type conversion
-    *pb_row->add_values() = TableRowHelper::AddTypedValue(
-        Scalar{static_cast<int64_t>(row.index)}, epoch_proto::TypeInteger);
 
     // Net drawdown as percentage - use helper for proper type conversion
     *pb_row->add_values() = TableRowHelper::AddTypedValue(
@@ -566,12 +561,9 @@ void TearSheetFactory::MakeRollingMaxDrawdownCharts(
     auto recovery =
         row.recoveryDate.value_or(m_strategy.index()->at(-1).to_date().date());
     auto *band = ld->add_x_plot_bands();
-    // Convert dates to timestamp format (milliseconds) for bands
-    // The band expects timestamp in milliseconds
-    auto peak_timestamp = DateToTimestampMs(row.peakDate);
-    auto recovery_timestamp = DateToTimestampMs(recovery);
-    band->mutable_from()->set_timestamp_ms(peak_timestamp);
-    band->mutable_to()->set_timestamp_ms(recovery_timestamp);
+    // Convert Date to DateTime and use timestamp conversion for time-series plotbands
+    *band->mutable_from() = ToProtoScalarTimestamp(epoch_frame::DateTime(row.peakDate));
+    *band->mutable_to() = ToProtoScalarTimestamp(epoch_frame::DateTime(recovery));
   }
 
   lines.push_back(std::move(c));
