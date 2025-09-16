@@ -1,6 +1,6 @@
 #pragma once
 #include "common/chart_def.h"
-#include "ireport.h"
+#include "../../include/epoch_folio/ireport.h"
 #include <glaze/glaze.hpp>
 
 #include <epoch_metadata/bar_attribute.h>
