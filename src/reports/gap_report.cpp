@@ -28,7 +28,43 @@ epoch_proto::TearSheet
 GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
   epoch_proto::TearSheet result;
 
-  auto filtered_gaps = filter_gaps(df);
+  // Create a DataFrame with gap_down column if it doesn't exist
+  epoch_frame::DataFrame working_df = df;
+  bool has_gap_down = false;
+  for (size_t i = 0; i < static_cast<size_t>(df.num_cols()); ++i) {
+    if (df.table()->field(i)->name() == "gap_down") {
+      has_gap_down = true;
+      break;
+    }
+  }
+
+  if (!has_gap_down) {
+    // Create gap_down as inverse of gap_up
+    auto gap_up_col = df["gap_up"];
+    auto gap_down_col = gap_up_col == epoch_frame::Scalar{false};
+
+    // Create new Series with proper name
+    auto gap_down_series = epoch_frame::Series(gap_down_col.index(), gap_down_col.array(), "gap_down");
+
+    // Create new DataFrame with gap_down column added
+    std::vector<arrow::ChunkedArrayPtr> arrays;
+    std::vector<std::string> column_names;
+
+    // Copy existing columns
+    for (size_t i = 0; i < static_cast<size_t>(df.num_cols()); ++i) {
+      auto col_name = df.table()->field(i)->name();
+      arrays.push_back(df[col_name].array());
+      column_names.push_back(col_name);
+    }
+
+    // Add gap_down column
+    arrays.push_back(gap_down_series.array());
+    column_names.push_back("gap_down");
+
+    working_df = epoch_frame::make_dataframe(df.index(), arrays, column_names);
+  }
+
+  auto filtered_gaps = filter_gaps(working_df);
   if (filtered_gaps.num_rows() == 0) {
     SPDLOG_WARN("No gaps found after filtering");
     return result;
@@ -146,6 +182,7 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
   // Access columns directly - orchestrator ensures they exist
   auto is_up = df["gap_up"];
   auto is_down = df["gap_down"];
+
   auto fill_fraction = df["fill_fraction"];
   auto gap_size = df["gap_size"];
 
@@ -272,6 +309,22 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
     all_columns.push_back(col_name);
   }
 
+  // Add gap_down column derived from gap_up if it doesn't exist
+  bool has_gap_down = false;
+  for (size_t i = 0; i < static_cast<size_t>(filtered.num_cols()); ++i) {
+    if (filtered.table()->field(i)->name() == "gap_down") {
+      has_gap_down = true;
+      break;
+    }
+  }
+
+  if (!has_gap_down) {
+    auto gap_up_col = filtered["gap_up"];
+    auto gap_down_col = gap_up_col == epoch_frame::Scalar{false};
+    all_series.push_back(gap_down_col);
+    all_columns.push_back("gap_down");
+  }
+
   // Add derived columns
   all_series.push_back(day_of_week_series);
   all_columns.push_back("day_of_week");
@@ -305,8 +358,19 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   cards.push_back(std::move(card1));
 
   // Count gap types using boolean columns
-  auto gap_up_count = gaps["gap_up"].sum().cast_int64().as_int64();
-  auto gap_down_count = gaps["gap_down"].sum().cast_int64().as_int64();
+  auto gap_up_series = gaps["gap_up"];
+  auto gap_up_count = gap_up_series.sum().cast_int64().as_int64();
+
+  // Calculate gap_down as inverse of gap_up when gap_up is not null
+  int64_t gap_down_count = 0;
+  try {
+    auto gap_down_series = gaps["gap_down"];
+    gap_down_count = gap_down_series.sum().cast_int64().as_int64();
+  } catch (...) {
+    // If gap_down doesn't exist, calculate as false values in gap_up
+    auto gap_up_false = gap_up_series == epoch_frame::Scalar{false};
+    gap_down_count = gap_up_false.sum().cast_int64().as_int64();
+  }
 
   // Count filled gaps based on fill_fraction
   auto fill_fraction = gaps["fill_fraction"];
@@ -327,7 +391,7 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   CardDataHelper::AddIntegerField(card2, "Gap Up",
       epoch_frame::Scalar{gap_up_count}, 1);
   CardDataHelper::AddIntegerField(card2, "Gap Down",
-      epoch_frame::Scalar{gap_down_count}, 1);
+      epoch_frame::Scalar{static_cast<int64_t>(gap_down_count)}, 1);
 
   cards.push_back(std::move(card2));
 

@@ -43,8 +43,7 @@ public:
       epoch_proto::CardDef& card,
       const std::string& title,
       const epoch_frame::Scalar& percent_value,
-      int group = 0,
-      bool multiply_by_100 = false);
+      int group = 0);
 
   // Add monetary field to card
   static epoch_proto::CardData* AddMonetaryField(

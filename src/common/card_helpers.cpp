@@ -99,18 +99,12 @@ epoch_proto::CardData* CardDataHelper::AddPercentField(
     epoch_proto::CardDef& card,
     const std::string& title,
     const epoch_frame::Scalar& percent_value,
-    int group,
-    bool multiply_by_100) {
+    int group) {
   auto* data = card.add_data();
   data->set_title(title);
-  
-  if (multiply_by_100) {
-    auto scaled_value = percent_value * epoch_frame::Scalar{100.0};
-    *data->mutable_value() = ToProtoScalar(scaled_value);
-  } else {
-    *data->mutable_value() = ToProtoScalar(percent_value);
-  }
-  
+
+  *data->mutable_value() = ToProtoScalar(percent_value);
+
   data->set_type(epoch_proto::TypePercent);
   data->set_group(group);
   return data;
@@ -275,9 +269,8 @@ epoch_proto::Scalar TableRowHelper::AddTypedValue(
       return AddTimestampValue(value);
       
     case epoch_proto::TypePercent: {
-      // Percentages need to be multiplied by 100 for display
-      auto scaled_value = value * epoch_frame::Scalar{100.0};
-      return ToProtoScalar(scaled_value);
+      // Percentage values should already be scaled (e.g., 5.0 for 5%)
+      return ToProtoScalar(value);
     }
       
     case epoch_proto::TypeMonetary:

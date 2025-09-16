@@ -115,7 +115,6 @@ struct ReportMetadata<GapReport> {
       .desc = "Analyzes gaps in price data and generates comprehensive statistics",
       .inputs = {
         {epoch_core::IODataType::Boolean, "gap_up", "Gap Up"},
-        {epoch_core::IODataType::Boolean, "gap_down", "Gap Down"},
         {epoch_core::IODataType::Decimal, "fill_fraction", "Fill Fraction"},
         {epoch_core::IODataType::Decimal, "gap_size", "Gap Size"},
         {epoch_core::IODataType::Decimal, "psc", "Prior Session Close"},

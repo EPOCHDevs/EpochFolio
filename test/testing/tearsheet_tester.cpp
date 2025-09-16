@@ -192,37 +192,52 @@ epoch_frame::DataFrame GetDataFrameFromYAML(const YAML::Node& node,
     auto createSeriesFromYAML = [&](const YAML::Node& data, const epoch_metadata::transforms::IOMetaData& inputSpec) -> Series {
         switch (inputSpec.type) {
             case epoch_core::IODataType::Boolean: {
-                std::vector<bool> values;
+                std::vector<epoch_frame::Scalar> values;
                 for (const auto& val : data) {
-                    values.push_back(val.as<bool>());
-                }
-                return make_series(index, values, inputSpec.id);
-            }
-            case epoch_core::IODataType::Decimal: {
-                std::vector<double> values;
-                for (const auto& val : data) {
-                    values.push_back(val.as<double>());
-                }
-                return make_series(index, values, inputSpec.id);
-            }
-            case epoch_core::IODataType::Integer: {
-                std::vector<int64_t> values;
-                for (const auto& val : data) {
-                    if (inputSpec.id.find("timestamp") != std::string::npos) {
-                        // Special handling for timestamp columns
-                        values.push_back(parseTimestamp(val));
+                    if (val.IsNull()) {
+                        values.push_back(epoch_frame::Scalar{arrow::MakeNullScalar(arrow::boolean())});
                     } else {
-                        values.push_back(val.as<int64_t>());
+                        values.push_back(epoch_frame::Scalar{val.as<bool>()});
                     }
                 }
-                return make_series(index, values, inputSpec.id);
+                // Create the series using the factory that handles Scalar vectors
+                return epoch_frame::Series(index, epoch_frame::factory::array::make_chunked_array(values, arrow::boolean()), inputSpec.id);
+            }
+            case epoch_core::IODataType::Decimal: {
+                std::vector<epoch_frame::Scalar> values;
+                for (const auto& val : data) {
+                    if (val.IsNull()) {
+                        values.push_back(epoch_frame::Scalar{arrow::MakeNullScalar(arrow::float64())});
+                    } else {
+                        values.push_back(epoch_frame::Scalar{val.as<double>()});
+                    }
+                }
+                return epoch_frame::Series(index, epoch_frame::factory::array::make_chunked_array(values, arrow::float64()), inputSpec.id);
+            }
+            case epoch_core::IODataType::Integer: {
+                std::vector<epoch_frame::Scalar> values;
+                for (const auto& val : data) {
+                    if (val.IsNull()) {
+                        values.push_back(epoch_frame::Scalar{arrow::MakeNullScalar(arrow::int64())});
+                    } else if (inputSpec.id.find("timestamp") != std::string::npos) {
+                        // Special handling for timestamp columns
+                        values.push_back(epoch_frame::Scalar{parseTimestamp(val)});
+                    } else {
+                        values.push_back(epoch_frame::Scalar{val.as<int64_t>()});
+                    }
+                }
+                return epoch_frame::Series(index, epoch_frame::factory::array::make_chunked_array(values, arrow::int64()), inputSpec.id);
             }
             case epoch_core::IODataType::String: {
-                std::vector<std::string> values;
+                std::vector<epoch_frame::Scalar> values;
                 for (const auto& val : data) {
-                    values.push_back(val.as<std::string>());
+                    if (val.IsNull()) {
+                        values.push_back(epoch_frame::Scalar{arrow::MakeNullScalar(arrow::utf8())});
+                    } else {
+                        values.push_back(epoch_frame::Scalar{val.as<std::string>()});
+                    }
                 }
-                return make_series(index, values, inputSpec.id);
+                return epoch_frame::Series(index, epoch_frame::factory::array::make_chunked_array(values, arrow::utf8()), inputSpec.id);
             }
             default:
                 throw std::runtime_error("Unsupported IODataType for input: " + inputSpec.id);

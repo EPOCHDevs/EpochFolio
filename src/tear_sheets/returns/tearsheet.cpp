@@ -365,8 +365,7 @@ CardDef TearSheetFactory::MakePerformanceStats(
         if (pct_fns.contains(ep::get_stat_name(stat))) {
           // Use helper for percentage fields
           CardDataHelper::AddPercentField(card, ep::get_stat_name(stat),
-                                          Scalar{std::move(scalar)}, kGroup1,
-                                          true);
+                                          Scalar{std::move(scalar)}, kGroup1);
         } else {
           // Use helper for decimal fields
           CardDataHelper::AddDecimalField(card, ep::get_stat_name(stat),
@@ -393,7 +392,7 @@ CardDef TearSheetFactory::MakePerformanceStats(
         auto turnover =
             GetTurnover(positions, m_transactions, turnoverDenominator).mean();
         CardDataHelper::AddPercentField(card, "Daily Turnover", turnover,
-                                        kGroup2, true);
+                                        kGroup2);
       } catch (const std::exception &e) {
         SPDLOG_WARN("Failed to compute daily turnover: {}", e.what());
       }
@@ -446,17 +445,17 @@ Table TearSheetFactory::MakeStressEventTable() const {
     // Event name (string) - direct conversion is fine for strings
     *row->add_values() = ToProtoScalarValue(event);
 
-    // Mean percentage - use helper for proper percent conversion
+    // Mean percentage - multiply by 100 for percentage display
     *row->add_values() = TableRowHelper::AddTypedValue(
-        strategy.mean(), epoch_proto::TypePercent);
+        strategy.mean() * hundred, epoch_proto::TypePercent);
 
-    // Min percentage - use helper for proper percent conversion
+    // Min percentage - multiply by 100 for percentage display
     *row->add_values() = TableRowHelper::AddTypedValue(
-        strategy.min(), epoch_proto::TypePercent);
+        strategy.min() * hundred, epoch_proto::TypePercent);
 
-    // Max percentage - use helper for proper percent conversion
+    // Max percentage - multiply by 100 for percentage display
     *row->add_values() = TableRowHelper::AddTypedValue(
-        strategy.max(), epoch_proto::TypePercent);
+        strategy.max() * hundred, epoch_proto::TypePercent);
   }
 
   return out;
@@ -481,7 +480,6 @@ Table TearSheetFactory::MakeWorstDrawdownTable(int64_t top,
 
   // Build data directly in protobuf format
   auto *table_data = out.mutable_data();
-  const Scalar hundred{100.0};
 
   for (auto const &row : data) {
     auto *pb_row = table_data->add_rows();
