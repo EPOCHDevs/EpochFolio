@@ -289,12 +289,22 @@ LinesDef TearSheetFactory::MakeGrossLeverageChart() const {
 }
 
 LinesDef TearSheetFactory::MakeSectorExposureChart() const {
+  auto sectorExposures = GetSectorExposure(m_positionsNoCash, m_sectorMappings);
+  sectorExposures = sectorExposures.assign("cash", m_cash);
+  auto sectorAlloc = GetPercentAlloc(sectorExposures).drop("cash");
+
   LinesDef out;
   auto *cd = out.mutable_chart_def();
   cd->set_id("sectorExposure");
-  cd->set_title("Sector Exposure");
-  cd->set_type(epoch_proto::WidgetLines);
+  cd->set_title("Sector Allocation over time");
+  cd->set_type(epoch_proto::WidgetArea);
   cd->set_category(epoch_folio::categories::Positions);
+
+  auto lines = MakeSeriesLines(sectorAlloc);
+  for (auto &line : lines) {
+    *out.add_lines() = std::move(line);
+  }
+
   return out;
 }
 

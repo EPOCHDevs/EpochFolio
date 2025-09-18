@@ -24,6 +24,8 @@
 #include <epoch_frame/factory/table_factory.h>
 #include <optional>
 
+#include "google/protobuf/json/json.h"
+
 using namespace epoch_core;
 using namespace epoch_frame;
 using namespace epoch_folio;
@@ -795,6 +797,7 @@ BoxPlotDef TearSheetFactory::BuildReturnQuantiles() const {
   x_axis->add_categories("Monthly");
 
   *out.mutable_data() = data;
+
   return out;
 }
 
