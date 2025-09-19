@@ -170,8 +170,9 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
   auto is_up = gap_up == Scalar{true};
   auto is_down = gap_up == Scalar{false};
 
-  // Convert gap_size to percentage
-  auto gap_pct = gap_size * Scalar{100.0};
+  // Convert gap_size (absolute price) to percentage using prior session close
+  auto psc = df["psc"];
+  auto gap_pct = (gap_size / psc) * Scalar{100.0};
   auto pct_abs = gap_pct.abs();
 
   // Gap type filter
@@ -350,8 +351,8 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   auto gap_filled = gaps["gap_filled"];
   auto filled_count = gap_filled.sum().cast_int64().as_int64();
 
-  // Calculate gap percentages from gap_size
-  auto gap_pct = gaps["gap_size"] * epoch_frame::Scalar{100.0};
+  // Calculate gap percentages from gap_size (absolute price) and prior close
+  auto gap_pct = (gaps["gap_size"] / gaps["psc"]) * epoch_frame::Scalar{100.0};
   auto total_gap_pct = gap_pct.abs().sum().as_double();
   auto max_gap_pct = gap_pct.abs().max().as_double();
 
@@ -558,9 +559,10 @@ GapTableData GapReport::build_comprehensive_table_data(const epoch_frame::DataFr
     int64_t timestamp_ms = date_scalar.timestamp().value / 1000000;
     ARROW_UNUSED(date_builder.Append(timestamp_ms));
 
-    // Gap size (as percentage)
+    // Gap size (absolute price) - convert to percentage
     auto gap_size = gaps["gap_size"].iloc(i).as_double();
-    auto gap_size_pct = std::abs(gap_size * 100);
+    auto psc_val = gaps["psc"].iloc(i).as_double();
+    auto gap_size_pct = std::abs(gap_size / psc_val * 100);
     ARROW_UNUSED(gap_size_builder.Append(gap_size_pct));
 
     // Gap type and filled status
@@ -604,7 +606,6 @@ GapTableData GapReport::build_comprehensive_table_data(const epoch_frame::DataFr
 
     // Performance
     auto close_val = gaps[closeLiteral].iloc(i).as_double();
-    auto psc_val = gaps["psc"].iloc(i).as_double();
     ARROW_UNUSED(performance_builder.Append(close_val > psc_val ? "green" : "red"));
 
     // Fill time with configurable pivot
@@ -756,8 +757,8 @@ Table GapReport::create_frequency_table(const epoch_frame::DataFrame &gaps,
 HistogramDef
 GapReport::create_gap_distribution(const epoch_frame::DataFrame &gaps,
                                    uint32_t bins) const {
-  // Extract gap percentages from gap_size
-  auto gap_pct = gaps["gap_size"] * epoch_frame::Scalar{100.0};
+  // Extract gap percentages from gap_size (absolute price) and prior close
+  auto gap_pct = (gaps["gap_size"] / gaps["psc"]) * epoch_frame::Scalar{100.0};
   auto abs_gap_pct = gap_pct.abs();
 
   auto data_array = abs_gap_pct.array()->chunk(0);
@@ -860,9 +861,10 @@ Table GapReport::create_comprehensive_gap_table(const epoch_frame::DataFrame &ga
     int64_t timestamp_ms = date_scalar.timestamp().value / 1000000;
     ARROW_UNUSED(date_builder.Append(timestamp_ms));
 
-    // Gap size column (always included) - stored as percentage
+    // Gap size column (always included) - convert from absolute to percentage
     auto gap_size = gaps["gap_size"].iloc(i).as_double();
-    auto gap_size_pct = std::abs(gap_size * 100);
+    auto psc_val = gaps["psc"].iloc(i).as_double();
+    auto gap_size_pct = std::abs(gap_size / psc_val * 100);
     ARROW_UNUSED(gap_size_builder.Append(gap_size_pct));
 
     // Gap type and filled status
@@ -1051,9 +1053,10 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
     auto gap_type_str = is_gap_up ? "Gap Up" : "Gap Down";
     ARROW_UNUSED(gap_type_builder.Append(gap_type_str));
 
-    // Calculate gap percentage from gap_size
+    // Calculate gap percentage from gap_size (absolute price)
     auto gap_size = gaps["gap_size"].iloc(i).as_double();
-    auto gap_pct = std::abs(gap_size * 100);
+    auto psc_val = gaps["psc"].iloc(i).as_double();
+    auto gap_pct = std::abs(gap_size / psc_val * 100);
     ARROW_UNUSED(gap_pct_builder.Append(gap_pct));
 
     // Check if filled using gap_filled column
@@ -1067,7 +1070,6 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
 
     // Derive close performance from close vs psc
     auto close_val = gaps[closeLiteral].iloc(i).as_double();
-    auto psc_val = gaps["psc"].iloc(i).as_double();
     auto performance_str = close_val > psc_val ? "green" : "red";
     ARROW_UNUSED(performance_builder.Append(performance_str));
   }
