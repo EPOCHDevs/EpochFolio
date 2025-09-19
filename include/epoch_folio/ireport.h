@@ -33,6 +33,9 @@ public:
     for (const auto& [inputId, columns] : m_config.GetInputs()) {
       inputColumns.insert(inputColumns.end(), columns.begin(), columns.end());
     }
+    for (const auto& column : m_config.GetTransformDefinition().GetMetadata().requiredDataSources) {
+      inputColumns.emplace_back(column);
+    }
 
     if (inputColumns.empty()) {
       // No inputs configured, return empty DataFrame
@@ -79,6 +82,10 @@ protected:
         // e.g., "gap_classifier#result" -> "gap"
         m_columnMappings[inputColumns.front()] = inputId;
       }
+    }
+
+    for (const auto& column : m_config.GetTransformDefinition().GetMetadata().requiredDataSources) {
+      m_columnMappings.emplace(column, column);
     }
   }
 
