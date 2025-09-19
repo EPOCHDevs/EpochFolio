@@ -69,7 +69,7 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
 
   // Set up y-axis
   auto *y_axis = chart_def->mutable_y_axis();
-  y_axis->set_type(kCategoryAxisType);
+  y_axis->set_type(epoch_proto::AxisCategory);
   y_axis->set_label("Asset");
 
   // Set categories and prepare for parallel processing
@@ -395,47 +395,24 @@ PieDef TearSheetFactory::MakeProfitabilityPieChart(
           .to_series();
   auto profit_attr = profit_attribution.to_series();
 
-  PieDataDef profit_attr_data;
-  profit_attr_data.set_name("Asset");
-  profit_attr_data.set_size("80%");
-  profit_attr_data.set_inner_size("60%");
-
-  for (int64_t i = 0; i < static_cast<int64_t>(profit_attr.size()); ++i) {
-    auto asset = profit_attr.index()->at(i);
-    auto profit = profit_attr.iloc(i) * 100_scalar;
-
-    auto *point = profit_attr_data.add_points();
-    point->set_name(asset.repr());
-    point->set_y(profit.as_double());
-  }
-
-  PieDataDef sector_profit_attr_data;
-  sector_profit_attr_data.set_name("Sector");
-  sector_profit_attr_data.set_size("45%");
-
-  for (int64_t i = 0; i < static_cast<int64_t>(sector_profit_attr.size());
-       ++i) {
-    auto sector = sector_profit_attr.index()->at(i);
-    auto profit = sector_profit_attr.iloc(i) * 100_scalar;
-
-    auto *point = sector_profit_attr_data.add_points();
-    point->set_name(sector.repr());
-    point->set_y(profit.as_double());
-  }
-
-  PieDef pie_def;
-
-  // Set up chart definition
-  auto *chart_def = pie_def.mutable_chart_def();
-  chart_def->set_id("profitability_pie");
-  chart_def->set_title("Profitability (PnL / PnL total)");
-  chart_def->set_type(epoch_proto::WidgetPie);
-  chart_def->set_category(epoch_folio::categories::RoundTrip);
-
-  // Add the pie data
-  *pie_def.add_data() = std::move(profit_attr_data);
-  *pie_def.add_data() = std::move(sector_profit_attr_data);
-
-  return pie_def;
+  // Use the builder pattern for cleaner construction
+  return PieChartBuilder({
+      .id = "profitability_pie",
+      .title = "Profitability (PnL / PnL total)",
+      .category = epoch_folio::categories::RoundTrip
+  })
+  .addDataSeries({
+      .name = "Asset",
+      .size = "80%",
+      .inner_size = "60%"
+  })
+  .addFromSeries(profit_attr, 100.0)  // Multiply by 100 for percentage
+  .addDataSeries({
+      .name = "Sector",
+      .size = "45%",
+      .inner_size = "0%"  // No inner size for outer ring
+  })
+  .addFromSeries(sector_profit_attr, 100.0)
+  .build();
 }
 } // namespace epoch_folio::round_trip

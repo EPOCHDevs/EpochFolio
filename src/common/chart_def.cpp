@@ -1,8 +1,33 @@
 #include "chart_def.h"
+#include "table_helpers.h"
 #include <arrow/scalar.h>
 #include <memory>
 #include <tbb/tbb.h>
 namespace epoch_folio {
+
+// HistogramBuilder method implementations
+HistogramBuilder& HistogramBuilder::setData(const std::shared_ptr<arrow::Array>& data) {
+  auto chunked = arrow::ChunkedArray::Make({data});
+  *histogram_def_.mutable_data() = MakeArrayFromArrow(chunked.MoveValueUnsafe());
+  return *this;
+}
+
+HistogramBuilder& HistogramBuilder::setData(const std::shared_ptr<arrow::ChunkedArray>& chunked_data) {
+  *histogram_def_.mutable_data() = MakeArrayFromArrow(chunked_data);
+  return *this;
+}
+
+// BarChartBuilder method implementations
+BarChartBuilder& BarChartBuilder::setData(const std::shared_ptr<arrow::Array>& data) {
+  auto chunked = arrow::ChunkedArray::Make({data});
+  *bar_def_.mutable_data() = MakeArrayFromArrow(chunked.MoveValueUnsafe());
+  return *this;
+}
+
+BarChartBuilder& BarChartBuilder::setData(const std::shared_ptr<arrow::ChunkedArray>& chunked_data) {
+  *bar_def_.mutable_data() = MakeArrayFromArrow(chunked_data);
+  return *this;
+}
 constexpr size_t kParallelThreshold = 10;
 
 epoch_proto::Scalar ToProtoScalar(const epoch_frame::Scalar &s) {

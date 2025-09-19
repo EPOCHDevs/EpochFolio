@@ -14,10 +14,6 @@
 #include <string_view>
 
 namespace epoch_folio {
-constexpr epoch_proto::AxisType kLinearAxisType{epoch_proto::AxisLinear};
-constexpr epoch_proto::AxisType kLogAxisType{epoch_proto::AxisLogarithmic};
-constexpr epoch_proto::AxisType kDateTimeAxisType{epoch_proto::AxisDateTime};
-constexpr epoch_proto::AxisType kCategoryAxisType{epoch_proto::AxisCategory};
 
 // Now in proto includes above
 
@@ -194,7 +190,7 @@ inline StraightLineDef MakeStraightLine(const std::string &title,
 // Builders for axes
 inline AxisDef MakeLinearAxis(std::optional<std::string> label = std::nullopt) {
   AxisDef axis;
-  axis.set_type(kLinearAxisType);
+  axis.set_type(epoch_proto::AxisLinear);
   if (label)
     axis.set_label(*label);
   return axis;
@@ -203,7 +199,7 @@ inline AxisDef MakeLinearAxis(std::optional<std::string> label = std::nullopt) {
 inline AxisDef
 MakeDateTimeAxis(std::optional<std::string> label = std::nullopt) {
   AxisDef axis;
-  axis.set_type(kDateTimeAxisType);
+  axis.set_type(epoch_proto::AxisDateTime);
   if (label)
     axis.set_label(*label);
   return axis;
@@ -292,6 +288,272 @@ inline int64_t MonthStringToTimestampMs(const std::string &month_str) {
   std::string date_str = month_str + "-15T12:00:00";  // Mid-month timestamp
   auto datetime = epoch_frame::DateTime::from_str(date_str, "UTC", "%Y-%m-%dT%H:%M:%S");
   return datetime.m_nanoseconds.count() / 1000000;  // Convert to milliseconds
+}
+
+// Pie chart configuration structs
+struct PieChartConfig {
+  std::string id;
+  std::string title;
+  std::string category = "Reports";
+};
+
+struct PieDataConfig {
+  std::string name = "Data";
+  std::string size = "90%";
+  std::string inner_size = "50%";
+};
+
+struct PieSlice {
+  std::string name;
+  double value;
+
+  PieSlice(std::string n, double v) : name(std::move(n)), value(v) {}
+};
+
+// Pie chart builder class for fluent API
+class PieChartBuilder {
+private:
+  PieDef pie_def_;
+  PieDataDef* current_data_ = nullptr;
+
+public:
+  PieChartBuilder(const PieChartConfig& config) {
+    auto* chart_def = pie_def_.mutable_chart_def();
+    chart_def->set_id(config.id);
+    chart_def->set_title(config.title);
+    chart_def->set_type(epoch_proto::WidgetPie);
+    chart_def->set_category(config.category);
+  }
+
+  PieChartBuilder& addDataSeries(const PieDataConfig& config = {}) {
+    current_data_ = pie_def_.add_data();
+    current_data_->set_name(config.name);
+    current_data_->set_size(config.size);
+    current_data_->set_inner_size(config.inner_size);
+    return *this;
+  }
+
+  PieChartBuilder& addSlice(const PieSlice& slice) {
+    if (!current_data_) {
+      addDataSeries();
+    }
+    auto* point = current_data_->add_points();
+    point->set_name(slice.name);
+    point->set_y(slice.value);
+    return *this;
+  }
+
+  PieChartBuilder& addSlices(const std::vector<PieSlice>& slices) {
+    for (const auto& slice : slices) {
+      addSlice(slice);
+    }
+    return *this;
+  }
+
+  PieChartBuilder& addFromSeries(const epoch_frame::Series& series, double multiplier = 1.0) {
+    if (!current_data_) {
+      addDataSeries();
+    }
+    for (int64_t i = 0; i < static_cast<int64_t>(series.size()); ++i) {
+      auto name = series.index()->at(i).repr();
+      auto value = series.iloc(i).as_double() * multiplier;
+      addSlice({name, value});
+    }
+    return *this;
+  }
+
+  PieDef build() {
+    return std::move(pie_def_);
+  }
+};
+
+// Simple helper functions using the builder
+inline PieDataDef MakePieDataDef(const std::string &name,
+                                 const std::string &size = "90%",
+                                 const std::string &inner_size = "50%") {
+  PieDataDef pie_data;
+  pie_data.set_name(name);
+  pie_data.set_size(size);
+  pie_data.set_inner_size(inner_size);
+  return pie_data;
+}
+
+inline PieData MakePieDataPoint(const std::string &name, double value) {
+  PieData point;
+  point.set_name(name);
+  point.set_y(value);
+  return point;
+}
+
+// Convenience function for simple two-value pie charts
+inline PieDef MakeSimplePieChart(const PieChartConfig& config,
+                                 const PieSlice& slice1,
+                                 const PieSlice& slice2,
+                                 const PieDataConfig& data_config = {}) {
+  return PieChartBuilder(config)
+      .addDataSeries(data_config)
+      .addSlice(slice1)
+      .addSlice(slice2)
+      .build();
+}
+
+// Convenience function for creating pie chart from Series
+inline PieDef MakePieChartFromSeries(const PieChartConfig& config,
+                                     const epoch_frame::Series& series,
+                                     const PieDataConfig& data_config = {},
+                                     double multiplier = 1.0) {
+  return PieChartBuilder(config)
+      .addDataSeries(data_config)
+      .addFromSeries(series, multiplier)
+      .build();
+}
+
+// ==== Histogram Helpers ====
+
+struct HistogramConfig {
+  std::string id = "histogram";
+  std::string title = "Histogram";
+  std::string category = "Charts";
+};
+
+class HistogramBuilder {
+private:
+  HistogramDef histogram_def_;
+
+public:
+  explicit HistogramBuilder(const HistogramConfig& config = {}) {
+    auto* chart_def = histogram_def_.mutable_chart_def();
+    chart_def->set_id(config.id);
+    chart_def->set_title(config.title);
+    chart_def->set_type(epoch_proto::WidgetHistogram);
+    chart_def->set_category(config.category);
+  }
+
+  HistogramBuilder& setXAxis(const AxisDef& axis) {
+    *histogram_def_.mutable_chart_def()->mutable_x_axis() = axis;
+    return *this;
+  }
+
+  HistogramBuilder& setYAxis(const AxisDef& axis) {
+    *histogram_def_.mutable_chart_def()->mutable_y_axis() = axis;
+    return *this;
+  }
+
+  // Forward declare to avoid circular dependency
+  HistogramBuilder& setData(const std::shared_ptr<arrow::Array>& data);
+  HistogramBuilder& setData(const std::shared_ptr<arrow::ChunkedArray>& chunked_data);
+
+  HistogramBuilder& setBins(uint32_t bins) {
+    histogram_def_.set_bins_count(bins);
+    return *this;
+  }
+
+  HistogramDef build() {
+    return std::move(histogram_def_);
+  }
+};
+
+// Note: Convenience functions that use setData are not available in the header
+// due to circular dependency. Use HistogramBuilder directly in implementation files.
+
+// ==== Bar Chart Helpers ====
+
+struct BarChartConfig {
+  std::string id = "bar_chart";
+  std::string title = "Bar Chart";
+  std::string category = "Charts";
+};
+
+class BarChartBuilder {
+private:
+  BarDef bar_def_;
+
+public:
+  explicit BarChartBuilder(const BarChartConfig& config = {}) {
+    auto* chart_def = bar_def_.mutable_chart_def();
+    chart_def->set_id(config.id);
+    chart_def->set_title(config.title);
+    chart_def->set_type(epoch_proto::WidgetBar);
+    chart_def->set_category(config.category);
+  }
+
+  BarChartBuilder& setXAxis(const AxisDef& axis) {
+    *bar_def_.mutable_chart_def()->mutable_x_axis() = axis;
+    return *this;
+  }
+
+  BarChartBuilder& setYAxis(const AxisDef& axis) {
+    *bar_def_.mutable_chart_def()->mutable_y_axis() = axis;
+    return *this;
+  }
+
+  BarChartBuilder& addCategory(const std::string& category) {
+    bar_def_.mutable_chart_def()->mutable_x_axis()->add_categories(category);
+    return *this;
+  }
+
+  BarChartBuilder& addCategories(const std::vector<std::string>& categories) {
+    auto* x_axis = bar_def_.mutable_chart_def()->mutable_x_axis();
+    for (const auto& cat : categories) {
+      x_axis->add_categories(cat);
+    }
+    return *this;
+  }
+
+  BarChartBuilder& addValue(double value) {
+    bar_def_.mutable_data()->add_values()->set_decimal_value(value);
+    return *this;
+  }
+
+  BarChartBuilder& addValue(int64_t value) {
+    bar_def_.mutable_data()->add_values()->set_integer_value(value);
+    return *this;
+  }
+
+  BarChartBuilder& addValues(const std::vector<double>& values) {
+    for (double value : values) {
+      addValue(value);
+    }
+    return *this;
+  }
+
+  BarChartBuilder& addValues(const std::vector<int64_t>& values) {
+    for (int64_t value : values) {
+      addValue(value);
+    }
+    return *this;
+  }
+
+  // Forward declare to avoid circular dependency
+  BarChartBuilder& setData(const std::shared_ptr<arrow::Array>& data);
+  BarChartBuilder& setData(const std::shared_ptr<arrow::ChunkedArray>& chunked_data);
+
+  BarChartBuilder& addStraightLine(const StraightLineDef& line) {
+    *bar_def_.add_straight_lines() = line;
+    return *this;
+  }
+
+  BarDef build() {
+    return std::move(bar_def_);
+  }
+};
+
+// Simple helper for creating category-based bar charts
+inline BarDef MakeCategoryBarChart(const BarChartConfig& config,
+                                   const std::vector<std::string>& categories,
+                                   const std::vector<double>& values,
+                                   const std::string& x_label = "Category",
+                                   const std::string& y_label = "Value") {
+  auto x_axis = AxisDef{};
+  x_axis.set_type(epoch_proto::AxisCategory);
+  x_axis.set_label(x_label);
+
+  return BarChartBuilder(config)
+      .setXAxis(x_axis)
+      .setYAxis(MakeLinearAxis(y_label))
+      .addCategories(categories)
+      .addValues(values)
+      .build();
 }
 
 } // namespace epoch_folio

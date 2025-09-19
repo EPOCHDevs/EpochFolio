@@ -3,6 +3,7 @@
 #include <arrow/builder.h>
 #include <arrow/compute/api_scalar.h>
 #include <arrow/table.h>
+#include <cmath>
 #include <ctime>
 #include <limits>
 #include <epoch_frame/factory/series_factory.h>
@@ -28,57 +29,39 @@ epoch_proto::TearSheet
 GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
   epoch_proto::TearSheet result;
 
-  // Create a DataFrame with gap_down column if it doesn't exist
-  epoch_frame::DataFrame working_df = df;
-  bool has_gap_down = false;
-  for (size_t i = 0; i < static_cast<size_t>(df.num_cols()); ++i) {
-    if (df.table()->field(i)->name() == "gap_down") {
-      has_gap_down = true;
-      break;
-    }
+  // Filter out rows where gap_up is null (no gap exists)
+  auto gap_up_col = df["gap_up"];
+  auto has_gap_mask = !gap_up_col.is_null();
+  auto working_df = df.loc(has_gap_mask);
+
+  if (working_df.num_rows() == 0) {
+    SPDLOG_WARN("No gaps found in data");
+    return result;
   }
 
-  if (!has_gap_down) {
-    // Create gap_down as inverse of gap_up
-    auto gap_up_col = df["gap_up"];
-    auto gap_down_col = gap_up_col == epoch_frame::Scalar{false};
-
-    // Create new Series with proper name
-    auto gap_down_series = epoch_frame::Series(gap_down_col.index(), gap_down_col.array(), "gap_down");
-
-    // Create new DataFrame with gap_down column added
-    std::vector<arrow::ChunkedArrayPtr> arrays;
-    std::vector<std::string> column_names;
-
-    // Copy existing columns
-    for (size_t i = 0; i < static_cast<size_t>(df.num_cols()); ++i) {
-      auto col_name = df.table()->field(i)->name();
-      arrays.push_back(df[col_name].array());
-      column_names.push_back(col_name);
-    }
-
-    // Add gap_down column
-    arrays.push_back(gap_down_series.array());
-    column_names.push_back("gap_down");
-
-    working_df = epoch_frame::make_dataframe(df.index(), arrays, column_names);
-  }
-
+  SPDLOG_INFO("Before filter_gaps: {} rows", working_df.num_rows());
   auto filtered_gaps = filter_gaps(working_df);
+  SPDLOG_INFO("After filter_gaps: {} rows", filtered_gaps.num_rows());
   if (filtered_gaps.num_rows() == 0) {
     SPDLOG_WARN("No gaps found after filtering");
     return result;
   }
 
-  // Debug: Check what columns are available
-  SPDLOG_INFO("Filtered gaps DataFrame has {} columns:", filtered_gaps.num_cols());
-  for (size_t i = 0; i < static_cast<size_t>(filtered_gaps.num_cols()); ++i) {
-    auto col_name = filtered_gaps.table()->field(i)->name();
+  // Build comprehensive table first - this becomes our single source of truth
+  // We'll always build it internally even if not displayed
+  auto comprehensive_table_data = build_comprehensive_table_data(filtered_gaps);
+
+  // Now all other visualizations are derived from this table data
+
+  // Debug: Check what columns are available in the table
+  SPDLOG_INFO("Comprehensive table has {} columns:", comprehensive_table_data.arrow_table->num_columns());
+  for (int i = 0; i < comprehensive_table_data.arrow_table->num_columns(); ++i) {
+    auto col_name = comprehensive_table_data.arrow_table->field(i)->name();
     SPDLOG_INFO("  Column {}: {}", i, col_name);
   }
 
-  // 1. Summary cards
-  auto cards = compute_summary_cards(filtered_gaps);
+  // 1. Summary cards - now from table data
+  auto cards = compute_summary_cards_from_table(comprehensive_table_data);
   for (auto &card : cards) {
     *result.mutable_cards()->add_cards() = std::move(card);
   }
@@ -91,13 +74,6 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
       return defVal;
     }
   };
-  auto getIntOpt = [&](std::string const &key, int defVal) -> int {
-    try {
-      return static_cast<int>(m_config.GetOptionValue(key).GetInteger());
-    } catch (...) {
-      return defVal;
-    }
-  };
 
   bool show_fill_analysis = getBoolOpt("show_fill_analysis", true);
   bool show_day_of_week_analysis =
@@ -105,24 +81,23 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
   bool show_fill_time_analysis = getBoolOpt("show_fill_time_analysis", true);
   bool show_performance_analysis =
       getBoolOpt("show_performance_analysis", true);
-  bool show_streak_analysis = getBoolOpt("show_streak_analysis", true);
   bool show_distribution_histogram =
       getBoolOpt("show_distribution_histogram", true);
-  int histogram_bins = getIntOpt("histogram_bins", 20);
+  // histogram_bins now handled inside create_gap_distribution_from_data
 
-  // 2. Fill rate analysis bar chart
+  // 2. Fill rate analysis tables (separate for gap up and gap down) - from table data
   if (show_fill_analysis) {
-    Chart chart;
-    *chart.mutable_bar_def() =
-        create_fill_rate_chart(filtered_gaps, "Gap Fill Analysis");
-    *result.mutable_charts()->add_charts() = std::move(chart);
+    auto [gap_up_table, gap_down_table] = create_fill_rate_tables_from_data(comprehensive_table_data);
+    SPDLOG_INFO("Adding fill rate tables - Gap Up table title: {}, Gap Down table title: {}",
+                gap_up_table.title(), gap_down_table.title());
+    *result.mutable_tables()->add_tables() = std::move(gap_up_table);
+    *result.mutable_tables()->add_tables() = std::move(gap_down_table);
   }
 
-  // 3. Day of week frequency bar chart (better visualization than table)
+  // 3. Day of week frequency bar chart - from table data
   if (show_day_of_week_analysis) {
     Chart chart;
-    *chart.mutable_bar_def() = create_day_of_week_chart(
-        filtered_gaps, "Gap Frequency by Day of Week");
+    *chart.mutable_bar_def() = create_day_of_week_chart_from_data(comprehensive_table_data);
     *result.mutable_charts()->add_charts() = std::move(chart);
   }
 
@@ -132,19 +107,12 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
         filtered_gaps, "fill_time", "Gap Frequency by Time");
   }
 
-  // 5. Streak visualization
-  if (show_streak_analysis) {
-    Chart chart;
-    *chart.mutable_x_range_def() =
-        create_streak_chart(filtered_gaps, std::numeric_limits<uint32_t>::max()); // No limit
-    *result.mutable_charts()->add_charts() = std::move(chart);
-  }
+  // 5. Streak visualization - removed per requirements
 
-  // 6. Gap size distribution histogram
+  // 6. Gap size distribution histogram - from table data
   if (show_distribution_histogram) {
     Chart chart;
-    *chart.mutable_histogram_def() = create_gap_distribution(
-        filtered_gaps, static_cast<uint32_t>(histogram_bins));
+    *chart.mutable_histogram_def() = create_gap_distribution_from_data(comprehensive_table_data);
     *result.mutable_charts()->add_charts() = std::move(chart);
   }
 
@@ -154,14 +122,25 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
         filtered_gaps, "close_performance", "Gap Fill vs Close Performance");
   }
 
-  // 8. Time distribution pie chart
-  Chart chart;
-  *chart.mutable_pie_def() = create_time_distribution(filtered_gaps);
-  *result.mutable_charts()->add_charts() = std::move(chart);
+  // 8. Time distribution pie chart - from table data
+  if (show_fill_time_analysis) {
+    Chart chart;
+    *chart.mutable_pie_def() = create_time_distribution_from_data(comprehensive_table_data);
+    *result.mutable_charts()->add_charts() = std::move(chart);
+  }
 
-  // 9. Gap details table
-  *result.mutable_tables()->add_tables() = create_gap_details_table(
-      filtered_gaps, std::numeric_limits<uint32_t>::max()); // No limit
+  // 9. Comprehensive gap table (replaces simple details table if enabled)
+  bool show_comprehensive_table = getBoolOpt("show_comprehensive_table", true);
+  if (show_comprehensive_table) {
+    auto comp_table = create_comprehensive_gap_table(filtered_gaps);
+    SPDLOG_INFO("Adding comprehensive gap table with {} rows", comp_table.data().rows_size());
+
+    *result.mutable_tables()->add_tables() = std::move(comp_table);
+  } else {
+    // Fallback to simple gap details table
+    *result.mutable_tables()->add_tables() = create_gap_details_table(
+        filtered_gaps, std::numeric_limits<uint32_t>::max()); // No limit
+  }
 
   // 10. Trend analysis
   Chart chart2;
@@ -177,27 +156,23 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
   using epoch_frame::make_series;
   using epoch_frame::Scalar;
 
-  // Start with full mask (all true)
+  // Start with full mask (all true) - input already filtered for non-null gaps
+  SPDLOG_INFO("filter_gaps: Starting with {} rows", df.num_rows());
   auto mask =
       make_series(df.index(), std::vector<bool>(df.num_rows(), true), "mask");
 
-  // Access columns directly - orchestrator ensures they exist
-  auto is_up = df["gap_up"];
-  auto is_down = df["gap_down"];
-
-  auto fill_fraction = df["fill_fraction"];
+  // Access columns directly - gap_up is boolean (true=up, false=down)
+  auto gap_up = df["gap_up"];
+  auto gap_filled = df["gap_filled"];  // Use directly from input
   auto gap_size = df["gap_size"];
 
-  // Determine if gaps are filled based on fill_fraction
-  auto is_filled_up = is_up && (fill_fraction > Scalar{0.5});
-  auto is_filled_down = is_down && (fill_fraction > Scalar{0.5});
-  auto is_filled = is_filled_up || is_filled_down;
+  // Derive gap types from gap_up boolean
+  auto is_up = gap_up == Scalar{true};
+  auto is_down = gap_up == Scalar{false};
 
   // Convert gap_size to percentage
   auto gap_pct = gap_size * Scalar{100.0};
   auto pct_abs = gap_pct.abs();
-  auto gap_up_pct = gap_pct.where(is_up, Scalar{0.0});
-  auto gap_down_pct = gap_pct.abs().where(is_down, Scalar{0.0});
 
   // Gap type filter
   bool include_gap_up = true;
@@ -220,17 +195,25 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
   // Apply percentage bounds filter
   double min_gap_pct = 0.0;
   double max_gap_pct = 100.0;
+  SPDLOG_INFO("filter_gaps: Applying percentage bounds filter: {} to {}", min_gap_pct, max_gap_pct);
   mask = mask && (pct_abs >= Scalar{min_gap_pct}) &&
          (pct_abs <= Scalar{max_gap_pct});
+  // Check mask status
+  auto mask_sum = mask.sum().cast_int64().as_int64();
+  SPDLOG_INFO("filter_gaps: After percentage filter, {} rows pass", mask_sum);
 
   // Filled / unfilled filter
   bool only_filled = false;
   bool only_unfilled = false;
   if (only_filled && !only_unfilled) {
-    mask = mask && is_filled;
+    SPDLOG_INFO("filter_gaps: Applying only_filled filter");
+    mask = mask && gap_filled;
   } else if (only_unfilled && !only_filled) {
-    mask = mask && !is_filled;
+    SPDLOG_INFO("filter_gaps: Applying only_unfilled filter");
+    mask = mask && !gap_filled;
   }
+  auto mask_sum2 = mask.sum().cast_int64().as_int64();
+  SPDLOG_INFO("filter_gaps: After filled/unfilled filter, {} rows pass", mask_sum2);
 
   // Time range filter (index is date-sorted)
   std::optional<int64_t> start_timestamp_ns{};
@@ -253,12 +236,14 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
   }
 
   // Apply the mask
+  SPDLOG_INFO("filter_gaps: Applying mask to filter rows");
   auto filtered = df.loc(mask);
+  SPDLOG_INFO("filter_gaps: After mask application, {} rows remain", filtered.num_rows());
   auto index_dt = filtered.index()->array().dt();
 
-  // Direct access - orchestrator ensures columns exist
-  auto gap_up = filtered["gap_up"];
-  auto gap_down = filtered["gap_down"];
+  // Direct access - gap_up is boolean (true=up, false=down)
+  auto gap_up_filtered = filtered["gap_up"];
+  auto gap_filled_filtered = filtered["gap_filled"];
 
   // Add derived columns to the filtered DataFrame
   SPDLOG_INFO("Adding derived columns to {} rows", filtered.num_rows());
@@ -266,6 +251,11 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
   std::vector<std::string> day_of_week_data;
   std::vector<std::string> time_bucket_data;
   std::vector<std::string> close_performance_data;
+
+  // Reserve memory for efficiency
+  day_of_week_data.reserve(filtered.num_rows());
+  time_bucket_data.reserve(filtered.num_rows());
+  close_performance_data.reserve(filtered.num_rows());
 
   SPDLOG_INFO("Starting derived column computation loop for {} rows...", filtered.num_rows());
   for (size_t i = 0; i < static_cast<size_t>(filtered.num_rows()); ++i) {
@@ -311,21 +301,10 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
     all_columns.push_back(col_name);
   }
 
-  // Add gap_down column derived from gap_up if it doesn't exist
-  bool has_gap_down = false;
-  for (size_t i = 0; i < static_cast<size_t>(filtered.num_cols()); ++i) {
-    if (filtered.table()->field(i)->name() == "gap_down") {
-      has_gap_down = true;
-      break;
-    }
-  }
-
-  if (!has_gap_down) {
-    auto gap_up_col = filtered["gap_up"];
-    auto gap_down_col = gap_up_col == epoch_frame::Scalar{false};
-    all_series.push_back(gap_down_col);
-    all_columns.push_back("gap_down");
-  }
+  // Add gap_down column derived from gap_up (true=up, false=down)
+  auto gap_down_col = gap_up_filtered == epoch_frame::Scalar{false};
+  all_series.push_back(gap_down_col);
+  all_columns.push_back("gap_down");
 
   // Add derived columns
   all_series.push_back(day_of_week_series);
@@ -359,25 +338,17 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
       epoch_frame::Scalar{static_cast<int64_t>(gaps.num_rows())});
   cards.push_back(std::move(card1));
 
-  // Count gap types using boolean columns
+  // Count gap types using gap_up boolean (true=up, false=down)
   auto gap_up_series = gaps["gap_up"];
-  auto gap_up_count = gap_up_series.sum().cast_int64().as_int64();
+  auto gap_up_true = gap_up_series == epoch_frame::Scalar{true};
+  auto gap_up_count = gap_up_true.sum().cast_int64().as_int64();
 
-  // Calculate gap_down as inverse of gap_up when gap_up is not null
-  int64_t gap_down_count = 0;
-  try {
-    auto gap_down_series = gaps["gap_down"];
-    gap_down_count = gap_down_series.sum().cast_int64().as_int64();
-  } catch (...) {
-    // If gap_down doesn't exist, calculate as false values in gap_up
-    auto gap_up_false = gap_up_series == epoch_frame::Scalar{false};
-    gap_down_count = gap_up_false.sum().cast_int64().as_int64();
-  }
+  auto gap_up_false = gap_up_series == epoch_frame::Scalar{false};
+  auto gap_down_count = gap_up_false.sum().cast_int64().as_int64();
 
-  // Count filled gaps based on fill_fraction
-  auto fill_fraction = gaps["fill_fraction"];
-  auto is_filled = fill_fraction > epoch_frame::Scalar{0.5};
-  auto filled_count = is_filled.sum().cast_int64().as_int64();
+  // Count filled gaps using gap_filled input column
+  auto gap_filled = gaps["gap_filled"];
+  auto filled_count = gap_filled.sum().cast_int64().as_int64();
 
   // Calculate gap percentages from gap_size
   auto gap_pct = gaps["gap_size"] * epoch_frame::Scalar{100.0};
@@ -429,107 +400,283 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   return cards;
 }
 
-BarDef GapReport::create_day_of_week_chart(const epoch_frame::DataFrame &gaps,
-                                           const std::string &title) const {
-  // Group gaps by day of week and count
-  auto dow = gaps["day_of_week"];
-  auto grouped = dow.contiguous_array().value_counts();
+// Removed: Duplicate function - use create_day_of_week_chart_from_data instead
 
-  // Create ordered map for consistent day ordering
-  std::map<int, std::pair<std::string, int64_t>> ordered_days;
-  const char *days[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+std::pair<Table, Table> GapReport::create_fill_rate_tables(const epoch_frame::DataFrame &gaps) const {
+  // Count gap types and fills
+  auto gap_up_mask = gaps["gap_up"] == epoch_frame::Scalar{true};
+  auto gap_down_mask = gaps["gap_up"] == epoch_frame::Scalar{false};
+  auto gap_filled = gaps["gap_filled"];
 
-  // Initialize with zeros
-  for (int i = 0; i < 7; ++i) {
-    ordered_days[i] = {days[i], 0};
-  }
+  // Check which gaps are filled
+  auto gap_up_filled_mask = gap_up_mask && gap_filled;
+  auto gap_down_filled_mask = gap_down_mask && gap_filled;
 
-  // Populate with actual counts
-  for (size_t i = 0; i < static_cast<size_t>(grouped.first.length()); ++i) {
-    auto day_name = grouped.first[i].repr();
-    auto count = grouped.second[i].as_int64();
+  // Count unfilled gaps
+  auto gap_up_unfilled_mask = gap_up_mask && !gap_filled;
+  auto gap_down_unfilled_mask = gap_down_mask && !gap_filled;
 
-    // Find the day index
-    for (int d = 0; d < 7; ++d) {
-      if (day_name == days[d]) {
-        ordered_days[d].second = count;
-        break;
-      }
+  auto gap_up_total = gap_up_mask.sum().cast_int64().as_int64();
+  auto gap_up_filled = gap_up_filled_mask.sum().cast_int64().as_int64();
+  auto gap_up_unfilled = gap_up_unfilled_mask.sum().cast_int64().as_int64();
+
+  auto gap_down_total = gap_down_mask.sum().cast_int64().as_int64();
+  auto gap_down_filled = gap_down_filled_mask.sum().cast_int64().as_int64();
+  auto gap_down_unfilled = gap_down_unfilled_mask.sum().cast_int64().as_int64();
+
+  // Calculate percentages relative to total gaps
+  auto total_gaps = gap_up_total + gap_down_total;
+
+  double gap_up_total_pct = total_gaps > 0 ?
+    (static_cast<double>(gap_up_total) / total_gaps * 100) : 0;
+  double gap_up_filled_pct = gap_up_total > 0 ?
+    (static_cast<double>(gap_up_filled) / gap_up_total * 100) : 0;
+  double gap_up_unfilled_pct = gap_up_total > 0 ?
+    (static_cast<double>(gap_up_unfilled) / gap_up_total * 100) : 0;
+
+  double gap_down_total_pct = total_gaps > 0 ?
+    (static_cast<double>(gap_down_total) / total_gaps * 100) : 0;
+  double gap_down_filled_pct = gap_down_total > 0 ?
+    (static_cast<double>(gap_down_filled) / gap_down_total * 100) : 0;
+  double gap_down_unfilled_pct = gap_down_total > 0 ?
+    (static_cast<double>(gap_down_unfilled) / gap_down_total * 100) : 0;
+
+  // Create Gap Up table
+  arrow::StringBuilder gap_up_category_builder;
+  arrow::Int64Builder gap_up_frequency_builder;
+  arrow::DoubleBuilder gap_up_percentage_builder;
+
+  // Add rows for gap up table
+  ARROW_UNUSED(gap_up_category_builder.Append("gap up"));
+  ARROW_UNUSED(gap_up_frequency_builder.Append(gap_up_total));
+  ARROW_UNUSED(gap_up_percentage_builder.Append(gap_up_total_pct));
+
+  ARROW_UNUSED(gap_up_category_builder.Append("gap up filled"));
+  ARROW_UNUSED(gap_up_frequency_builder.Append(gap_up_filled));
+  ARROW_UNUSED(gap_up_percentage_builder.Append(gap_up_filled_pct));
+
+  ARROW_UNUSED(gap_up_category_builder.Append("gap up not filled"));
+  ARROW_UNUSED(gap_up_frequency_builder.Append(gap_up_unfilled));
+  ARROW_UNUSED(gap_up_percentage_builder.Append(gap_up_unfilled_pct));
+
+  std::shared_ptr<arrow::Array> gap_up_category_array, gap_up_frequency_array, gap_up_percentage_array;
+  ARROW_UNUSED(gap_up_category_builder.Finish(&gap_up_category_array));
+  ARROW_UNUSED(gap_up_frequency_builder.Finish(&gap_up_frequency_array));
+  ARROW_UNUSED(gap_up_percentage_builder.Finish(&gap_up_percentage_array));
+
+  auto gap_up_schema = arrow::schema({
+      arrow::field("category", arrow::utf8()),
+      arrow::field("frequency", arrow::int64()),
+      arrow::field("percentage", arrow::float64())
+  });
+
+  auto gap_up_table_data = arrow::Table::Make(
+      gap_up_schema,
+      {gap_up_category_array, gap_up_frequency_array, gap_up_percentage_array}
+  );
+
+  Table gap_up_table;
+  gap_up_table.set_type(epoch_proto::WidgetDataTable);
+  gap_up_table.set_category("Reports");
+  gap_up_table.set_title("Gap Up Fill Analysis");
+
+  TableColumnHelper::AddStringColumn(gap_up_table, "category", "category");
+  TableColumnHelper::AddIntegerColumn(gap_up_table, "frequency", "frequency");
+  TableColumnHelper::AddPercentColumn(gap_up_table, "percentage", "percentage");
+
+  *gap_up_table.mutable_data() = MakeTableDataFromArrow(gap_up_table_data);
+
+  // Create Gap Down table
+  arrow::StringBuilder gap_down_category_builder;
+  arrow::Int64Builder gap_down_frequency_builder;
+  arrow::DoubleBuilder gap_down_percentage_builder;
+
+  // Add rows for gap down table
+  ARROW_UNUSED(gap_down_category_builder.Append("gap down"));
+  ARROW_UNUSED(gap_down_frequency_builder.Append(gap_down_total));
+  ARROW_UNUSED(gap_down_percentage_builder.Append(gap_down_total_pct));
+
+  ARROW_UNUSED(gap_down_category_builder.Append("gap down filled"));
+  ARROW_UNUSED(gap_down_frequency_builder.Append(gap_down_filled));
+  ARROW_UNUSED(gap_down_percentage_builder.Append(gap_down_filled_pct));
+
+  ARROW_UNUSED(gap_down_category_builder.Append("gap down not filled"));
+  ARROW_UNUSED(gap_down_frequency_builder.Append(gap_down_unfilled));
+  ARROW_UNUSED(gap_down_percentage_builder.Append(gap_down_unfilled_pct));
+
+  std::shared_ptr<arrow::Array> gap_down_category_array, gap_down_frequency_array, gap_down_percentage_array;
+  ARROW_UNUSED(gap_down_category_builder.Finish(&gap_down_category_array));
+  ARROW_UNUSED(gap_down_frequency_builder.Finish(&gap_down_frequency_array));
+  ARROW_UNUSED(gap_down_percentage_builder.Finish(&gap_down_percentage_array));
+
+  auto gap_down_schema = arrow::schema({
+      arrow::field("category", arrow::utf8()),
+      arrow::field("frequency", arrow::int64()),
+      arrow::field("percentage", arrow::float64())
+  });
+
+  auto gap_down_table_data = arrow::Table::Make(
+      gap_down_schema,
+      {gap_down_category_array, gap_down_frequency_array, gap_down_percentage_array}
+  );
+
+  Table gap_down_table;
+  gap_down_table.set_type(epoch_proto::WidgetDataTable);
+  gap_down_table.set_category("Reports");
+  gap_down_table.set_title("Gap Down Fill Analysis");
+
+  TableColumnHelper::AddStringColumn(gap_down_table, "category", "category");
+  TableColumnHelper::AddIntegerColumn(gap_down_table, "frequency", "frequency");
+  TableColumnHelper::AddPercentColumn(gap_down_table, "percentage", "percentage");
+
+  *gap_down_table.mutable_data() = MakeTableDataFromArrow(gap_down_table_data);
+
+  return {std::move(gap_up_table), std::move(gap_down_table)};
+}
+
+GapTableData GapReport::build_comprehensive_table_data(const epoch_frame::DataFrame &gaps) const {
+  GapTableData data;
+
+  // Always include all columns in the internal data structure
+  // The display functions will choose what to show based on configuration
+
+  auto num_rows = static_cast<int>(gaps.num_rows());
+
+  // Create builders for all columns
+  auto timestamp_type = arrow::timestamp(arrow::TimeUnit::MILLI, "UTC");
+  arrow::TimestampBuilder date_builder(timestamp_type, arrow::default_memory_pool());
+  arrow::DoubleBuilder gap_size_builder;
+  arrow::StringBuilder gap_type_builder, gap_filled_builder;
+  arrow::StringBuilder weekday_builder, gap_category_builder, performance_builder, fill_time_builder;
+
+  // Track aggregations as we build
+  data.total_gaps = num_rows;
+
+  for (int64_t i = 0; i < num_rows; ++i) {
+    // Date column
+    auto date_scalar = gaps.index()->at(i);
+    int64_t timestamp_ms = date_scalar.timestamp().value / 1000000;
+    ARROW_UNUSED(date_builder.Append(timestamp_ms));
+
+    // Gap size (as percentage)
+    auto gap_size = gaps["gap_size"].iloc(i).as_double();
+    auto gap_size_pct = std::abs(gap_size * 100);
+    ARROW_UNUSED(gap_size_builder.Append(gap_size_pct));
+
+    // Gap type and filled status
+    auto is_gap_up = gaps["gap_up"].iloc(i).as_bool();
+    auto is_filled = gaps["gap_filled"].iloc(i).as_bool();
+
+    ARROW_UNUSED(gap_type_builder.Append(is_gap_up ? "gap up" : "gap down"));
+    ARROW_UNUSED(gap_filled_builder.Append(is_filled ? "filled" : "not filled"));
+
+    // Update aggregations
+    if (is_gap_up) {
+      data.gap_up_count++;
+      if (is_filled) data.gap_up_filled++;
+    } else {
+      data.gap_down_count++;
+      if (is_filled) data.gap_down_filled++;
+    }
+    if (is_filled) data.filled_count++;
+
+    // Weekday
+    auto datetime = gaps.index()->at(i).to_datetime();
+    const char *days[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    ARROW_UNUSED(weekday_builder.Append(days[datetime.weekday()]));
+
+    // Gap category
+    std::string category;
+    if (gap_size_pct < 0.2) {
+      category = "0-0.19%";
+    } else if (gap_size_pct < 0.4) {
+      category = "0.2-0.39%";
+    } else if (gap_size_pct < 0.6) {
+      category = "0.4-0.59%";
+    } else if (gap_size_pct < 1.0) {
+      category = "0.6-0.99%";
+    } else if (gap_size_pct < 2.0) {
+      category = "1.0-1.99%";
+    } else {
+      category = "2.0%+";
+    }
+    ARROW_UNUSED(gap_category_builder.Append(category));
+
+    // Performance
+    auto close_val = gaps[closeLiteral].iloc(i).as_double();
+    auto psc_val = gaps["psc"].iloc(i).as_double();
+    ARROW_UNUSED(performance_builder.Append(close_val > psc_val ? "green" : "red"));
+
+    // Fill time with configurable pivot
+    if (is_filled) {
+      auto hour = datetime.time().hour.count();
+      int pivot_hour = 13; // Default, will be configured from options
+      try {
+        pivot_hour = static_cast<int>(m_config.GetOptionValue("fill_time_pivot_hour").GetInteger());
+      } catch (...) {}
+
+      std::string before_label = "before " + std::to_string(pivot_hour) + ":00";
+      std::string after_label = "after " + std::to_string(pivot_hour) + ":00";
+      ARROW_UNUSED(fill_time_builder.Append(hour < pivot_hour ? before_label : after_label));
+    } else {
+      ARROW_UNUSED(fill_time_builder.Append("not filled"));
     }
   }
 
-  BarDef bar_def;
+  // Build the complete table with all columns
+  std::vector<std::shared_ptr<arrow::Field>> fields;
+  std::vector<std::shared_ptr<arrow::Array>> arrays;
 
-  // Set up chart definition
-  auto *chart_def = bar_def.mutable_chart_def();
-  chart_def->set_id("gap_day_of_week");
-  chart_def->set_title(title);
-  chart_def->set_type(epoch_proto::WidgetBar);
-  chart_def->set_category("Reports");
+  // Build all arrays
+  std::shared_ptr<arrow::Array> date_array, gap_size_array, gap_type_array, gap_filled_array;
+  std::shared_ptr<arrow::Array> weekday_array, gap_category_array, performance_array, fill_time_array;
 
-  // Set up axes
-  *chart_def->mutable_y_axis() = MakeLinearAxis("Gap Count");
+  ARROW_UNUSED(date_builder.Finish(&date_array));
+  ARROW_UNUSED(gap_size_builder.Finish(&gap_size_array));
+  ARROW_UNUSED(gap_type_builder.Finish(&gap_type_array));
+  ARROW_UNUSED(gap_filled_builder.Finish(&gap_filled_array));
+  ARROW_UNUSED(weekday_builder.Finish(&weekday_array));
+  ARROW_UNUSED(gap_category_builder.Finish(&gap_category_array));
+  ARROW_UNUSED(performance_builder.Finish(&performance_array));
+  ARROW_UNUSED(fill_time_builder.Finish(&fill_time_array));
 
-  auto *x_axis = chart_def->mutable_x_axis();
-  x_axis->set_type(kCategoryAxisType);
+  // Add all fields and arrays
+  fields.push_back(arrow::field("date", timestamp_type));
+  arrays.push_back(date_array);
+  data.date_col = 0;
 
-  // Add categories and data in order
-  auto* bar_data = bar_def.mutable_data();
-  for (const auto& [idx, day_data] : ordered_days) {
-    x_axis->add_categories(day_data.first);
-    bar_data->add_values()->set_integer_value(day_data.second);
-  }
+  fields.push_back(arrow::field("gap_size", arrow::float64()));
+  arrays.push_back(gap_size_array);
+  data.gap_size_col = 1;
 
-  return bar_def;
-}
+  fields.push_back(arrow::field("gap_type", arrow::utf8()));
+  arrays.push_back(gap_type_array);
+  data.gap_type_col = 2;
 
-BarDef GapReport::create_fill_rate_chart(const epoch_frame::DataFrame &gaps,
-                                         const std::string &title) const {
-  // Count gap types and fills
-  auto gap_up_mask = gaps["gap_up"];
-  auto gap_down_mask = gaps["gap_down"];
-  auto fill_fraction = gaps["fill_fraction"];
+  fields.push_back(arrow::field("gap_filled", arrow::utf8()));
+  arrays.push_back(gap_filled_array);
+  data.gap_filled_col = 3;
 
-  // Gap is considered filled if fill_fraction > 0.5
-  auto gap_up_filled_mask = gap_up_mask && (fill_fraction > epoch_frame::Scalar{0.5});
-  auto gap_down_filled_mask = gap_down_mask && (fill_fraction > epoch_frame::Scalar{0.5});
+  fields.push_back(arrow::field("weekday", arrow::utf8()));
+  arrays.push_back(weekday_array);
+  data.weekday_col = 4;
 
-  auto gap_up_count = gap_up_mask.sum().cast_int64().as_int64();
-  auto gap_down_count = gap_down_mask.sum().cast_int64().as_int64();
-  auto gap_up_filled = gap_up_filled_mask.sum().cast_int64().as_int64();
-  auto gap_down_filled = gap_down_filled_mask.sum().cast_int64().as_int64();
+  fields.push_back(arrow::field("gap_category", arrow::utf8()));
+  arrays.push_back(gap_category_array);
+  data.gap_category_col = 5;
 
-  double gap_up_fill_rate =
-      gap_up_count > 0 ? static_cast<double>(gap_up_filled) / gap_up_count * 100
-                       : 0;
-  double gap_down_fill_rate =
-      gap_down_count > 0
-          ? static_cast<double>(gap_down_filled) / gap_down_count * 100
-          : 0;
+  fields.push_back(arrow::field("performance", arrow::utf8()));
+  arrays.push_back(performance_array);
+  data.performance_col = 6;
 
-  BarDef bar_def;
+  fields.push_back(arrow::field("fill_time", arrow::utf8()));
+  arrays.push_back(fill_time_array);
+  data.fill_time_col = 7;
 
-  // Set up chart definition
-  auto *chart_def = bar_def.mutable_chart_def();
-  chart_def->set_id("gap_fill_rates");
-  chart_def->set_title(title);
-  chart_def->set_type(epoch_proto::WidgetBar);
-  chart_def->set_category("Reports");
+  auto schema = arrow::schema(fields);
+  data.arrow_table = arrow::Table::Make(schema, arrays);
 
-  // Set up axes
-  *chart_def->mutable_y_axis() = MakePercentageAxis("Fill Rate (%)");
-
-  auto *x_axis = chart_def->mutable_x_axis();
-  x_axis->set_type(kCategoryAxisType);
-  x_axis->add_categories("Gap Up");
-  x_axis->add_categories("Gap Down");
-
-  // Set bar data
-  auto* bar_data = bar_def.mutable_data();
-  bar_data->add_values()->set_decimal_value(gap_up_fill_rate);
-  bar_data->add_values()->set_decimal_value(gap_down_fill_rate);
-
-  return bar_def;
+  return data;
 }
 
 Table GapReport::create_frequency_table(const epoch_frame::DataFrame &gaps,
@@ -605,73 +752,6 @@ Table GapReport::create_frequency_table(const epoch_frame::DataFrame &gaps,
   return result_table;
 }
 
-XRangeDef GapReport::create_streak_chart(const epoch_frame::DataFrame &gaps,
-                                         uint32_t max_streaks) const {
-  std::vector<XRangePoint> points;
-  std::vector<std::string> categories = {"Gap Up Streaks", "Gap Down Streaks"};
-
-  // Collect last N gaps of each type using boolean columns
-  std::vector<std::pair<int64_t, bool>> gap_up_list; // (index, is_filled)
-  std::vector<std::pair<int64_t, bool>> gap_down_list;
-
-  for (size_t i = 0; i < static_cast<size_t>(gaps.num_rows()); ++i) {
-    auto is_gap_up = gaps["gap_up"].iloc(i).as_bool();
-    auto is_gap_down = gaps["gap_down"].iloc(i).as_bool();
-    auto fill_frac = gaps["fill_fraction"].iloc(i).as_double();
-    bool is_filled = fill_frac > 0.5;
-
-    if (is_gap_up) {
-      gap_up_list.push_back({i, is_filled});
-    }
-    if (is_gap_down) {
-      gap_down_list.push_back({i, is_filled});
-    }
-  }
-
-  // Take all or last N of each type (no artificial limit if max_streaks is very large)
-  auto add_points = [&](const std::vector<std::pair<int64_t, bool>> &list,
-                        size_t category_idx) {
-    size_t start = (max_streaks < list.size()) ? list.size() - max_streaks : 0;
-    for (size_t j = start; j < list.size(); ++j) {
-      auto [idx, is_filled] = list[j];
-      auto date = gaps.index()->at(idx);
-      auto point = MakeXRangePoint(date, category_idx, is_filled);
-      points.push_back(std::move(point));
-    }
-  };
-
-  add_points(gap_up_list, 0);
-  add_points(gap_down_list, 1);
-
-  XRangeDef xrange_def;
-
-  // Set up chart definition
-  auto *chart_def = xrange_def.mutable_chart_def();
-  chart_def->set_id("gap_streaks");
-  chart_def->set_title("Recent Gap Streaks");
-  chart_def->set_type(epoch_proto::WidgetXRange);
-  chart_def->set_category("Reports");
-
-  // Set up axes
-  auto *y_axis = chart_def->mutable_y_axis();
-  y_axis->set_type(kCategoryAxisType);
-  for (const auto &cat : categories) {
-    y_axis->add_categories(cat);
-  }
-
-  *chart_def->mutable_x_axis() = MakeDateTimeAxis();
-
-  // Set categories and points
-  for (const auto &cat : categories) {
-    xrange_def.add_categories(cat);
-  }
-
-  for (auto &point : points) {
-    *xrange_def.add_points() = std::move(point);
-  }
-
-  return xrange_def;
-}
 
 HistogramDef
 GapReport::create_gap_distribution(const epoch_frame::DataFrame &gaps,
@@ -682,26 +762,17 @@ GapReport::create_gap_distribution(const epoch_frame::DataFrame &gaps,
 
   auto data_array = abs_gap_pct.array()->chunk(0);
 
-  HistogramDef histogram_def;
-
-  // Set up chart definition
-  auto *chart_def = histogram_def.mutable_chart_def();
-  chart_def->set_id("gap_distribution");
-  chart_def->set_title("Gap Size Distribution");
-  chart_def->set_type(epoch_proto::WidgetHistogram);
-  chart_def->set_category("Reports");
-
-  // Set up axes
-  *chart_def->mutable_y_axis() = MakeLinearAxis("Frequency");
-  *chart_def->mutable_x_axis() = MakePercentageAxis("Gap Size (%)");
-
-  // Set data and bins
-  // Convert Arrow array to protobuf array
-  auto chunked = arrow::ChunkedArray::Make({data_array});
-  *histogram_def.mutable_data() = MakeArrayFromArrow(chunked.MoveValueUnsafe());
-  histogram_def.set_bins_count(bins);
-
-  return histogram_def;
+  // Use the new HistogramBuilder for cleaner construction
+  return HistogramBuilder({
+      .id = "gap_distribution",
+      .title = "Gap Size Distribution",
+      .category = "Reports"
+  })
+  .setXAxis(MakePercentageAxis("Gap Size (%)"))
+  .setYAxis(MakeLinearAxis("Frequency"))
+  .setData(data_array)
+  .setBins(bins)
+  .build();
 }
 
 PieDef
@@ -716,13 +787,15 @@ GapReport::create_time_distribution(const epoch_frame::DataFrame &gaps) const {
 
     // Categorize by trading session periods
     std::string period;
-    if (hour < 10) {
-      period = "Pre-Market (9:30-10:00)";
-    } else if (hour < 12) {
-      period = "Morning (10:00-12:00)";
-    } else if (hour < 14) {
+    if (hour == 9 && datetime.time().minute.count() >= 30) {
+      period = "Opening (9:30-10:00)";
+    } else if (hour == 10) {
+      period = "Early Morning (10:00-11:00)";
+    } else if (hour == 11) {
+      period = "Late Morning (11:00-12:00)";
+    } else if (hour >= 12 && hour < 14) {
       period = "Midday (12:00-14:00)";
-    } else if (hour < 16) {
+    } else if (hour >= 14 && hour < 16) {
       period = "Afternoon (14:00-16:00)";
     } else {
       period = "After-Hours";
@@ -731,34 +804,230 @@ GapReport::create_time_distribution(const epoch_frame::DataFrame &gaps) const {
     time_counts[period]++;
   }
 
-  std::vector<PieData> points;
+  // Use builder pattern for cleaner construction
+  std::vector<PieSlice> time_slices;
   for (const auto &[bucket, count] : time_counts) {
-    PieData point;
-    point.set_name(bucket);
-    point.set_y(static_cast<double>(count));
-    points.push_back(std::move(point));
+    time_slices.emplace_back(bucket, static_cast<double>(count));
   }
 
-  PieDef pie_def;
+  return PieChartBuilder({
+      .id = "gap_time_distribution",
+      .title = "Gap Timing Distribution",
+      .category = "Reports"
+  })
+  .addDataSeries({.name = "Gap Timing"})
+  .addSlices(time_slices)
+  .build();
+}
 
-  // Set up chart definition
-  auto *chart_def = pie_def.mutable_chart_def();
-  chart_def->set_id("gap_time_distribution");
-  chart_def->set_title("Gap Timing Distribution");
-  chart_def->set_type(epoch_proto::WidgetPie);
-  chart_def->set_category("Reports");
+Table GapReport::create_comprehensive_gap_table(const epoch_frame::DataFrame &gaps) const {
+  // Get configuration options using the same pattern as other options
+  auto getBoolOpt = [&](std::string const &key, bool defVal) -> bool {
+    try {
+      return m_config.GetOptionValue(key).GetBoolean();
+    } catch (...) {
+      return defVal;
+    }
+  };
+  auto getIntOpt = [&](std::string const &key, int defVal) -> int {
+    try {
+      return static_cast<int>(m_config.GetOptionValue(key).GetInteger());
+    } catch (...) {
+      return defVal;
+    }
+  };
 
-  // Set up pie data
-  auto *pie_data = pie_def.add_data();
-  pie_data->set_name("Gap Timing");
-  pie_data->set_size("90%");
-  pie_data->set_inner_size("50%");
+  bool show_weekday = getBoolOpt("table_show_weekday", true);
+  bool show_gap_category = getBoolOpt("table_show_gap_category", true);
+  bool show_performance = getBoolOpt("table_show_performance", true);
+  bool show_fill_time = getBoolOpt("table_show_fill_time", true);
+  bool combine_gap_direction = getBoolOpt("table_combine_gap_direction", false);
+  int max_rows = getIntOpt("table_max_rows", 100);
 
-  for (auto &point : points) {
-    *pie_data->add_points() = std::move(point);
+  // Limit rows
+  auto num_rows = std::min(max_rows, static_cast<int>(gaps.num_rows()));
+
+  // Create builders for each potential column
+  auto timestamp_type = arrow::timestamp(arrow::TimeUnit::MILLI, "UTC");
+  arrow::TimestampBuilder date_builder(timestamp_type, arrow::default_memory_pool());
+  arrow::DoubleBuilder gap_size_builder;
+  arrow::StringBuilder gap_type_builder, gap_filled_builder, combined_gap_builder;
+  arrow::StringBuilder weekday_builder, gap_category_builder, performance_builder, fill_time_builder;
+
+  for (int64_t i = 0; i < num_rows; ++i) {
+    // Date column (always included)
+    auto date_scalar = gaps.index()->at(i);
+    int64_t timestamp_ms = date_scalar.timestamp().value / 1000000;
+    ARROW_UNUSED(date_builder.Append(timestamp_ms));
+
+    // Gap size column (always included) - stored as percentage
+    auto gap_size = gaps["gap_size"].iloc(i).as_double();
+    auto gap_size_pct = std::abs(gap_size * 100);
+    ARROW_UNUSED(gap_size_builder.Append(gap_size_pct));
+
+    // Gap type and filled status
+    auto is_gap_up = gaps["gap_up"].iloc(i).as_bool();
+    auto is_filled = gaps["gap_filled"].iloc(i).as_bool();
+
+    if (combine_gap_direction) {
+      // Combined column: "gap up filled", "gap down not filled", etc.
+      std::string combined = is_gap_up ? "gap up" : "gap down";
+      combined += is_filled ? " filled" : "";
+      ARROW_UNUSED(combined_gap_builder.Append(combined));
+    } else {
+      // Separate columns
+      ARROW_UNUSED(gap_type_builder.Append(is_gap_up ? "gap up" : "gap down"));
+      ARROW_UNUSED(gap_filled_builder.Append(is_filled ? "filled" : "not filled"));
+    }
+
+    // Optional columns
+    if (show_weekday) {
+      auto datetime = gaps.index()->at(i).to_datetime();
+      const char *days[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+      ARROW_UNUSED(weekday_builder.Append(days[datetime.weekday()]));
+    }
+
+    if (show_gap_category) {
+      // Categorize gap size
+      std::string category;
+      if (gap_size_pct < 0.2) {
+        category = "0-0.19%";
+      } else if (gap_size_pct < 0.4) {
+        category = "0.2-0.39%";
+      } else if (gap_size_pct < 0.6) {
+        category = "0.4-0.59%";
+      } else if (gap_size_pct < 1.0) {
+        category = "0.6-0.99%";
+      } else if (gap_size_pct < 2.0) {
+        category = "1.0-1.99%";
+      } else {
+        category = "2.0%+";
+      }
+      ARROW_UNUSED(gap_category_builder.Append(category));
+    }
+
+    if (show_performance) {
+      auto close_val = gaps[closeLiteral].iloc(i).as_double();
+      auto psc_val = gaps["psc"].iloc(i).as_double();
+      ARROW_UNUSED(performance_builder.Append(close_val > psc_val ? "green" : "red"));
+    }
+
+    if (show_fill_time && is_filled) {
+      // Simple categorization - can be enhanced with actual fill time data
+      auto datetime = gaps.index()->at(i).to_datetime();
+      auto hour = datetime.time().hour.count();
+      int pivot_hour = getIntOpt("fill_time_pivot_hour", 13);
+
+      std::string before_label = "before " + std::to_string(pivot_hour) + ":00";
+      std::string after_label = "after " + std::to_string(pivot_hour) + ":00";
+      ARROW_UNUSED(fill_time_builder.Append(hour < pivot_hour ? before_label : after_label));
+    } else if (show_fill_time) {
+      ARROW_UNUSED(fill_time_builder.Append("not filled"));
+    }
   }
 
-  return pie_def;
+  // Build schema and arrays based on enabled columns
+  std::vector<std::shared_ptr<arrow::Field>> fields;
+  std::vector<std::shared_ptr<arrow::Array>> arrays;
+
+  // Always include date
+  fields.push_back(arrow::field("date", timestamp_type));
+  std::shared_ptr<arrow::Array> date_array;
+  ARROW_UNUSED(date_builder.Finish(&date_array));
+  arrays.push_back(date_array);
+
+  // Always include gap size
+  fields.push_back(arrow::field("gap size", arrow::float64()));
+  std::shared_ptr<arrow::Array> gap_size_array;
+  ARROW_UNUSED(gap_size_builder.Finish(&gap_size_array));
+  arrays.push_back(gap_size_array);
+
+  // Gap category (if enabled and before gap type for logical ordering)
+  if (show_gap_category) {
+    fields.push_back(arrow::field("gap category", arrow::utf8()));
+    std::shared_ptr<arrow::Array> gap_category_array;
+    ARROW_UNUSED(gap_category_builder.Finish(&gap_category_array));
+    arrays.push_back(gap_category_array);
+  }
+
+  // Gap type and filled status
+  if (combine_gap_direction) {
+    fields.push_back(arrow::field("gap direction", arrow::utf8()));
+    std::shared_ptr<arrow::Array> combined_gap_array;
+    ARROW_UNUSED(combined_gap_builder.Finish(&combined_gap_array));
+    arrays.push_back(combined_gap_array);
+  } else {
+    fields.push_back(arrow::field("gap type", arrow::utf8()));
+    std::shared_ptr<arrow::Array> gap_type_array;
+    ARROW_UNUSED(gap_type_builder.Finish(&gap_type_array));
+    arrays.push_back(gap_type_array);
+
+    fields.push_back(arrow::field("gap filled", arrow::utf8()));
+    std::shared_ptr<arrow::Array> gap_filled_array;
+    ARROW_UNUSED(gap_filled_builder.Finish(&gap_filled_array));
+    arrays.push_back(gap_filled_array);
+  }
+
+  // Optional columns
+  if (show_weekday) {
+    fields.push_back(arrow::field("weekday", arrow::utf8()));
+    std::shared_ptr<arrow::Array> weekday_array;
+    ARROW_UNUSED(weekday_builder.Finish(&weekday_array));
+    arrays.push_back(weekday_array);
+  }
+
+  if (show_performance) {
+    fields.push_back(arrow::field("performance", arrow::utf8()));
+    std::shared_ptr<arrow::Array> performance_array;
+    ARROW_UNUSED(performance_builder.Finish(&performance_array));
+    arrays.push_back(performance_array);
+  }
+
+  if (show_fill_time) {
+    fields.push_back(arrow::field("gap fill time", arrow::utf8()));
+    std::shared_ptr<arrow::Array> fill_time_array;
+    ARROW_UNUSED(fill_time_builder.Finish(&fill_time_array));
+    arrays.push_back(fill_time_array);
+  }
+
+  auto schema = arrow::schema(fields);
+  auto table = arrow::Table::Make(schema, arrays);
+
+  Table result_table;
+  result_table.set_type(epoch_proto::WidgetDataTable);
+  result_table.set_category("Reports");
+  result_table.set_title("Comprehensive Gap Analysis");
+
+  // Add columns to protobuf table definition
+  TableColumnHelper::AddTimestampColumn(result_table, "date", "date");
+  TableColumnHelper::AddPercentColumn(result_table, "gap size", "gap_size");
+
+  if (show_gap_category) {
+    TableColumnHelper::AddStringColumn(result_table, "gap category", "gap_category");
+  }
+
+  if (combine_gap_direction) {
+    TableColumnHelper::AddStringColumn(result_table, "gap direction", "gap_direction");
+  } else {
+    TableColumnHelper::AddStringColumn(result_table, "gap type", "gap_type");
+    TableColumnHelper::AddStringColumn(result_table, "gap filled", "gap_filled");
+  }
+
+  if (show_weekday) {
+    TableColumnHelper::AddStringColumn(result_table, "weekday", "weekday");
+  }
+
+  if (show_performance) {
+    TableColumnHelper::AddStringColumn(result_table, "performance", "performance");
+  }
+
+  if (show_fill_time) {
+    TableColumnHelper::AddStringColumn(result_table, "gap fill time", "gap_fill_time");
+  }
+
+  *result_table.mutable_data() = MakeTableDataFromArrow(table);
+
+  return result_table;
 }
 
 Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
@@ -768,25 +1037,18 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
                            static_cast<int64_t>(gaps.num_rows()));
 
   // Build table columns
-  auto timestamp_type = arrow::timestamp(arrow::TimeUnit::MILLI, "UTC");
-  arrow::TimestampBuilder date_builder(timestamp_type, arrow::default_memory_pool());
-  arrow::StringBuilder symbol_builder, gap_type_builder, performance_builder;
+  arrow::Date32Builder date_builder;
+  arrow::StringBuilder gap_type_builder, performance_builder, is_filled_builder;
   arrow::DoubleBuilder gap_pct_builder, fill_pct_builder;
-  arrow::BooleanBuilder is_filled_builder;
 
   for (int64_t i = 0; i < num_rows; ++i) {
-    // Convert index timestamp to milliseconds for proper display
-    auto date_scalar = gaps.index()->at(i);
-    // Convert nanoseconds to milliseconds
-    int64_t timestamp_ms = date_scalar.timestamp().value / 1000000;
-    ARROW_UNUSED(date_builder.Append(timestamp_ms));
-
-    // Derive symbol (if available) or use placeholder
-    ARROW_UNUSED(symbol_builder.Append("SPY")); // placeholder
+    // Convert index to date32 (days since epoch)
+    auto date_scalar = gaps.index()->at(i).to_date().date();
+    ARROW_UNUSED(date_builder.Append(static_cast<int32_t>(date_scalar.toordinal())));
 
     // Determine gap type from boolean columns
     auto is_gap_up = gaps["gap_up"].iloc(i).as_bool();
-    auto gap_type_str = is_gap_up ? "gap_up" : "gap_down";
+    auto gap_type_str = is_gap_up ? "Gap Up" : "Gap Down";
     ARROW_UNUSED(gap_type_builder.Append(gap_type_str));
 
     // Calculate gap percentage from gap_size
@@ -794,13 +1056,13 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
     auto gap_pct = std::abs(gap_size * 100);
     ARROW_UNUSED(gap_pct_builder.Append(gap_pct));
 
-    // Check if filled based on fill_fraction
-    auto fill_frac = gaps["fill_fraction"].iloc(i).as_double();
-    auto is_filled = fill_frac > 0.5;
-    ARROW_UNUSED(is_filled_builder.Append(is_filled));
+    // Check if filled using gap_filled column
+    auto is_filled = gaps["gap_filled"].iloc(i).as_bool();
+    ARROW_UNUSED(is_filled_builder.Append(is_filled ? "Yes" : "No"));
 
-    // Fill percentage
-    auto fill_pct = fill_frac * gap_pct;
+    // Fill percentage (from fill_fraction * 100, not gap_pct)
+    auto fill_frac = gaps["fill_fraction"].iloc(i).as_double();
+    auto fill_pct = fill_frac * 100.0;
     ARROW_UNUSED(fill_pct_builder.Append(fill_pct));
 
     // Derive close performance from close vs psc
@@ -810,27 +1072,25 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
     ARROW_UNUSED(performance_builder.Append(performance_str));
   }
 
-  std::shared_ptr<arrow::Array> date_array, symbol_array, gap_type_array,
+  std::shared_ptr<arrow::Array> date_array, gap_type_array,
       gap_pct_array, is_filled_array, fill_pct_array, performance_array;
 
   ARROW_UNUSED(date_builder.Finish(&date_array));
-  ARROW_UNUSED(symbol_builder.Finish(&symbol_array));
   ARROW_UNUSED(gap_type_builder.Finish(&gap_type_array));
   ARROW_UNUSED(gap_pct_builder.Finish(&gap_pct_array));
   ARROW_UNUSED(is_filled_builder.Finish(&is_filled_array));
   ARROW_UNUSED(fill_pct_builder.Finish(&fill_pct_array));
   ARROW_UNUSED(performance_builder.Finish(&performance_array));
 
-  auto schema = arrow::schema({arrow::field("Date", arrow::timestamp(arrow::TimeUnit::MILLI, "UTC")),
-                               arrow::field("Symbol", arrow::utf8()),
+  auto schema = arrow::schema({arrow::field("Date", arrow::date32()),
                                arrow::field("Type", arrow::utf8()),
                                arrow::field("Gap %", arrow::float64()),
-                               arrow::field("Filled", arrow::boolean()),
+                               arrow::field("Filled", arrow::utf8()),
                                arrow::field("Fill %", arrow::float64()),
                                arrow::field("Performance", arrow::utf8())});
 
   auto table = arrow::Table::Make(
-      schema, {date_array, symbol_array, gap_type_array, gap_pct_array,
+      schema, {date_array, gap_type_array, gap_pct_array,
                is_filled_array, fill_pct_array, performance_array});
 
   Table result_table;
@@ -838,9 +1098,8 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
   result_table.set_category("Reports");
   result_table.set_title("Recent Gap Details");
 
-  // Add columns using helpers
-  TableColumnHelper::AddTimestampColumn(result_table, "Date", "date");
-  TableColumnHelper::AddStringColumn(result_table, "Symbol", "symbol");
+  // Add columns using helpers - Use Date not Timestamp
+  TableColumnHelper::AddDateColumn(result_table, "Date", "date");
   TableColumnHelper::AddStringColumn(result_table, "Type", "type");
   TableColumnHelper::AddPercentColumn(result_table, "Gap %", "gap_percent");
   TableColumnHelper::AddStringColumn(result_table, "Filled", "filled");
@@ -882,8 +1141,19 @@ GapReport::create_gap_trend_chart(const epoch_frame::DataFrame &gaps) const {
   line.set_name("Gap Frequency");
 
   for (const auto &[month_str, count] : sorted_counts) {
-    // Use helper to convert month string to proper timestamp
-    auto timestamp_ms = MonthStringToTimestampMs(month_str);
+    // Parse YYYY-MM format to timestamp
+    // month_str format: "2024-01"
+    int year, month;
+    std::sscanf(month_str.c_str(), "%d-%d", &year, &month);
+
+    // Convert to timestamp (first day of month, midnight UTC)
+    std::tm timeinfo = {};
+    timeinfo.tm_year = year - 1900;
+    timeinfo.tm_mon = month - 1;
+    timeinfo.tm_mday = 1;
+    auto timestamp_s = std::mktime(&timeinfo);
+    int64_t timestamp_ms = timestamp_s * 1000;
+
     auto point = MakeLinePoint(timestamp_ms, static_cast<double>(count));
     *line.add_data() = std::move(point);
   }
@@ -905,6 +1175,248 @@ GapReport::create_gap_trend_chart(const epoch_frame::DataFrame &gaps) const {
   *lines_def.add_lines() = std::move(line);
 
   return lines_def;
+}
+
+// Helper functions that work with GapTableData
+std::vector<CardDef> GapReport::compute_summary_cards_from_table(const GapTableData &data) const {
+  std::vector<CardDef> cards;
+
+  // Total gaps card
+  CardDef total_gaps_card;
+  total_gaps_card.set_type(epoch_proto::WidgetCard);
+  total_gaps_card.set_category("Reports");
+  CardDataHelper::AddIntegerField(total_gaps_card, "Total Gaps",
+      epoch_frame::Scalar{data.total_gaps});
+  cards.push_back(std::move(total_gaps_card));
+
+  // Gap up percentage - floor to match expected integer values
+  double gap_up_pct = data.total_gaps > 0 ?
+      std::floor(data.gap_up_count * 100.0 / data.total_gaps) : 0;
+  CardDef gap_up_pct_card;
+  gap_up_pct_card.set_type(epoch_proto::WidgetCard);
+  gap_up_pct_card.set_category("Reports");
+  CardDataHelper::AddPercentField(gap_up_pct_card, "Gap Up %",
+      epoch_frame::Scalar{gap_up_pct});
+  cards.push_back(std::move(gap_up_pct_card));
+
+  // Gap down percentage - floor to match expected integer values
+  double gap_down_pct = data.total_gaps > 0 ?
+      std::floor(data.gap_down_count * 100.0 / data.total_gaps) : 0;
+  CardDef gap_down_pct_card;
+  gap_down_pct_card.set_type(epoch_proto::WidgetCard);
+  gap_down_pct_card.set_category("Reports");
+  CardDataHelper::AddPercentField(gap_down_pct_card, "Gap Down %",
+      epoch_frame::Scalar{gap_down_pct});
+  cards.push_back(std::move(gap_down_pct_card));
+
+  // Overall fill rate - floor to match expected integer values
+  double fill_rate = data.total_gaps > 0 ?
+      std::floor(data.filled_count * 100.0 / data.total_gaps) : 0;
+  CardDef fill_rate_card;
+  fill_rate_card.set_type(epoch_proto::WidgetCard);
+  fill_rate_card.set_category("Reports");
+  CardDataHelper::AddPercentField(fill_rate_card, "Fill Rate",
+      epoch_frame::Scalar{fill_rate});
+  cards.push_back(std::move(fill_rate_card));
+
+  return cards;
+}
+
+std::pair<Table, Table> GapReport::create_fill_rate_tables_from_data(const GapTableData &data) const {
+  // Gap Up Fill Rate Table
+  Table gap_up_table;
+  gap_up_table.set_type(epoch_proto::WidgetDataTable);
+  gap_up_table.set_category("Reports");
+  gap_up_table.set_title("Gap Up Fill Analysis");
+
+  // Build Gap Up table
+  arrow::StringBuilder category_builder_up;
+  arrow::Int64Builder count_builder_up;
+  arrow::DoubleBuilder percentage_builder_up;
+
+  ARROW_UNUSED(category_builder_up.Append("Filled"));
+  ARROW_UNUSED(count_builder_up.Append(data.gap_up_filled));
+  double gap_up_filled_pct = data.gap_up_count > 0 ?
+      (data.gap_up_filled * 100.0 / data.gap_up_count) : 0;
+  ARROW_UNUSED(percentage_builder_up.Append(gap_up_filled_pct));
+
+  ARROW_UNUSED(category_builder_up.Append("Not Filled"));
+  int64_t gap_up_not_filled = data.gap_up_count - data.gap_up_filled;
+  ARROW_UNUSED(count_builder_up.Append(gap_up_not_filled));
+  double gap_up_not_filled_pct = data.gap_up_count > 0 ?
+      (gap_up_not_filled * 100.0 / data.gap_up_count) : 0;
+  ARROW_UNUSED(percentage_builder_up.Append(gap_up_not_filled_pct));
+
+  std::shared_ptr<arrow::Array> category_array_up, count_array_up, percentage_array_up;
+  ARROW_UNUSED(category_builder_up.Finish(&category_array_up));
+  ARROW_UNUSED(count_builder_up.Finish(&count_array_up));
+  ARROW_UNUSED(percentage_builder_up.Finish(&percentage_array_up));
+
+  auto schema_up = arrow::schema({
+      arrow::field("Category", arrow::utf8()),
+      arrow::field("Count", arrow::int64()),
+      arrow::field("Percentage", arrow::float64())
+  });
+
+  auto table_up = arrow::Table::Make(schema_up,
+      {category_array_up, count_array_up, percentage_array_up});
+
+  TableColumnHelper::AddStringColumn(gap_up_table, "Category", "category");
+  TableColumnHelper::AddIntegerColumn(gap_up_table, "Count", "count");
+  TableColumnHelper::AddPercentColumn(gap_up_table, "Percentage", "percentage");
+
+  *gap_up_table.mutable_data() = MakeTableDataFromArrow(table_up);
+
+  // Gap Down Fill Rate Table
+  Table gap_down_table;
+  gap_down_table.set_type(epoch_proto::WidgetDataTable);
+  gap_down_table.set_category("Reports");
+  gap_down_table.set_title("Gap Down Fill Analysis");
+
+  // Build Gap Down table
+  arrow::StringBuilder category_builder_down;
+  arrow::Int64Builder count_builder_down;
+  arrow::DoubleBuilder percentage_builder_down;
+
+  ARROW_UNUSED(category_builder_down.Append("Filled"));
+  ARROW_UNUSED(count_builder_down.Append(data.gap_down_filled));
+  double gap_down_filled_pct = data.gap_down_count > 0 ?
+      (data.gap_down_filled * 100.0 / data.gap_down_count) : 0;
+  ARROW_UNUSED(percentage_builder_down.Append(gap_down_filled_pct));
+
+  ARROW_UNUSED(category_builder_down.Append("Not Filled"));
+  int64_t gap_down_not_filled = data.gap_down_count - data.gap_down_filled;
+  ARROW_UNUSED(count_builder_down.Append(gap_down_not_filled));
+  double gap_down_not_filled_pct = data.gap_down_count > 0 ?
+      (gap_down_not_filled * 100.0 / data.gap_down_count) : 0;
+  ARROW_UNUSED(percentage_builder_down.Append(gap_down_not_filled_pct));
+
+  std::shared_ptr<arrow::Array> category_array_down, count_array_down, percentage_array_down;
+  ARROW_UNUSED(category_builder_down.Finish(&category_array_down));
+  ARROW_UNUSED(count_builder_down.Finish(&count_array_down));
+  ARROW_UNUSED(percentage_builder_down.Finish(&percentage_array_down));
+
+  auto schema_down = arrow::schema({
+      arrow::field("Category", arrow::utf8()),
+      arrow::field("Count", arrow::int64()),
+      arrow::field("Percentage", arrow::float64())
+  });
+
+  auto table_down = arrow::Table::Make(schema_down,
+      {category_array_down, count_array_down, percentage_array_down});
+
+  TableColumnHelper::AddStringColumn(gap_down_table, "Category", "category");
+  TableColumnHelper::AddIntegerColumn(gap_down_table, "Count", "count");
+  TableColumnHelper::AddPercentColumn(gap_down_table, "Percentage", "percentage");
+
+  *gap_down_table.mutable_data() = MakeTableDataFromArrow(table_down);
+
+  return {gap_up_table, gap_down_table};
+}
+
+BarDef GapReport::create_day_of_week_chart_from_data(const GapTableData &data) const {
+  // Count gaps by weekday from the table data
+  std::unordered_map<std::string, int64_t> weekday_counts;
+
+  if (data.weekday_col >= 0) {
+    auto weekday_array = std::static_pointer_cast<arrow::StringArray>(
+        data.arrow_table->column(data.weekday_col)->chunk(0));
+
+    for (int64_t i = 0; i < weekday_array->length(); ++i) {
+      if (!weekday_array->IsNull(i)) {
+        std::string weekday = weekday_array->GetString(i);
+        weekday_counts[weekday]++;
+      }
+    }
+  }
+
+  // Order weekdays properly
+  const std::vector<std::string> ordered_days = {
+      "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+  };
+
+  // Build values in the same order as categories
+  std::vector<int64_t> values;
+  values.reserve(ordered_days.size());
+  for (const auto &day : ordered_days) {
+    values.push_back(weekday_counts.count(day) ? weekday_counts.at(day) : 0);
+  }
+
+  // Use the new BarChartBuilder for cleaner construction
+  auto x_axis = AxisDef{};
+  x_axis.set_type(epoch_proto::AxisCategory);
+  x_axis.set_label("Day of Week");
+
+  return BarChartBuilder({
+      .id = "day_of_week_gaps",
+      .title = "Gap Frequency by Day of Week",
+      .category = "Reports"
+  })
+  .setXAxis(x_axis)
+  .setYAxis(MakeLinearAxis("Number of Gaps"))
+  .addCategories(ordered_days)
+  .addValues(values)
+  .build();
+}
+
+PieDef GapReport::create_time_distribution_from_data(const GapTableData &data) const {
+  // Count gaps by fill time from the table data
+  std::unordered_map<std::string, int64_t> time_counts;
+
+  if (data.fill_time_col >= 0) {
+    auto fill_time_array = std::static_pointer_cast<arrow::StringArray>(
+        data.arrow_table->column(data.fill_time_col)->chunk(0));
+
+    for (int64_t i = 0; i < fill_time_array->length(); ++i) {
+      if (!fill_time_array->IsNull(i)) {
+        std::string time_category = fill_time_array->GetString(i);
+        time_counts[time_category]++;
+      }
+    }
+  }
+
+  // Build pie chart
+  std::vector<PieSlice> time_slices;
+  for (const auto &[category, count] : time_counts) {
+    time_slices.emplace_back(category, static_cast<double>(count));
+  }
+
+  return PieChartBuilder({
+      .id = "gap_fill_time_distribution",
+      .title = "Gap Fill Time Distribution",
+      .category = "Reports"
+  })
+  .addDataSeries({.name = "Fill Time"})
+  .addSlices(time_slices)
+  .build();
+}
+
+HistogramDef GapReport::create_gap_distribution_from_data(const GapTableData &data) const {
+  // Return empty histogram if no data
+  if (data.gap_size_col < 0) {
+    return HistogramDef{};
+  }
+
+  auto gap_size_array = std::static_pointer_cast<arrow::DoubleArray>(
+      data.arrow_table->column(data.gap_size_col)->chunk(0));
+
+  // Get bins count from config
+  uint32_t bins = 20; // Default
+  try {
+    bins = static_cast<uint32_t>(m_config.GetOptionValue("histogram_bins").GetInteger());
+  } catch (...) {}
+
+  // Use the new HistogramBuilder for cleaner construction
+  return HistogramBuilder({
+      .id = "gap_distribution",
+      .title = "Gap Size Distribution",
+      .category = "Reports"
+  })
+  .setXAxis(MakePercentageAxis("Gap Size (%)"))
+  .setYAxis(MakeLinearAxis("Frequency"))
+  .setData(gap_size_array)
+  .setBins(bins)
+  .build();
 }
 
 

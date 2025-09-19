@@ -1,0 +1,147 @@
+tests:
+  - title: "Intraday Gap Analysis Test"
+    input:
+      type: "gap_report"
+      # Both open and close bars for each day
+      timestamps: [
+        "2024-01-08T09:30:00",  # Monday open
+        "2024-01-08T15:55:00",  # Monday close
+        "2024-01-09T09:30:00",  # Tuesday open
+        "2024-01-09T15:55:00",  # Tuesday close
+        "2024-01-10T09:30:00",  # Wednesday open
+        "2024-01-10T15:55:00"   # Wednesday close
+      ]
+
+      # Required inputs for gap_report
+      # Gap analysis only applies to session opens
+      gap_up: [
+        true,   # Monday open: 101.5 > 100.0 (gap up)
+        ~,      # Monday close: not a gap
+        false,  # Tuesday open: 99.0 < 100.5 (gap down)
+        ~,      # Tuesday close: not a gap
+        true,   # Wednesday open: 100.0 > 98.6 (gap up)
+        ~       # Wednesday close: not a gap
+      ]
+
+      gap_filled: [
+        true,   # Monday: gap filled (price went below 100.0)
+        ~,      # Monday close
+        false,  # Tuesday: gap not filled (never reached 100.5)
+        ~,      # Tuesday close
+        false,  # Wednesday: gap not filled (partial fill only)
+        ~       # Wednesday close
+      ]
+
+      fill_fraction: [
+        1.0,    # Monday: fully filled
+        ~,      # Monday close
+        0.0,    # Tuesday: no fill
+        ~,      # Tuesday close
+        0.5,    # Wednesday: 50% fill
+        ~       # Wednesday close
+      ]
+
+      gap_size: [
+        0.015,  # Monday: 1.5% gap (as decimal)
+        ~,      # Monday close
+        -0.0149,  # Tuesday: -1.49% gap (as decimal, negative for gap down)
+        ~,      # Tuesday close
+        0.0142, # Wednesday: 1.42% gap (as decimal)
+        ~       # Wednesday close
+      ]
+
+      psc: [
+        100.0,  # Monday open: previous session close (Friday)
+        ~,      # Monday close
+        100.5,  # Tuesday open: Monday's close
+        ~,      # Tuesday close
+        98.6,   # Wednesday open: Tuesday's close
+        ~       # Wednesday close
+      ]
+
+      psc_timestamp: [
+        "2024-01-05T16:00:00",  # Friday close for Monday open
+        ~,                      # Monday close
+        "2024-01-08T16:00:00",  # Monday close for Tuesday open
+        ~,                      # Tuesday close
+        "2024-01-09T16:00:00",  # Tuesday close for Wednesday open
+        ~                       # Wednesday close
+      ]
+
+      # Required data source - close prices for all bars
+      c: [
+        101.5,  # Monday open
+        100.5,  # Monday close
+        99.0,   # Tuesday open
+        98.6,   # Tuesday close
+        100.0,  # Wednesday open
+        99.5    # Wednesday close
+      ]
+
+    expect:
+      type: "tearsheet"
+      skip_charts: true  # Don't validate charts for now
+      cards:
+        - data:
+          - title: "Total Gaps"
+            value: 3
+        - data:
+          - title: "Gap Up %"
+            value: 66  # 2 gap ups out of 3
+        - data:
+          - title: "Gap Down %"
+            value: 33  # 1 gap down out of 3
+        - data:
+          - title: "Fill Rate"
+            value: 33  # 1 filled (Monday) out of 3
+
+      tables:
+        # Table 1: Gap Up Fill Analysis
+        - title: "Gap Up Fill Analysis"
+          data:
+            columns: ["Category", "Count", "Percentage"]
+            rows:
+              - ["Filled", 1, 50.0]  # 1 out of 2 gap ups filled
+              - ["Not Filled", 1, 50.0]  # 1 out of 2 gap ups not filled
+
+        # Table 2: Gap Down Fill Analysis
+        - title: "Gap Down Fill Analysis"
+          data:
+            columns: ["Category", "Count", "Percentage"]
+            rows:
+              - ["Filled", 0, 0.0]  # 0 out of 1 gap down filled
+              - ["Not Filled", 1, 100.0]  # 1 out of 1 gap down not filled
+
+        # Table 3: Fill Time Frequency
+        - title: "Gap Frequency by Time"
+          data:
+            columns: ["fill_time", "Count", "Percentage"]
+            rows:
+              - ["before 13:00", 1, 33.3333]  # Monday filled before 13:00
+              - ["not filled", 2, 66.6667]  # Tuesday and Wednesday not filled
+
+        # Table 4: Performance Analysis
+        - title: "Gap Fill vs Close Performance"
+          data:
+            columns: ["close_performance", "Count", "Percentage"]
+            rows:
+              - ["green", 2, 66.6667]  # Monday and Wednesday closed green
+              - ["red", 1, 33.3333]  # Tuesday closed red
+
+        # Table 5: Comprehensive Gap Table
+        - title: "Gap Details"
+          data:
+            columns: ["date", "gap_size", "gap_type", "gap_filled", "weekday", "gap_category", "performance", "fill_time", "combined_gap"]
+            rows:
+              - ["2024-01-08", "1.50%", "gap up", "Yes", "Monday", "1.00-1.99%", "green", "before 13:00", "gap up filled"]
+              - ["2024-01-09", "-1.49%", "gap down", "No", "Tuesday", "1.00-1.99%", "red", "not filled", "gap down not filled"]
+              - ["2024-01-10", "1.42%", "gap up", "No", "Wednesday", "1.00-1.99%", "red", "not filled", "gap up not filled"]
+
+    options:
+      report_type: "gap_report"
+      instance_id: "intraday_gap_test"
+      show_fill_analysis: true
+      show_day_of_week_analysis: true
+      show_distribution_histogram: true
+      show_comprehensive_table: true
+      histogram_bins: 10

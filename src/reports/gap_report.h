@@ -7,6 +7,30 @@
 
 namespace epoch_folio {
 
+// Structure to hold comprehensive gap data for reuse across visualizations
+struct GapTableData {
+  std::shared_ptr<arrow::Table> arrow_table;
+
+  // Cached aggregations for efficiency
+  int64_t total_gaps = 0;
+  int64_t gap_up_count = 0;
+  int64_t gap_down_count = 0;
+  int64_t filled_count = 0;
+  int64_t gap_up_filled = 0;
+  int64_t gap_down_filled = 0;
+
+  // Column indices for quick access
+  int date_col = -1;
+  int gap_size_col = -1;
+  int gap_type_col = -1;
+  int gap_filled_col = -1;
+  int weekday_col = -1;
+  int performance_col = -1;
+  int gap_category_col = -1;
+  int fill_time_col = -1;
+  int combined_gap_col = -1;
+};
+
 class GapReport : public IReporter {
 public:
   explicit GapReport(epoch_metadata::transform::TransformConfiguration config)
@@ -24,18 +48,14 @@ public:
   std::vector<CardDef>
   compute_summary_cards(const epoch_frame::DataFrame &gaps) const;
 
-  BarDef create_fill_rate_chart(const epoch_frame::DataFrame &gaps,
-                                const std::string &title) const;
+  std::pair<Table, Table> create_fill_rate_tables(
+      const epoch_frame::DataFrame &gaps) const;
 
-  BarDef create_day_of_week_chart(const epoch_frame::DataFrame &gaps,
-                                  const std::string &title) const;
+  // Removed: Use create_day_of_week_chart_from_data instead
 
   Table create_frequency_table(const epoch_frame::DataFrame &gaps,
                                const std::string &category_col,
                                const std::string &title) const;
-
-  XRangeDef create_streak_chart(const epoch_frame::DataFrame &gaps,
-                                uint32_t max_streaks) const;
 
   HistogramDef create_gap_distribution(const epoch_frame::DataFrame &gaps,
                                        uint32_t bins) const;
@@ -45,7 +65,22 @@ public:
   Table create_gap_details_table(const epoch_frame::DataFrame &gaps,
                                  uint32_t limit) const;
 
+  Table create_comprehensive_gap_table(const epoch_frame::DataFrame &gaps) const;
+
   LinesDef create_gap_trend_chart(const epoch_frame::DataFrame &gaps) const;
+
+  // New methods that work with table data
+  GapTableData build_comprehensive_table_data(const epoch_frame::DataFrame &gaps) const;
+
+  std::vector<CardDef> compute_summary_cards_from_table(const GapTableData &data) const;
+
+  std::pair<Table, Table> create_fill_rate_tables_from_data(const GapTableData &data) const;
+
+  BarDef create_day_of_week_chart_from_data(const GapTableData &data) const;
+
+  PieDef create_time_distribution_from_data(const GapTableData &data) const;
+
+  HistogramDef create_gap_distribution_from_data(const GapTableData &data) const;
 
   // Utility
   epoch_frame::DataFrame filter_gaps(const epoch_frame::DataFrame &df) const;
@@ -86,12 +121,6 @@ template <> struct ReportMetadata<GapReport> {
           .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
           .isRequired = false,
           .desc = "Display table comparing gap fill outcomes with closing price performance. Shows whether gaps that fill tend to close green or red relative to prior session close, helping assess the profitability of gap fade versus gap continuation strategies."},
-         {.id = "show_streak_analysis",
-          .name = "Show Streak Analysis",
-          .type = epoch_core::MetaDataOptionType::Boolean,
-          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
-          .isRequired = false,
-          .desc = "Visualize consecutive gap patterns using XRange chart showing recent gap up and gap down streaks over time. Identifies clustering of similar gap types and helps detect regime changes in market gap behavior, useful for adjusting trading strategies based on current market conditions."},
          {.id = "show_distribution_histogram",
           .name = "Show Distribution Histogram",
           .type = epoch_core::MetaDataOptionType::Boolean,
@@ -105,7 +134,59 @@ template <> struct ReportMetadata<GapReport> {
           .isRequired = false,
           .min = 5,
           .max = 100,
-          .desc = "Number of bins for the gap size distribution histogram. Lower values provide broader gap size categories while higher values offer more granular distribution analysis. Adjust based on data volume and desired granularity of gap size analysis."}},
+          .desc = "Number of bins for the gap size distribution histogram. Lower values provide broader gap size categories while higher values offer more granular distribution analysis. Adjust based on data volume and desired granularity of gap size analysis."},
+         {.id = "show_comprehensive_table",
+          .name = "Show Comprehensive Gap Table",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false,
+          .desc = "Display a comprehensive gap details table with configurable columns based on other enabled options."},
+         {.id = "table_show_weekday",
+          .name = "Include Weekday Column",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false,
+          .desc = "Add weekday column to the comprehensive gap table."},
+         {.id = "table_show_gap_category",
+          .name = "Include Gap Category Column",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false,
+          .desc = "Add gap size category column (e.g., 0-0.19%, 0.2-0.39%) to the comprehensive gap table."},
+         {.id = "table_show_performance",
+          .name = "Include Performance Column",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false,
+          .desc = "Add closing performance column (green/red) to the comprehensive gap table."},
+         {.id = "table_show_fill_time",
+          .name = "Include Fill Time Column",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{true},
+          .isRequired = false,
+          .desc = "Add gap fill time column (before/after 13:00) to the comprehensive gap table."},
+         {.id = "table_combine_gap_direction",
+          .name = "Combine Gap Direction with Fill Status",
+          .type = epoch_core::MetaDataOptionType::Boolean,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{false},
+          .isRequired = false,
+          .desc = "Combine gap type and fill status into single column (e.g., 'gap up filled')."},
+         {.id = "table_max_rows",
+          .name = "Maximum Table Rows",
+          .type = epoch_core::MetaDataOptionType::Integer,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{100.0},
+          .isRequired = false,
+          .min = 10,
+          .max = 1000,
+          .desc = "Maximum number of rows to display in the comprehensive gap table."},
+         {.id = "fill_time_pivot_hour",
+          .name = "Fill Time Pivot Hour",
+          .type = epoch_core::MetaDataOptionType::Integer,
+          .defaultValue = epoch_metadata::MetaDataOptionDefinition{13.0},
+          .isRequired = false,
+          .min = 9,
+          .max = 16,
+          .desc = "The hour used to categorize gap fill times (e.g., 13 for 'before 13:00' vs 'after 13:00'). Used in fill time analysis to identify early vs late session fills."}},
     .isCrossSectional = false,
     .desc = "Comprehensive gap analysis report that examines price gaps "
             "between trading sessions. Analyzes opening price gaps relative "
