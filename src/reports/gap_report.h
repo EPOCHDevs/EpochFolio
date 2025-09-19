@@ -125,10 +125,10 @@ template <> struct ReportMetadata<GapReport> {
     .outputs = {},
     .tags = {"gap_classify"},
  .requiresTimeFrame = true,
- .intradayOnly=true,
- .allowNullInputs=true,
     .requiredDataSources =
         {epoch_metadata::EpochStratifyXConstants::instance().CLOSE()},
+    .intradayOnly=true,
+.allowNullInputs=true,
     .isReporter = true};
   }
 
