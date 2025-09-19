@@ -27,6 +27,9 @@ public:
   BarDef create_fill_rate_chart(const epoch_frame::DataFrame &gaps,
                                 const std::string &title) const;
 
+  BarDef create_day_of_week_chart(const epoch_frame::DataFrame &gaps,
+                                  const std::string &title) const;
+
   Table create_frequency_table(const epoch_frame::DataFrame &gaps,
                                const std::string &category_col,
                                const std::string &title) const;

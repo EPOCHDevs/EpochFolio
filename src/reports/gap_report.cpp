@@ -118,10 +118,12 @@ GapReport::generate_impl(const epoch_frame::DataFrame &df) const {
     *result.mutable_charts()->add_charts() = std::move(chart);
   }
 
-  // 3. Day of week frequency table
+  // 3. Day of week frequency bar chart (better visualization than table)
   if (show_day_of_week_analysis) {
-    *result.mutable_tables()->add_tables() = create_frequency_table(
-        filtered_gaps, "day_of_week", "Gap Frequency by Day of Week");
+    Chart chart;
+    *chart.mutable_bar_def() = create_day_of_week_chart(
+        filtered_gaps, "Gap Frequency by Day of Week");
+    *result.mutable_charts()->add_charts() = std::move(chart);
   }
 
   // 4. Time bucket analysis table
@@ -278,7 +280,7 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
     // Time bucket (simplified - based on hour)
     auto time = datetime.time();
     time_bucket_data.push_back(
-        std::format("{}:{:02d}", time.hour.count(), time.minute.count()));
+        std::format("{:02d}:{:02d}", time.hour.count(), time.minute.count()));
 
     // Close performance (green if close > prior session close, red otherwise)
     auto close_val = filtered[closeLiteral].iloc(i).as_double();
@@ -425,6 +427,60 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   cards.push_back(std::move(card4));
 
   return cards;
+}
+
+BarDef GapReport::create_day_of_week_chart(const epoch_frame::DataFrame &gaps,
+                                           const std::string &title) const {
+  // Group gaps by day of week and count
+  auto dow = gaps["day_of_week"];
+  auto grouped = dow.contiguous_array().value_counts();
+
+  // Create ordered map for consistent day ordering
+  std::map<int, std::pair<std::string, int64_t>> ordered_days;
+  const char *days[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
+  // Initialize with zeros
+  for (int i = 0; i < 7; ++i) {
+    ordered_days[i] = {days[i], 0};
+  }
+
+  // Populate with actual counts
+  for (size_t i = 0; i < static_cast<size_t>(grouped.first.length()); ++i) {
+    auto day_name = grouped.first[i].repr();
+    auto count = grouped.second[i].as_int64();
+
+    // Find the day index
+    for (int d = 0; d < 7; ++d) {
+      if (day_name == days[d]) {
+        ordered_days[d].second = count;
+        break;
+      }
+    }
+  }
+
+  BarDef bar_def;
+
+  // Set up chart definition
+  auto *chart_def = bar_def.mutable_chart_def();
+  chart_def->set_id("gap_day_of_week");
+  chart_def->set_title(title);
+  chart_def->set_type(epoch_proto::WidgetBar);
+  chart_def->set_category("Reports");
+
+  // Set up axes
+  *chart_def->mutable_y_axis() = MakeLinearAxis("Gap Count");
+
+  auto *x_axis = chart_def->mutable_x_axis();
+  x_axis->set_type(kCategoryAxisType);
+
+  // Add categories and data in order
+  auto* bar_data = bar_def.mutable_data();
+  for (const auto& [idx, day_data] : ordered_days) {
+    x_axis->add_categories(day_data.first);
+    bar_data->add_values()->set_integer_value(day_data.second);
+  }
+
+  return bar_def;
 }
 
 BarDef GapReport::create_fill_rate_chart(const epoch_frame::DataFrame &gaps,
@@ -640,10 +696,9 @@ GapReport::create_gap_distribution(const epoch_frame::DataFrame &gaps,
   *chart_def->mutable_x_axis() = MakePercentageAxis("Gap Size (%)");
 
   // Set data and bins
-  // TODO: Convert Arrow array to protobuf scalar/array type properly
-  // Temporarily disabled to unblock compilation
-  // *histogram_def.mutable_data() =
-  // ToProtoScalar(epoch_frame::Array{data_array});
+  // Convert Arrow array to protobuf array
+  auto chunked = arrow::ChunkedArray::Make({data_array});
+  *histogram_def.mutable_data() = MakeArrayFromArrow(chunked.MoveValueUnsafe());
   histogram_def.set_bins_count(bins);
 
   return histogram_def;
@@ -651,18 +706,30 @@ GapReport::create_gap_distribution(const epoch_frame::DataFrame &gaps,
 
 PieDef
 GapReport::create_time_distribution(const epoch_frame::DataFrame &gaps) const {
-  // Derive time buckets from index and count
+  // Derive time buckets from actual timestamps
   std::unordered_map<std::string, int64_t> time_counts;
 
-  // For now, create simple AM/PM buckets based on gaps
-  // In practice, you'd derive this from the DataFrame index timestamps
-  auto gap_up_count = static_cast<int64_t>(gaps["gap_up"].sum().value<uint64_t>().value());
-  auto gap_down_count = static_cast<int64_t>(gaps["gap_down"].sum().value<uint64_t>().value());
+  // Count gaps by time period
+  for (size_t i = 0; i < static_cast<size_t>(gaps.num_rows()); ++i) {
+    auto datetime = gaps.index()->at(i).to_datetime();
+    auto hour = datetime.time().hour.count();
 
-  // Simplified time distribution for demo
-  time_counts["Morning"] = gap_up_count / 2 + gap_down_count / 3;
-  time_counts["Afternoon"] = gap_up_count - time_counts["Morning"] +
-                             gap_down_count - gap_down_count / 3;
+    // Categorize by trading session periods
+    std::string period;
+    if (hour < 10) {
+      period = "Pre-Market (9:30-10:00)";
+    } else if (hour < 12) {
+      period = "Morning (10:00-12:00)";
+    } else if (hour < 14) {
+      period = "Midday (12:00-14:00)";
+    } else if (hour < 16) {
+      period = "Afternoon (14:00-16:00)";
+    } else {
+      period = "After-Hours";
+    }
+
+    time_counts[period]++;
+  }
 
   std::vector<PieData> points;
   for (const auto &[bucket, count] : time_counts) {
@@ -701,15 +768,18 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
                            static_cast<int64_t>(gaps.num_rows()));
 
   // Build table columns
-  arrow::StringBuilder date_builder, symbol_builder, gap_type_builder,
-      performance_builder;
+  auto timestamp_type = arrow::timestamp(arrow::TimeUnit::MILLI, "UTC");
+  arrow::TimestampBuilder date_builder(timestamp_type, arrow::default_memory_pool());
+  arrow::StringBuilder symbol_builder, gap_type_builder, performance_builder;
   arrow::DoubleBuilder gap_pct_builder, fill_pct_builder;
   arrow::BooleanBuilder is_filled_builder;
 
   for (int64_t i = 0; i < num_rows; ++i) {
-    // Convert index timestamp to string for display
+    // Convert index timestamp to milliseconds for proper display
     auto date_scalar = gaps.index()->at(i);
-    ARROW_UNUSED(date_builder.Append(date_scalar.repr()));
+    // Convert nanoseconds to milliseconds
+    int64_t timestamp_ms = date_scalar.timestamp().value / 1000000;
+    ARROW_UNUSED(date_builder.Append(timestamp_ms));
 
     // Derive symbol (if available) or use placeholder
     ARROW_UNUSED(symbol_builder.Append("SPY")); // placeholder
@@ -751,7 +821,7 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
   ARROW_UNUSED(fill_pct_builder.Finish(&fill_pct_array));
   ARROW_UNUSED(performance_builder.Finish(&performance_array));
 
-  auto schema = arrow::schema({arrow::field("Date", arrow::utf8()),
+  auto schema = arrow::schema({arrow::field("Date", arrow::timestamp(arrow::TimeUnit::MILLI, "UTC")),
                                arrow::field("Symbol", arrow::utf8()),
                                arrow::field("Type", arrow::utf8()),
                                arrow::field("Gap %", arrow::float64()),
