@@ -170,10 +170,8 @@ GapReport::filter_gaps(const epoch_frame::DataFrame &df) const {
   auto is_up = gap_up == Scalar{true};
   auto is_down = gap_up == Scalar{false};
 
-  // Convert gap_size (absolute price) to percentage using prior session close
-  auto psc = df["psc"];
-  auto gap_pct = (gap_size / psc) * Scalar{100.0};
-  auto pct_abs = gap_pct.abs();
+  // gap_size is already a percentage from gap_classify
+  auto pct_abs = gap_size.abs();
 
   // Gap type filter
   bool include_gap_up = true;
@@ -351,8 +349,8 @@ GapReport::compute_summary_cards(const epoch_frame::DataFrame &gaps) const {
   auto gap_filled = gaps["gap_filled"];
   auto filled_count = gap_filled.sum().cast_int64().as_int64();
 
-  // Calculate gap percentages from gap_size (absolute price) and prior close
-  auto gap_pct = (gaps["gap_size"] / gaps["psc"]) * epoch_frame::Scalar{100.0};
+  // gap_size is already a percentage from gap_classify
+  auto gap_pct = gaps["gap_size"];
   auto total_gap_pct = gap_pct.abs().sum().as_double();
   auto max_gap_pct = gap_pct.abs().max().as_double();
 
@@ -544,8 +542,7 @@ GapTableData GapReport::build_comprehensive_table_data(const epoch_frame::DataFr
   auto num_rows = static_cast<int>(gaps.num_rows());
 
   // Create builders for all columns
-  auto timestamp_type = arrow::timestamp(arrow::TimeUnit::MILLI, "UTC");
-  arrow::TimestampBuilder date_builder(timestamp_type, arrow::default_memory_pool());
+  arrow::Date32Builder date_builder;
   arrow::DoubleBuilder gap_size_builder;
   arrow::StringBuilder gap_type_builder, gap_filled_builder;
   arrow::StringBuilder weekday_builder, gap_category_builder, performance_builder, fill_time_builder;
@@ -555,14 +552,11 @@ GapTableData GapReport::build_comprehensive_table_data(const epoch_frame::DataFr
 
   for (int64_t i = 0; i < num_rows; ++i) {
     // Date column
-    auto date_scalar = gaps.index()->at(i);
-    int64_t timestamp_ms = date_scalar.timestamp().value / 1000000;
-    ARROW_UNUSED(date_builder.Append(timestamp_ms));
+    auto date_scalar = gaps.index()->at(i).to_date().date();
+    ARROW_UNUSED(date_builder.Append(static_cast<int32_t>(date_scalar.toordinal())));
 
-    // Gap size (absolute price) - convert to percentage
-    auto gap_size = gaps["gap_size"].iloc(i).as_double();
-    auto psc_val = gaps["psc"].iloc(i).as_double();
-    auto gap_size_pct = std::abs(gap_size / psc_val * 100);
+    // Gap size is already a percentage from gap_classify
+    auto gap_size_pct = std::abs(gaps["gap_size"].iloc(i).as_double());
     ARROW_UNUSED(gap_size_builder.Append(gap_size_pct));
 
     // Gap type and filled status
@@ -606,6 +600,7 @@ GapTableData GapReport::build_comprehensive_table_data(const epoch_frame::DataFr
 
     // Performance
     auto close_val = gaps[closeLiteral].iloc(i).as_double();
+    auto psc_val = gaps["psc"].iloc(i).as_double();
     ARROW_UNUSED(performance_builder.Append(close_val > psc_val ? "green" : "red"));
 
     // Fill time with configurable pivot
@@ -642,7 +637,7 @@ GapTableData GapReport::build_comprehensive_table_data(const epoch_frame::DataFr
   ARROW_UNUSED(fill_time_builder.Finish(&fill_time_array));
 
   // Add all fields and arrays
-  fields.push_back(arrow::field("date", timestamp_type));
+  fields.push_back(arrow::field("date", arrow::date32()));
   arrays.push_back(date_array);
   data.date_col = 0;
 
@@ -757,9 +752,8 @@ Table GapReport::create_frequency_table(const epoch_frame::DataFrame &gaps,
 HistogramDef
 GapReport::create_gap_distribution(const epoch_frame::DataFrame &gaps,
                                    uint32_t bins) const {
-  // Extract gap percentages from gap_size (absolute price) and prior close
-  auto gap_pct = (gaps["gap_size"] / gaps["psc"]) * epoch_frame::Scalar{100.0};
-  auto abs_gap_pct = gap_pct.abs();
+  // gap_size is already a percentage from gap_classify
+  auto abs_gap_pct = gaps["gap_size"].abs();
 
   auto data_array = abs_gap_pct.array()->chunk(0);
 
@@ -849,22 +843,18 @@ Table GapReport::create_comprehensive_gap_table(const epoch_frame::DataFrame &ga
   auto num_rows = std::min(max_rows, static_cast<int>(gaps.num_rows()));
 
   // Create builders for each potential column
-  auto timestamp_type = arrow::timestamp(arrow::TimeUnit::MILLI, "UTC");
-  arrow::TimestampBuilder date_builder(timestamp_type, arrow::default_memory_pool());
+  arrow::Date32Builder date_builder;
   arrow::DoubleBuilder gap_size_builder;
   arrow::StringBuilder gap_type_builder, gap_filled_builder, combined_gap_builder;
   arrow::StringBuilder weekday_builder, gap_category_builder, performance_builder, fill_time_builder;
 
   for (int64_t i = 0; i < num_rows; ++i) {
     // Date column (always included)
-    auto date_scalar = gaps.index()->at(i);
-    int64_t timestamp_ms = date_scalar.timestamp().value / 1000000;
-    ARROW_UNUSED(date_builder.Append(timestamp_ms));
+    auto date_scalar = gaps.index()->at(i).to_date().date();
+    ARROW_UNUSED(date_builder.Append(static_cast<int32_t>(date_scalar.toordinal())));
 
-    // Gap size column (always included) - convert from absolute to percentage
-    auto gap_size = gaps["gap_size"].iloc(i).as_double();
-    auto psc_val = gaps["psc"].iloc(i).as_double();
-    auto gap_size_pct = std::abs(gap_size / psc_val * 100);
+    // Gap size column (always included) - already a percentage from gap_classify
+    auto gap_size_pct = std::abs(gaps["gap_size"].iloc(i).as_double());
     ARROW_UNUSED(gap_size_builder.Append(gap_size_pct));
 
     // Gap type and filled status
@@ -933,7 +923,7 @@ Table GapReport::create_comprehensive_gap_table(const epoch_frame::DataFrame &ga
   std::vector<std::shared_ptr<arrow::Array>> arrays;
 
   // Always include date
-  fields.push_back(arrow::field("date", timestamp_type));
+  fields.push_back(arrow::field("date", arrow::date32()));
   std::shared_ptr<arrow::Array> date_array;
   ARROW_UNUSED(date_builder.Finish(&date_array));
   arrays.push_back(date_array);
@@ -1001,7 +991,7 @@ Table GapReport::create_comprehensive_gap_table(const epoch_frame::DataFrame &ga
   result_table.set_title("Comprehensive Gap Analysis");
 
   // Add columns to protobuf table definition
-  TableColumnHelper::AddTimestampColumn(result_table, "date", "date");
+  TableColumnHelper::AddDateColumn(result_table, "date", "date");
   TableColumnHelper::AddPercentColumn(result_table, "gap size", "gap_size");
 
   if (show_gap_category) {
@@ -1053,10 +1043,8 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
     auto gap_type_str = is_gap_up ? "Gap Up" : "Gap Down";
     ARROW_UNUSED(gap_type_builder.Append(gap_type_str));
 
-    // Calculate gap percentage from gap_size (absolute price)
-    auto gap_size = gaps["gap_size"].iloc(i).as_double();
-    auto psc_val = gaps["psc"].iloc(i).as_double();
-    auto gap_pct = std::abs(gap_size / psc_val * 100);
+    // Gap size is already a percentage from gap_classify
+    auto gap_pct = std::abs(gaps["gap_size"].iloc(i).as_double());
     ARROW_UNUSED(gap_pct_builder.Append(gap_pct));
 
     // Check if filled using gap_filled column
@@ -1070,6 +1058,7 @@ Table GapReport::create_gap_details_table(const epoch_frame::DataFrame &gaps,
 
     // Derive close performance from close vs psc
     auto close_val = gaps[closeLiteral].iloc(i).as_double();
+    auto psc_val = gaps["psc"].iloc(i).as_double();
     auto performance_str = close_val > psc_val ? "green" : "red";
     ARROW_UNUSED(performance_builder.Append(performance_str));
   }

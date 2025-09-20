@@ -63,6 +63,15 @@ MakeScalarFromArrow(const std::shared_ptr<arrow::Array> &array, int64_t row) {
     // Convert ns timestamp to ms
     return ToProtoScalarValue(a->Value(row) / 1000000);
   }
+  case arrow::Type::DATE32: {
+    auto a = std::static_pointer_cast<arrow::Date32Array>(array);
+    // Date32 stores days since epoch (1970-01-01)
+    // Convert to seconds for date_value field (days * 86400)
+    int32_t days_since_epoch = a->Value(row);
+    epoch_proto::Scalar s;
+    s.set_date_value(static_cast<int64_t>(days_since_epoch) * 86400);
+    return s;
+  }
   default: {
     // Fallback: use ToString
     return ToProtoScalarValue(array->ToString());

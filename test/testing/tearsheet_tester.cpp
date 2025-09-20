@@ -69,7 +69,24 @@ bool TearSheetOutput::equals(const IOutputType& other) const {
         }
     }
 
-    return true; // For simplicity, we'll consider them equal if cards match
+    // Compare charts (basic count comparison for now)
+    // A more sophisticated implementation would compare chart content
+
+    // Compare tables (basic count and title comparison)
+    for (int i = 0; i < data.tables().tables_size(); ++i) {
+        const auto& table1 = data.tables().tables(i);
+        const auto& table2 = otherTearSheet.data.tables().tables(i);
+
+        if (table1.title() != table2.title()) {
+            return false;
+        }
+
+        if (table1.columns_size() != table2.columns_size()) {
+            return false;
+        }
+    }
+
+    return true; // Equal if all components match
 }
 
 std::string TearSheetOutput::toString() const {
@@ -95,6 +112,28 @@ std::string TearSheetOutput::toString() const {
             }
             ss << "\n";
         }
+    }
+
+    // Print chart titles
+    for (int i = 0; i < data.charts().charts_size(); ++i) {
+        const auto& chart = data.charts().charts(i);
+        ss << "  Chart " << i << ": ";
+        if (chart.has_bar_def()) {
+            ss << chart.bar_def().chart_def().title();
+        } else if (chart.has_histogram_def()) {
+            ss << chart.histogram_def().chart_def().title();
+        } else if (chart.has_pie_def()) {
+            ss << chart.pie_def().chart_def().title();
+        } else if (chart.has_lines_def()) {
+            ss << chart.lines_def().chart_def().title();
+        }
+        ss << "\n";
+    }
+
+    // Print table titles
+    for (int i = 0; i < data.tables().tables_size(); ++i) {
+        const auto& table = data.tables().tables(i);
+        ss << "  Table " << i << ": " << table.title() << "\n";
     }
 
     ss << "}";
@@ -149,8 +188,70 @@ std::unique_ptr<IOutputType> TearSheetOutput::fromYAML(const YAML::Node& node) {
         }
     }
 
-    // For charts and tables, we'll add basic parsing as needed
-    // This is a simplified implementation - you might want more sophisticated parsing
+    // Parse charts if present
+    if (node["charts"]) {
+        const auto& chartsNode = node["charts"];
+        auto* chartsCollection = output->data.mutable_charts();
+
+        for (const auto& chartNode : chartsNode) {
+            auto* chart = chartsCollection->add_charts();
+
+            // Determine chart type and parse accordingly
+            if (chartNode["type"]) {
+                std::string chartType = chartNode["type"].as<std::string>();
+
+                if (chartType == "bar") {
+                    auto* barDef = chart->mutable_bar_def();
+                    auto* chartDef = barDef->mutable_chart_def();
+                    if (chartNode["title"]) {
+                        chartDef->set_title(chartNode["title"].as<std::string>());
+                    }
+                } else if (chartType == "histogram") {
+                    auto* histDef = chart->mutable_histogram_def();
+                    auto* chartDef = histDef->mutable_chart_def();
+                    if (chartNode["title"]) {
+                        chartDef->set_title(chartNode["title"].as<std::string>());
+                    }
+                } else if (chartType == "pie") {
+                    auto* pieDef = chart->mutable_pie_def();
+                    auto* chartDef = pieDef->mutable_chart_def();
+                    if (chartNode["title"]) {
+                        chartDef->set_title(chartNode["title"].as<std::string>());
+                    }
+                } else if (chartType == "lines") {
+                    auto* linesDef = chart->mutable_lines_def();
+                    auto* chartDef = linesDef->mutable_chart_def();
+                    if (chartNode["title"]) {
+                        chartDef->set_title(chartNode["title"].as<std::string>());
+                    }
+                }
+            }
+        }
+    }
+
+    // Parse tables if present
+    if (node["tables"]) {
+        const auto& tablesNode = node["tables"];
+        auto* tablesCollection = output->data.mutable_tables();
+
+        for (const auto& tableNode : tablesNode) {
+            auto* table = tablesCollection->add_tables();
+
+            if (tableNode["title"]) {
+                table->set_title(tableNode["title"].as<std::string>());
+            }
+
+            // Parse columns if present
+            if (tableNode["columns"]) {
+                for (const auto& colNode : tableNode["columns"]) {
+                    auto* col = table->add_columns();
+                    if (colNode["name"]) {
+                        col->set_name(colNode["name"].as<std::string>());
+                    }
+                }
+            }
+        }
+    }
 
     return std::move(output);
 }

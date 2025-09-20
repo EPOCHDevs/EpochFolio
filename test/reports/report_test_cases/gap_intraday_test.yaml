@@ -42,11 +42,11 @@ tests:
       ]
 
       gap_size: [
-        0.015,  # Monday: 1.5% gap (as decimal)
+        1.5,    # Monday: 1.5% gap (as percentage)
         ~,      # Monday close
-        -0.0149,  # Tuesday: -1.49% gap (as decimal, negative for gap down)
+        1.49,   # Tuesday: 1.49% gap (as percentage, absolute value)
         ~,      # Tuesday close
-        0.0142, # Wednesday: 1.42% gap (as decimal)
+        1.42,   # Wednesday: 1.42% gap (as percentage)
         ~       # Wednesday close
       ]
 
@@ -80,7 +80,6 @@ tests:
 
     expect:
       type: "tearsheet"
-      skip_charts: true  # Don't validate charts for now
       cards:
         - data:
           - title: "Total Gaps"
@@ -95,47 +94,123 @@ tests:
           - title: "Fill Rate"
             value: 33  # 1 filled (Monday) out of 3
 
+      charts:
+        # Chart 1: Day of Week Bar Chart
+        - type: "bar"
+          title: "Gap Frequency by Day of Week"
+          x_axis:
+            type: "category"
+            categories: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+          data:
+            - name: "Gaps"
+              values: [1, 1, 1, 0, 0, 0, 0]  # 1 gap each on Mon, Tue, Wed
+
+        # Chart 2: Gap Size Distribution Histogram
+        - type: "histogram"
+          title: "Gap Size Distribution"
+          bins: 10
+          data:
+            - name: "Gap Sizes"
+              values: [1.5, 1.49, 1.42]  # The three gap sizes
+
+        # Chart 3: Fill Time Pie Chart
+        - type: "pie"
+          title: "Gap Fill Time Distribution"
+          data:
+            - name: "before 13:00"
+              value: 1  # Monday filled before 13:00
+            - name: "not filled"
+              value: 2  # Tuesday and Wednesday not filled
+
+        # Chart 4: Trend Line Chart
+        - type: "lines"
+          title: "Gap Frequency Trend (Monthly)"
+          data:
+            - name: "Gap Frequency"
+              points:
+                - x: "2024-01"
+                  y: 3  # All 3 gaps in January
+
       tables:
         # Table 1: Gap Up Fill Analysis
         - title: "Gap Up Fill Analysis"
-          data:
-            columns: ["Category", "Count", "Percentage"]
-            rows:
-              - ["Filled", 1, 50.0]  # 1 out of 2 gap ups filled
-              - ["Not Filled", 1, 50.0]  # 1 out of 2 gap ups not filled
+          type: "table"
+          columns:
+            - name: "Category"
+              type: "string"
+            - name: "Count"
+              type: "integer"
+            - name: "Percentage"
+              type: "percent"
+          rows:
+            - ["Filled", 1, 50.0]  # 1 out of 2 gap ups filled
+            - ["Not Filled", 1, 50.0]  # 1 out of 2 gap ups not filled
 
         # Table 2: Gap Down Fill Analysis
         - title: "Gap Down Fill Analysis"
-          data:
-            columns: ["Category", "Count", "Percentage"]
-            rows:
-              - ["Filled", 0, 0.0]  # 0 out of 1 gap down filled
-              - ["Not Filled", 1, 100.0]  # 1 out of 1 gap down not filled
+          type: "table"
+          columns:
+            - name: "Category"
+              type: "string"
+            - name: "Count"
+              type: "integer"
+            - name: "Percentage"
+              type: "percent"
+          rows:
+            - ["Filled", 0, 0.0]  # 0 out of 1 gap down filled
+            - ["Not Filled", 1, 100.0]  # 1 out of 1 gap down not filled
 
         # Table 3: Fill Time Frequency
         - title: "Gap Frequency by Time"
-          data:
-            columns: ["fill_time", "Count", "Percentage"]
-            rows:
-              - ["before 13:00", 1, 33.3333]  # Monday filled before 13:00
-              - ["not filled", 2, 66.6667]  # Tuesday and Wednesday not filled
+          type: "table"
+          columns:
+            - name: "Category"
+              type: "string"
+            - name: "Frequency"
+              type: "integer"
+            - name: "Percentage"
+              type: "percent"
+          rows:
+            - ["09:30", 3, 100.0]  # All gaps at market open
 
         # Table 4: Performance Analysis
         - title: "Gap Fill vs Close Performance"
-          data:
-            columns: ["close_performance", "Count", "Percentage"]
-            rows:
-              - ["green", 2, 66.6667]  # Monday and Wednesday closed green
-              - ["red", 1, 33.3333]  # Tuesday closed red
+          type: "table"
+          columns:
+            - name: "Category"
+              type: "string"
+            - name: "Frequency"
+              type: "integer"
+            - name: "Percentage"
+              type: "percent"
+          rows:
+            - ["green", 1, 33.33]  # Monday closed green (close > psc)
+            - ["red", 2, 66.67]    # Tuesday and Wednesday closed red
 
-        # Table 5: Comprehensive Gap Table
-        - title: "Gap Details"
-          data:
-            columns: ["date", "gap_size", "gap_type", "gap_filled", "weekday", "gap_category", "performance", "fill_time", "combined_gap"]
-            rows:
-              - ["2024-01-08", "1.50%", "gap up", "Yes", "Monday", "1.00-1.99%", "green", "before 13:00", "gap up filled"]
-              - ["2024-01-09", "-1.49%", "gap down", "No", "Tuesday", "1.00-1.99%", "red", "not filled", "gap down not filled"]
-              - ["2024-01-10", "1.42%", "gap up", "No", "Wednesday", "1.00-1.99%", "red", "not filled", "gap up not filled"]
+        # Table 5: Comprehensive Gap Table (matches actual output)
+        - title: "Comprehensive Gap Analysis"
+          type: "table"
+          columns:
+            - name: "date"
+              type: "date"
+            - name: "gap size"
+              type: "percent"
+            - name: "gap category"
+              type: "string"
+            - name: "gap type"
+              type: "string"
+            - name: "gap filled"
+              type: "string"
+            - name: "weekday"
+              type: "string"
+            - name: "performance"
+              type: "string"
+            - name: "gap fill time"
+              type: "string"
+          rows:
+            - ["2024-01-08", 1.50, "1.0-1.99%", "gap up", "filled", "Monday", "green", "before 13:00"]
+            - ["2024-01-09", 1.49, "1.0-1.99%", "gap down", "not filled", "Tuesday", "red", "not filled"]
+            - ["2024-01-10", 1.42, "1.0-1.99%", "gap up", "not filled", "Wednesday", "red", "not filled"]
 
     options:
       report_type: "gap_report"
