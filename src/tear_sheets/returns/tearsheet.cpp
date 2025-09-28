@@ -603,8 +603,8 @@ namespace epoch_folio::returns {
 
         epoch_proto::Band band;
         // Convert Date to timestamp in milliseconds
-        band.mutable_from()->set_timestamp_ms(row.peakDate.toordinal() * 1e3);
-        band.mutable_to()->set_timestamp_ms(recovery.toordinal() * 1e3);
+        band.mutable_from()->set_timestamp_ms(epoch_frame::DateTime{row.peakDate}.m_nanoseconds.count() / 1e6);
+        band.mutable_to()->set_timestamp_ms(epoch_frame::DateTime{recovery}.m_nanoseconds.count() / 1e6);
         builder.addXPlotBand(band);
       }
 
