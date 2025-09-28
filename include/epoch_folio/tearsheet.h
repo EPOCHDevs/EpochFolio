@@ -17,12 +17,12 @@ namespace epoch_folio {
 
 // TearSheet category constants
 namespace categories {
-constexpr const char *StrategyBenchmark = "StrategyBenchmark";
-constexpr const char *RiskAnalysis = "RiskAnalysis";
-constexpr const char *ReturnsDistribution = "ReturnsDistribution";
+constexpr const char *StrategyBenchmark = "Strategy Benchmark";
+constexpr const char *RiskAnalysis = "Risk Analysis";
+constexpr const char *ReturnsDistribution = "Returns Distribution";
 constexpr const char *Positions = "Positions";
 constexpr const char *Transactions = "Transactions";
-constexpr const char *RoundTrip = "RoundTrip";
+constexpr const char *RoundTrip = "Round Trip";
 } // namespace categories
 
 class PortfolioTearSheetFactory {
@@ -30,7 +30,7 @@ class PortfolioTearSheetFactory {
 public:
   explicit PortfolioTearSheetFactory(TearSheetDataOption const &options);
 
-  epoch_proto::FullTearSheet MakeTearSheet(TearSheetOption const &) const;
+  epoch_proto::TearSheet MakeTearSheet(TearSheetOption const &) const;
 
 private:
   epoch_frame::Series m_returns;
@@ -41,9 +41,6 @@ private:
   round_trip::TearSheetFactory m_roundTripFactory;
 };
 
-std::string write_protobuf(epoch_proto::FullTearSheet const &output);
-void write_protobuf(epoch_proto::FullTearSheet const &output,
-                    std::string const &file_path);
 std::string write_protobuf(epoch_proto::TearSheet const &output);
 void write_protobuf(epoch_proto::TearSheet const &output,
                     std::string const &file_path);

@@ -28,99 +28,90 @@ json_t to_json(const epoch_frame::Scalar &array) {
 }; // namespace glz
 
 namespace epoch_folio {
-PortfolioTearSheetFactory::PortfolioTearSheetFactory(
-    TearSheetDataOption const &options)
-    : m_returns(options.isEquity ? options.equity.pct_change()
-                                       .iloc({.start = 1})
-                                       .ffill()
-                                       .drop_null()
-                                 : options.equity),
-      m_positions(options.positions.assign("cash", options.cash)),
-      m_returnsFactory(options.positions, options.transactions, options.cash,
-                       m_returns, options.benchmark.value_or(epoch_frame::Series{})),
-      m_positionsFactory(options.cash, options.positions, m_returns,
-                         options.sectorMapping),
-      m_transactionsFactory(m_returns, m_positions, options.transactions),
-      m_roundTripFactory(options.roundTrip, m_returns, m_positions,
-                         options.sectorMapping) {}
+  PortfolioTearSheetFactory::PortfolioTearSheetFactory(
+      TearSheetDataOption const &options)
+      : m_returns(options.isEquity ? options.equity.pct_change()
+                                         .iloc({.start = 1})
+                                         .ffill()
+                                         .drop_null()
+                                   : options.equity),
+        m_positions(options.positions.assign("cash", options.cash)),
+        m_returnsFactory(options.positions, options.transactions, options.cash,
+                         m_returns, options.benchmark),
+        m_positionsFactory(options.cash, options.positions, m_returns,
+                           options.sectorMapping),
+        m_transactionsFactory(m_returns, m_positions, options.transactions),
+        m_roundTripFactory(options.roundTrip, m_returns, m_positions,
+                           options.sectorMapping) {}
 
-epoch_proto::FullTearSheet
-PortfolioTearSheetFactory::MakeTearSheet(TearSheetOption const &options) const {
-  epoch_proto::FullTearSheet tearSheet;
+  epoch_proto::TearSheet
+  PortfolioTearSheetFactory::MakeTearSheet(TearSheetOption const &options) const {
+    epoch_tearsheet::DashboardBuilder builder;
 
-  try {
-    m_returnsFactory.Make(options.turnoverDenominator, options.topKDrawDowns,
-                          tearSheet);
-  } catch (std::exception const &e) {
-    SPDLOG_ERROR("Failed to create returns tearsheet: {}", e.what());
+    try {
+      m_returnsFactory.Make(options.turnoverDenominator, options.topKDrawDowns,
+                            builder);
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create returns tearsheet: {}", e.what());
+    }
+
+    try {
+      m_positionsFactory.Make(options.topKPositions, builder);
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create positions tearsheet: {}", e.what());
+    }
+
+    try {
+      m_transactionsFactory.Make(options.turnoverDenominator,
+                                 options.transactionBinMinutes,
+                                 options.transactionTimezone, builder);
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create transactions tearsheet: {}", e.what());
+    }
+
+    try {
+      m_roundTripFactory.Make(builder);
+    } catch (std::exception const &e) {
+      SPDLOG_ERROR("Failed to create round trip tearsheet: {}", e.what());
+    }
+
+    return builder.build();
   }
 
-  try {
-    m_positionsFactory.Make(options.topKPositions, tearSheet);
-  } catch (std::exception const &e) {
-    SPDLOG_ERROR("Failed to create positions tearsheet: {}", e.what());
+  template <typename T> std::string write_protobuf_(const T &output) {
+    std::string binary_data;
+    if (!output.SerializeToString(&binary_data)) {
+      SPDLOG_ERROR("Failed to serialize protobuf message to binary");
+      return "";
+    }
+    return binary_data;
   }
 
-  try {
-    m_transactionsFactory.Make(options.turnoverDenominator,
-                               options.transactionBinMinutes,
-                               options.transactionTimezone, tearSheet);
-  } catch (std::exception const &e) {
-    SPDLOG_ERROR("Failed to create transactions tearsheet: {}", e.what());
+  template <typename T>
+  void write_protobuf_(const T &output, std::string const &file_path) {
+    std::string binary_data;
+    if (!output.SerializeToString(&binary_data)) {
+      SPDLOG_ERROR("Failed to serialize protobuf message to binary");
+      return;
+    }
+
+    std::ofstream file(file_path, std::ios::binary);
+    if (!file.is_open()) {
+      SPDLOG_ERROR("Failed to open file for writing: {}", file_path);
+      return;
+    }
+
+    file.write(binary_data.data(), binary_data.size());
+    file.close();
+    SPDLOG_INFO("Successfully wrote protobuf data to: {}", file_path);
   }
 
-  try {
-    m_roundTripFactory.Make(tearSheet);
-  } catch (std::exception const &e) {
-    SPDLOG_ERROR("Failed to create round trip tearsheet: {}", e.what());
+  std::string write_protobuf(epoch_proto::TearSheet const &output) {
+    return write_protobuf_(output);
   }
 
-  return tearSheet;
-}
-
-template <typename T> std::string write_protobuf_(const T &output) {
-  std::string binary_data;
-  if (!output.SerializeToString(&binary_data)) {
-    SPDLOG_ERROR("Failed to serialize protobuf message to binary");
-    return "";
+  void write_protobuf(epoch_proto::TearSheet const &output,
+                      std::string const &file_path) {
+    write_protobuf_(output, file_path);
   }
-  return binary_data;
-}
-
-template <typename T>
-void write_protobuf_(const T &output, std::string const &file_path) {
-  std::string binary_data;
-  if (!output.SerializeToString(&binary_data)) {
-    SPDLOG_ERROR("Failed to serialize protobuf message to binary");
-    return;
-  }
-
-  std::ofstream file(file_path, std::ios::binary);
-  if (!file.is_open()) {
-    SPDLOG_ERROR("Failed to open file for writing: {}", file_path);
-    return;
-  }
-
-  file.write(binary_data.data(), binary_data.size());
-  file.close();
-  SPDLOG_INFO("Successfully wrote protobuf data to: {}", file_path);
-}
-
-std::string write_protobuf(epoch_proto::TearSheet const &output) {
-  return write_protobuf_(output);
-}
-
-void write_protobuf(epoch_proto::TearSheet const &output,
-                    std::string const &file_path) {
-  write_protobuf_(output, file_path);
-}
-
-std::string write_protobuf(epoch_proto::FullTearSheet const &output) {
-  return write_protobuf_(output);
-}
-
-void write_protobuf(epoch_proto::FullTearSheet const &output,
-                    std::string const &file_path) {
-  write_protobuf_(output, file_path);
-}
 } // namespace epoch_folio

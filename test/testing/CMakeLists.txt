@@ -1,1 +1,0 @@
-target_sources(epoch_folio_test PRIVATE tearsheet_tester.cpp)

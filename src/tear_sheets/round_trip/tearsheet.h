@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "common/chart_def.h"
+#include "epoch_dashboard/tearsheet/dashboard_builders.h"
 #include "epoch_frame/dataframe.h"
 #include "portfolio/model.h"
 #include <epoch_protos/tearsheet.pb.h>
@@ -16,7 +16,7 @@ public:
                    epoch_frame::DataFrame positions,
                    SectorMapping sector_mapping);
 
-  void Make(epoch_proto::FullTearSheet &output) const;
+  void Make(epoch_tearsheet::DashboardBuilder &output) const;
 
 private:
   epoch_frame::DataFrame m_round_trip;
@@ -26,18 +26,21 @@ private:
 
   epoch_frame::DataFrame ExtractRoundTrips() const;
 
-  XRangeDef MakeXRangeDef(epoch_frame::DataFrame const &trades) const;
+  epoch_proto::Chart MakeXRangeDef(epoch_frame::DataFrame const &trades) const;
 
-  LinesDef MakeProbProfitChart(epoch_frame::DataFrame const &trades) const;
+  epoch_proto::Chart
+  MakeProbProfitChart(epoch_frame::DataFrame const &trades) const;
 
-  HistogramDef MakeHoldingTimeChart(epoch_frame::DataFrame const &trades) const;
+  epoch_proto::Chart
+  MakeHoldingTimeChart(epoch_frame::DataFrame const &trades) const;
 
-  HistogramDef
+  epoch_proto::Chart
   MakePnlPerRoundTripDollarsChart(epoch_frame::DataFrame const &trades) const;
 
-  HistogramDef MakeReturnsPerRoundTripDollarsChart(
+  epoch_proto::Chart MakeReturnsPerRoundTripDollarsChart(
       epoch_frame::DataFrame const &trades) const;
 
-  PieDef MakeProfitabilityPieChart(epoch_frame::DataFrame const &trades) const;
+  epoch_proto::Chart
+  MakeProfitabilityPieChart(epoch_frame::DataFrame const &trades) const;
 };
 } // namespace epoch_folio::round_trip

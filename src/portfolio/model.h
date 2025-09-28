@@ -128,8 +128,4 @@ struct TearSheetOption {
   size_t transactionBinMinutes{5};
   std::string transactionTimezone{"America/New_York"};
 };
-
-using BoxPlotOutliers = std::vector<epoch_proto::BoxPlotOutlier>;
-std::pair<epoch_proto::BoxPlotDataPoint, BoxPlotOutliers>
-MakeBoxPlotDataPoint(int64_t category_index, const epoch_frame::Series &x);
 } // namespace epoch_folio

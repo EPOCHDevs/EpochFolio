@@ -94,7 +94,6 @@ target_include_directories(epoch_folio
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/src
-        ${PROJECT_SOURCE_DIR}/thirdparty/epoch_protos/include
     PRIVATE
         ${PROJECT_SOURCE_DIR}/src
 )
@@ -102,11 +101,10 @@ target_include_directories(epoch_folio
 target_compile_options(epoch_folio PRIVATE -Wall -Wextra -Werror)
 
 # Add subdirectories before linking
-add_subdirectory(thirdparty/epoch_protos)
 add_subdirectory(src)
 
 find_package(Protobuf REQUIRED)
-target_link_libraries(epoch_folio PUBLIC epoch::metadata ${PROJECT_SOURCE_DIR}/thirdparty/epoch_protos/lib/libepoch_protos_cpp.a protobuf::libprotobuf)
+target_link_libraries(epoch_folio PUBLIC epoch::metadata)
 
 if (BUILD_TEST)
   add_subdirectory(test)

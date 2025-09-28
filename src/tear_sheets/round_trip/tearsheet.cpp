@@ -6,8 +6,6 @@
 #include "epoch_folio/tearsheet.h"
 #include <arrow/acero/exec_plan.h>
 #include <arrow/acero/options.h>
-#include <common/chart_def.h>
-#include <common/table_helpers.h>
 #include <epoch_core/common_utils.h>
 #include <oneapi/tbb/parallel_for.h>
 
@@ -54,32 +52,23 @@ TearSheetFactory::TearSheetFactory(epoch_frame::DataFrame round_trip,
       m_positions(std::move(positions)),
       m_sector_mapping(std::move(sector_mapping)) {}
 
-XRangeDef
+epoch_proto::Chart
 TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
   // round_trip_lifetimes
   auto symbol_series = trades["symbol"];
-  XRangeDef xrange;
 
-  // Set up chart definition
-  auto *chart_def = xrange.mutable_chart_def();
-  chart_def->set_id("xrange");
-  chart_def->set_title("Round trip lifetimes");
-  chart_def->set_type(epoch_proto::WidgetXRange);
-  chart_def->set_category(epoch_folio::categories::RoundTrip);
-
-  // Set up y-axis
-  auto *y_axis = chart_def->mutable_y_axis();
-  y_axis->set_type(epoch_proto::AxisCategory);
-  y_axis->set_label("Asset");
+  epoch_tearsheet::XRangeChartBuilder builder;
+  builder.setId("xrange")
+      .setTitle("Round trip lifetimes")
+      .setCategory(epoch_folio::categories::RoundTrip)
+      .setYAxisType(epoch_proto::AxisCategory)
+      .setYAxisLabel("Asset");
 
   // Set categories and prepare for parallel processing
   auto categories = Array{symbol_series.unique()}.to_vector<std::string>();
   for (const auto &cat : categories) {
-    xrange.add_categories(cat);
+    builder.addYCategory(cat);
   }
-
-  // Pre-allocate points vector for the parallel processing
-  std::vector<XRangePoint> points_vec(trades.num_rows());
 
   auto date_range =
       trades[std::vector<std::string>{"open_dt", "close_dt", "long"}];
@@ -96,54 +85,40 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
                              close_dt_type->ToString());
   }
 
-  tbb::parallel_for(
-      tbb::blocked_range<size_t>(0, categories.size()), [&](auto const &range) {
-        for (auto i = range.begin(); i != range.end(); ++i) {
-          auto symbol = Scalar{categories[i]};
-          auto trades_in_sector = date_range.loc(symbol_series == symbol);
-          for (int64_t j = 0;
-               j < static_cast<int64_t>(trades_in_sector.num_rows()); ++j) {
-            auto open_dt = trades_in_sector["open_dt"].iloc(j);
-            auto close_dt = trades_in_sector["close_dt"].iloc(j);
-            auto long_ = trades_in_sector["long"].iloc(j);
-            auto index = trades_in_sector.index()->at(j);
-
-            XRangePoint point;
-            // Convert timestamps to ms (we know they are timestamps from the
-            // check above)
-            auto open_ts = std::static_pointer_cast<arrow::TimestampScalar>(
-                open_dt.value());
-            auto close_ts = std::static_pointer_cast<arrow::TimestampScalar>(
-                close_dt.value());
-            point.set_x(open_ts->value / 1000000);   // Convert ns to ms
-            point.set_x2(close_ts->value / 1000000); // Convert ns to ms
-            point.set_y(i);
-            point.set_is_long(long_.as_bool());
-            points_vec[index.value<uint64_t>().value()] = std::move(point);
-          }
-        }
-      });
-
-  // Add points to the xrange
-  for (auto &point : points_vec) {
-    *xrange.add_points() = std::move(point);
+  // Process sequentially to avoid thread safety issues with builder
+  for (size_t i = 0; i < categories.size(); ++i) {
+    auto symbol = Scalar{categories[i]};
+    auto trades_in_sector = date_range.loc(symbol_series == symbol);
+    for (int64_t j = 0;
+         j < static_cast<int64_t>(trades_in_sector.num_rows()); ++j) {
+      auto open_dt = trades_in_sector["open_dt"].iloc(j);
+      auto close_dt = trades_in_sector["close_dt"].iloc(j);
+      auto long_ = trades_in_sector["long"].iloc(j);
+      // Convert timestamps to ms (we know they are timestamps from the
+      // check above)
+      auto open_ts = std::static_pointer_cast<arrow::TimestampScalar>(
+          open_dt.value());
+      auto close_ts = std::static_pointer_cast<arrow::TimestampScalar>(
+          close_dt.value());
+      builder.addPoint(open_ts->value / 1000000,  // Convert ns to ms
+                       close_ts->value / 1000000, // Convert ns to ms
+                       i, long_.as_bool());
+    }
   }
 
-  return xrange;
+  return builder.build();
 }
 
-LinesDef TearSheetFactory::MakeProbProfitChart(
+epoch_proto::Chart TearSheetFactory::MakeProbProfitChart(
     epoch_frame::DataFrame const &trades) const {
-  LinesDef prob_profit_chart;
-
-  // Set up chart definition
-  auto *chart_def = prob_profit_chart.mutable_chart_def();
-  chart_def->set_id("prob_profit_trade");
-  chart_def->set_title("Probability of making a profitable decision");
-  chart_def->set_type(epoch_proto::WidgetLines);
-  chart_def->set_category(epoch_folio::categories::RoundTrip);
-  *chart_def->mutable_y_axis() = MakeLinearAxis("Belief");
-  *chart_def->mutable_x_axis() = MakeLinearAxis("Probability");
+  epoch_tearsheet::LinesChartBuilder builder;
+  builder.setId("prob_profit_trade")
+      .setTitle("Probability of making a profitable decision")
+      .setCategory(epoch_folio::categories::RoundTrip)
+      .setYAxisLabel("Belief")
+      .setXAxisLabel("Probability")
+      .setXAxisType(epoch_proto::AxisLinear)
+      .setYAxisType(epoch_proto::AxisLinear);
 
   constexpr double kMaxPoints = 500;
   auto x = linspace(0.0, 1.0, kMaxPoints);
@@ -153,7 +128,7 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
   const auto beta = (!profitable).sum().cast_double().as_double();
   if (alpha == 0.0 || beta == 0.0) {
     SPDLOG_WARN("No profitable trades found, skipping prob profit chart");
-    return prob_profit_chart;
+    return builder.build();
   }
 
   const boost::math::beta_distribution dist(alpha, beta);
@@ -166,156 +141,114 @@ LinesDef TearSheetFactory::MakeProbProfitChart(
                    return y_;
                  });
 
-  *prob_profit_chart.add_lines() = MakeSeriesLine(x, y, "Probability");
+  epoch_tearsheet::LineBuilder line_builder;
+  for (size_t i = 0; i < x.size(); ++i) {
+    line_builder.addPoint(static_cast<int64_t>(x[i]), y[i]);
+  }
+  line_builder.setName("Probability");
+  builder.addLine(line_builder.build());
 
-  auto *straight_line1 = prob_profit_chart.add_straight_lines();
-  straight_line1->set_title("2.5%");
-  straight_line1->set_value(quantile(dist, 0.025) * 100.0);
-  straight_line1->set_vertical(true);
+  epoch_proto::StraightLineDef straight_line1;
+  straight_line1.set_title("2.5%");
+  straight_line1.set_value(quantile(dist, 0.025) * 100.0);
+  straight_line1.set_vertical(true);
+  builder.addStraightLine(straight_line1);
 
-  auto *straight_line2 = prob_profit_chart.add_straight_lines();
-  straight_line2->set_title("97.5%");
-  straight_line2->set_value(quantile(dist, 0.975) * 100.0);
-  straight_line2->set_vertical(true);
+  epoch_proto::StraightLineDef straight_line2;
+  straight_line2.set_title("97.5%");
+  straight_line2.set_value(quantile(dist, 0.975) * 100.0);
+  straight_line2.set_vertical(true);
+  builder.addStraightLine(straight_line2);
 
-  return prob_profit_chart;
+  return builder.build();
 }
 
-HistogramDef TearSheetFactory::MakeHoldingTimeChart(
+epoch_proto::Chart TearSheetFactory::MakeHoldingTimeChart(
     epoch_frame::DataFrame const &trades) const {
-  HistogramDef histogram_def;
+  // Convert duration from nanoseconds to days
+  auto data_series = trades["duration"] / Scalar{86400000000000}; // nanoseconds per day
 
-  // Set up chart definition
-  auto *chart_def = histogram_def.mutable_chart_def();
-  chart_def->set_id("holding_time");
-  chart_def->set_title("Holding time in days");
-  chart_def->set_type(epoch_proto::WidgetHistogram);
-  chart_def->set_category(epoch_folio::categories::RoundTrip);
-
-  // Set data
-  auto data_series = trades["duration"]
-                         .cast(arrow::timestamp(arrow::TimeUnit::NANO))
-                         .dt()
-                         .floor(arrow::compute::RoundTemporalOptions{})
-                         .cast(arrow::int64());
-  *histogram_def.mutable_data() =
-      MakeArrayFromArrow(data_series.as_chunked_array());
-
-  return histogram_def;
+  return epoch_tearsheet::HistogramChartBuilder()
+      .setId("holding_time")
+      .setTitle("Holding time in days")
+      .setCategory(epoch_folio::categories::RoundTrip)
+      .fromSeries(data_series.cast(arrow::int64()))
+      .build();
 }
 
-HistogramDef TearSheetFactory::MakePnlPerRoundTripDollarsChart(
+epoch_proto::Chart TearSheetFactory::MakePnlPerRoundTripDollarsChart(
     epoch_frame::DataFrame const &trades) const {
-  HistogramDef histogram_def;
-
-  // Set up chart definition
-  auto *chart_def = histogram_def.mutable_chart_def();
-  chart_def->set_id("pnl_per_round_trip");
-  chart_def->set_title("PnL per round trip in dollars");
-  chart_def->set_type(epoch_proto::WidgetHistogram);
-  chart_def->set_category(epoch_folio::categories::RoundTrip);
-
-  // Set data
-  *histogram_def.mutable_data() = MakeArrayFromArrow(trades["pnl"].array());
-
-  return histogram_def;
+  return epoch_tearsheet::HistogramChartBuilder()
+      .setId("pnl_per_round_trip")
+      .setTitle("PnL per round trip in dollars")
+      .setCategory(epoch_folio::categories::RoundTrip)
+      .fromSeries(trades["pnl"])
+      .build();
 }
 
-HistogramDef TearSheetFactory::MakeReturnsPerRoundTripDollarsChart(
+epoch_proto::Chart TearSheetFactory::MakeReturnsPerRoundTripDollarsChart(
     epoch_frame::DataFrame const &trades) const {
-  HistogramDef histogram_def;
-
-  // Set up chart definition
-  auto *chart_def = histogram_def.mutable_chart_def();
-  chart_def->set_id("returns_per_round_trip");
-  chart_def->set_title("Returns per round trip in dollars");
-  chart_def->set_type(epoch_proto::WidgetHistogram);
-  chart_def->set_category(epoch_folio::categories::RoundTrip);
-
-  // Set data
-  *histogram_def.mutable_data() =
-      MakeArrayFromArrow((trades["returns"] * Scalar{100.0}).array());
-
-  return histogram_def;
+  return epoch_tearsheet::HistogramChartBuilder()
+      .setId("returns_per_round_trip")
+      .setTitle("Returns per round trip in dollars")
+      .setCategory(epoch_folio::categories::RoundTrip)
+      .fromSeries(trades["returns"] * Scalar{100.0})
+      .build();
 }
 
-void TearSheetFactory::Make(epoch_proto::FullTearSheet &output) const {
+void TearSheetFactory::Make(epoch_tearsheet::DashboardBuilder &output) const {
   try {
     auto trades = ExtractRoundTrips();
-
     if (trades.num_rows() == 0) {
       SPDLOG_WARN("No trades found, skipping round trip tear sheet");
       return;
     }
 
-    std::vector<Table> tables;
     try {
-      tables = GetRoundTripStats(trades);
+      for (auto const &table : GetRoundTripStats(trades)) {
+        output.addTable(table);
+      }
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to get round trip stats: {}", e.what());
     }
 
-    std::vector<Chart> charts;
-
     try {
-      Chart chart;
-      *chart.mutable_pie_def() = MakeProfitabilityPieChart(trades);
-      charts.push_back(std::move(chart));
+      output.addChart(MakeProfitabilityPieChart(trades));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create profitability pie chart: {}", e.what());
     }
 
     try {
-      Chart chart;
-      *chart.mutable_x_range_def() = MakeXRangeDef(trades);
-      charts.push_back(std::move(chart));
+      output.addChart(MakeXRangeDef(trades));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create x-range chart: {}", e.what());
     }
 
     try {
-      Chart chart;
-      *chart.mutable_lines_def() = MakeProbProfitChart(trades);
-      charts.push_back(std::move(chart));
+      output.addChart(MakeProbProfitChart(trades));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create probability profit chart: {}", e.what());
     }
 
     try {
-      Chart chart;
-      *chart.mutable_histogram_def() = MakeHoldingTimeChart(trades);
-      charts.push_back(std::move(chart));
+      output.addChart(MakeHoldingTimeChart(trades));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create holding time chart: {}", e.what());
     }
 
     try {
-      Chart chart;
-      *chart.mutable_histogram_def() = MakePnlPerRoundTripDollarsChart(trades);
-      charts.push_back(std::move(chart));
+      output.addChart(MakePnlPerRoundTripDollarsChart(trades));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create PnL per round trip chart: {}", e.what());
     }
 
     try {
-      Chart chart;
-      *chart.mutable_histogram_def() =
-          MakeReturnsPerRoundTripDollarsChart(trades);
-      charts.push_back(std::move(chart));
+      output.addChart(MakeReturnsPerRoundTripDollarsChart(trades));
     } catch (std::exception const &e) {
       SPDLOG_ERROR("Failed to create returns per round trip chart: {}",
                    e.what());
     }
 
-    epoch_proto::TearSheet tear_sheet;
-    for (auto &chart : charts) {
-      *tear_sheet.mutable_charts()->add_charts() = std::move(chart);
-    }
-    for (auto &table : tables) {
-      *tear_sheet.mutable_tables()->add_tables() = std::move(table);
-    }
-    (*output.mutable_categories())[epoch_folio::categories::RoundTrip] =
-        std::move(tear_sheet);
   } catch (std::exception const &e) {
     SPDLOG_ERROR("Failed to create round trip tearsheet: {}", e.what());
   }
@@ -380,7 +313,7 @@ DataFrame TearSheetFactory::ExtractRoundTrips() const {
   return make_dataframe(tmp);
 }
 
-PieDef TearSheetFactory::MakeProfitabilityPieChart(
+epoch_proto::Chart TearSheetFactory::MakeProfitabilityPieChart(
     epoch_frame::DataFrame const &trades) const {
   DataFrame profit_attribution = GetProfitAttribution(trades);
 
@@ -396,23 +329,38 @@ PieDef TearSheetFactory::MakeProfitabilityPieChart(
   auto profit_attr = profit_attribution.to_series();
 
   // Use the builder pattern for cleaner construction
-  return PieChartBuilder({
-      .id = "profitability_pie",
-      .title = "Profitability (PnL / PnL total)",
-      .category = epoch_folio::categories::RoundTrip
-  })
-  .addDataSeries({
-      .name = "Asset",
-      .size = "80%",
-      .inner_size = "60%"
-  })
-  .addFromSeries(profit_attr, 100.0)  // Multiply by 100 for percentage
-  .addDataSeries({
-      .name = "Sector",
-      .size = "45%",
-      .inner_size = "0%"  // No inner size for outer ring
-  })
-  .addFromSeries(sector_profit_attr, 100.0)
-  .build();
+  epoch_tearsheet::PieChartBuilder builder;
+  builder.setId("profitability_pie")
+      .setTitle("Profitability (PnL / PnL total)")
+      .setCategory(epoch_folio::categories::RoundTrip);
+
+  // Create pie data from the profit attribution series
+  std::vector<epoch_proto::PieData> asset_data;
+  for (int64_t i = 0; i < static_cast<int64_t>(profit_attr.size()); ++i) {
+    epoch_proto::PieData data;
+    data.set_name(profit_attr.index()->at(i).repr());
+    data.set_y(profit_attr.iloc(i).cast_double().as_double() * 100.0);
+    asset_data.push_back(std::move(data));
+  }
+
+  // Add asset series (outer ring)
+  builder.addSeries("Asset", asset_data, epoch_tearsheet::PieSize{80},
+                    epoch_tearsheet::PieInnerSize{60});
+
+  // Create pie data from the sector attribution series
+  std::vector<epoch_proto::PieData> sector_data;
+  for (int64_t i = 0; i < static_cast<int64_t>(sector_profit_attr.size()); ++i) {
+    epoch_proto::PieData data;
+    data.set_name(sector_profit_attr.index()->at(i).repr());
+    data.set_y(sector_profit_attr.iloc(i).cast_double().as_double() *
+                   100.0);
+    sector_data.push_back(std::move(data));
+  }
+
+  // Add sector series (inner ring)
+  builder.addSeries("Sector", sector_data, epoch_tearsheet::PieSize{45},
+                    epoch_tearsheet::PieInnerSize{0});
+
+  return builder.build();
 }
 } // namespace epoch_folio::round_trip

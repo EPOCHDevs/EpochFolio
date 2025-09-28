@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "common/chart_def.h"
+#include "epoch_dashboard/tearsheet/dashboard_builders.h"
 #include "epoch_frame/dataframe.h"
 #include "portfolio/model.h"
 #include <epoch_protos/tearsheet.pb.h>
@@ -15,7 +15,7 @@ public:
                    epoch_frame::Series returns,
                    std::unordered_map<std::string, std::string> sectorMappings);
 
-  void Make(uint32_t k, epoch_proto::FullTearSheet &) const;
+  void Make(uint32_t k, epoch_tearsheet::DashboardBuilder &output) const;
 
 protected:
   TearSheetFactory() = default;
@@ -40,20 +40,20 @@ private:
   epoch_frame::Series m_strategy;
   std::unordered_map<std::string, std::string> m_sectorMappings;
 
-  epoch_proto::LinesDef
+  epoch_proto::Chart
   MakeExposureOverTimeChart(epoch_frame::DataFrame const &positions,
                             epoch_frame::DataFrame const &isLong,
                             epoch_frame::DataFrame const &isShort) const;
-  epoch_proto::LinesDef MakeAllocationOverTimeChart(
+  epoch_proto::Chart MakeAllocationOverTimeChart(
       epoch_frame::DataFrame const &topPositionAllocations) const;
-  epoch_proto::LinesDef
+  epoch_proto::Chart
   MakeAllocationSummaryChart(epoch_frame::DataFrame const &positions) const;
-  epoch_proto::LinesDef
+  epoch_proto::Chart
   MakeTotalHoldingsChart(epoch_frame::DataFrame const &positions) const;
-  epoch_proto::LinesDef
+  epoch_proto::Chart
   MakeLongShortHoldingsChart(epoch_frame::DataFrame const &isLong,
                              epoch_frame::DataFrame const &isShort) const;
-  epoch_proto::LinesDef MakeGrossLeverageChart() const;
-  epoch_proto::LinesDef MakeSectorExposureChart() const;
+  epoch_proto::Chart MakeGrossLeverageChart() const;
+  epoch_proto::Chart MakeSectorExposureChart() const;
 };
 } // namespace epoch_folio::positions

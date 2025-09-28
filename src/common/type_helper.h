@@ -1,7 +1,6 @@
+#pragma once
 #include <string>
-#include <vector>
 
-#include <arrow/api.h>
 
 namespace epoch_folio {
 constexpr auto string_field = [](std::string const &s) {

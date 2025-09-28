@@ -3,7 +3,6 @@
 //
 
 #include "round_trip.h"
-#include "common/chart_def.h"
 #include "common/type_helper.h"
 #include "epoch_protos/common.pb.h"
 #include <epoch_frame/factory/dataframe_factory.h>
@@ -11,10 +10,11 @@
 #include <epoch_frame/factory/series_factory.h>
 #include <epoch_frame/factory/table_factory.h>
 #include <oneapi/tbb/parallel_for.h>
+#include "epoch_dashboard/tearsheet/table_builder.h"
+#include "epoch_folio/tearsheet.h"
 
 using namespace epoch_frame;
 
-#include "common/table_helpers.h"
 
 namespace epoch_folio {
 using AggList = std::vector<
@@ -110,48 +110,57 @@ epoch_proto::Table GetSymbolsTable(epoch_frame::DataFrame const &round_trip,
   auto groups = round_trip[std::vector<std::string>{"returns", "symbol"}]
                     .group_by_apply("symbol")
                     .groups();
-  epoch_proto::Table result_table;
+
+  epoch_tearsheet::TableBuilder builder;
+  builder.setType(epoch_proto::WidgetDataTable)
+      .setCategory(categories::RoundTrip)
+      .setTitle("Returns by Symbol");
+
+  // Add key column
+  builder.addColumn("key", "Stats", epoch_proto::TypeString);
 
   std::vector<FrameOrSeries> frames;
-
-  epoch_proto::ColumnDef key_col;
-  key_col.set_id("key");
-  key_col.set_name("Stats");
-  key_col.set_type(epoch_proto::TypeString);
-  result_table.add_columns()->CopyFrom(std::move(key_col));
-
   frames.reserve(groups.size());
-  result_table.mutable_columns()->Reserve(groups.size() + 1);
 
   auto returns = round_trip["returns"];
   for (auto const &[symbol, indexes] : groups) {
     auto symbol_name = symbol.repr();
     frames.emplace_back(
         apply_symbol(symbol_name, returns.iloc(Array{indexes})));
-    epoch_proto::ColumnDef symbol_col;
-    symbol_col.set_id(symbol_name);
-    symbol_col.set_name(symbol_name);
-    symbol_col.set_type(epoch_proto::TypePercent);
-    result_table.add_columns()->CopyFrom(std::move(symbol_col));
+    builder.addColumn(symbol_name, symbol_name, epoch_proto::TypePercent);
   }
-  arrow::TablePtr table;
+
   if (!frames.empty()) {
-    table = concat({.frames = frames, .axis = AxisType::Column})
-                .reset_index("key")
-                .table();
+    auto table = concat({.frames = frames, .axis = AxisType::Column})
+                     .reset_index("key");
+
+    // Build data incrementally using addRow
+    // Process columns in the same order they were added to the builder
+    std::vector<std::string> ordered_columns;
+    ordered_columns.reserve(table.column_names().size());
+    ordered_columns.push_back("key"); // First column added
+
+    // Add symbol columns in the same order they were added to the builder
+    for (auto const &[symbol, indexes] : groups) {
+      ordered_columns.push_back(symbol.repr());
+    }
+
+    for (int64_t i = 0; i < static_cast<int64_t>(table.num_rows()); ++i) {
+      epoch_proto::TableRow row;
+      for (const auto& col_name : ordered_columns) {
+        auto scalar = table[col_name].iloc(i);
+        if (col_name == "key") {
+          *row.add_values() = epoch_tearsheet::ScalarFactory::create(scalar);
+        } else {
+          // Percentage columns are already scaled by apply_symbol (lines 97,99 multiply by 100_scalar)
+          *row.add_values() = epoch_tearsheet::ScalarFactory::fromPercentValue(scalar.cast_double().as_double());
+        }
+      }
+      builder.addRow(row);
+    }
   }
 
-  result_table.set_type(epoch_proto::WidgetDataTable);
-  result_table.set_category("RoundTrip");
-  result_table.set_title("Returns by Symbol");
-
-  // Set data
-  if (table) {
-    auto table_data = MakeTableDataFromArrow(table);
-    *result_table.mutable_data() = std::move(table_data);
-  }
-
-  return result_table;
+  return builder.build();
 }
 
 std::vector<epoch_proto::Table>
@@ -252,18 +261,47 @@ GetRoundTripStats(epoch_frame::DataFrame const &round_trip) {
           const std::vector<std::pair<std::string, epoch_proto::EpochFolioType>>
               &cols,
           const std::shared_ptr<arrow::Table> &data) {
-        epoch_proto::Table t;
-        t.set_type(epoch_proto::WidgetDataTable);
-        t.set_category("RoundTrip");
-        t.set_title(title);
+        epoch_tearsheet::TableBuilder builder;
+        builder.setType(epoch_proto::WidgetDataTable)
+            .setCategory(categories::RoundTrip)
+            .setTitle(title);
+
         for (auto const &c : cols) {
-          epoch_proto::ColumnDef cd;
-          cd.set_name(c.first);
-          cd.set_type(c.second);
-          *t.add_columns() = std::move(cd);
+          builder.addColumn(c.first, c.first, c.second);
         }
-        *t.mutable_data() = MakeTableDataFromArrow(data);
-        return t;
+
+        if (data) {
+          auto df = make_dataframe(data);
+
+          // Build data incrementally using addRow
+          for (int64_t i = 0; i < static_cast<int64_t>(df.num_rows()); ++i) {
+            epoch_proto::TableRow row;
+            for (size_t j = 0; j < cols.size(); ++j) {
+              auto scalar = df[cols[j].first].iloc(i);
+
+              switch (cols[j].second) {
+                case epoch_proto::TypeString:
+                  *row.add_values() = epoch_tearsheet::ScalarFactory::create(scalar);
+                  break;
+                case epoch_proto::TypePercent:
+                  // Check if data is already scaled by looking at the calling context
+                  *row.add_values() = epoch_tearsheet::ScalarFactory::fromPercentValue(scalar.cast_double().as_double());
+                  break;
+                case epoch_proto::TypeDuration:
+                  // Convert from nanoseconds to milliseconds
+                  *row.add_values() = epoch_tearsheet::ScalarFactory::fromDurationMs(static_cast<int64_t>(scalar.cast_double().as_double() / 1000000.0));
+                  break;
+                case epoch_proto::TypeDecimal:
+                default:
+                  *row.add_values() = epoch_tearsheet::ScalarFactory::fromDecimal(scalar.cast_double().as_double());
+                  break;
+              }
+            }
+            builder.addRow(row);
+          }
+        }
+
+        return builder.build();
       };
 
   std::vector<epoch_proto::Table> out;
@@ -285,9 +323,9 @@ GetRoundTripStats(epoch_frame::DataFrame const &round_trip) {
 
   out.emplace_back(make_table("Duration Analysis",
                               {{"key", epoch_proto::TypeString},
-                               {"all_trades", epoch_proto::TypeDayDuration},
-                               {"long_trades", epoch_proto::TypeDayDuration},
-                               {"short_trades", epoch_proto::TypeDayDuration}},
+                               {"all_trades", epoch_proto::TypeDuration},
+                               {"long_trades", epoch_proto::TypeDuration},
+                               {"short_trades", epoch_proto::TypeDuration}},
                               duration));
 
   out.emplace_back(make_table("Return Analysis",

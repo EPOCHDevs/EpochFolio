@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "common/chart_def.h"
+#include "epoch_dashboard/tearsheet/dashboard_builders.h"
 #include "epoch_frame/dataframe.h"
 #include "portfolio/model.h"
 #include <epoch_protos/tearsheet.pb.h>
@@ -18,19 +18,20 @@ public:
 
   void Make(epoch_core::TurnoverDenominator turnoverDenominator, size_t binSize,
             std::string const &timezone,
-            epoch_proto::FullTearSheet &output) const;
+            epoch_tearsheet::DashboardBuilder &output) const;
 
 private:
   epoch_frame::Series m_returns;
   epoch_frame::DataFrame m_positions;
   epoch_frame::DataFrame m_transactions;
 
-  epoch_proto::LinesDef
+  epoch_proto::Chart
   MakeTurnoverOverTimeChart(epoch_frame::Series const &dfTurnover) const;
-  epoch_proto::LinesDef MakeDailyVolumeChart() const;
-  epoch_proto::HistogramDef
+  epoch_proto::Chart MakeDailyVolumeChart() const;
+  epoch_proto::Chart
   MakeDailyTurnoverHistogram(epoch_frame::Series const &dfTurnover) const;
-  BarDef MakeTransactionTimeHistogram(size_t binSize,
-                                      std::string const &timezone) const;
+  epoch_proto::Chart
+  MakeTransactionTimeHistogram(size_t binSize,
+                               std::string const &timezone) const;
 };
 } // namespace epoch_folio::txn

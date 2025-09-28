@@ -1,1 +1,0 @@
-target_sources(epoch_folio PRIVATE card_helpers.cpp chart_def.cpp table_helpers.cpp)
