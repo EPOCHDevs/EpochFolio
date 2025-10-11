@@ -4,6 +4,7 @@
 
 #pragma once
 #include "epoch_dashboard/tearsheet/dashboard_builders.h"
+#include "epoch_dashboard/tearsheet/numeric_line_builder.h"
 #include "epoch_frame/dataframe.h"
 #include "portfolio/model.h"
 #include <epoch_protos/tearsheet.pb.h>

@@ -411,7 +411,7 @@ namespace epoch_folio::returns {
             if (pct_fns.contains(ep::get_stat_name(stat))) {
               statBuilder
               .setType(epoch_proto::TypePercent)
-              .setValue(epoch_tearsheet::ScalarFactory::fromPercentValue(scalar));
+              .setValue(epoch_tearsheet::ScalarFactory::fromPercentValue(scalar * 100.0));
             } else {
               statBuilder.setType(epoch_proto::TypeDecimal).setValue(epoch_tearsheet::ScalarFactory::fromDecimal(scalar));
             }

@@ -94,15 +94,33 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
       auto open_dt = trades_in_sector["open_dt"].iloc(j);
       auto close_dt = trades_in_sector["close_dt"].iloc(j);
       auto long_ = trades_in_sector["long"].iloc(j);
+
+      // Skip if open_dt is null (no valid trade start)
+      if (open_dt.is_null()) {
+        continue;
+      }
+
+      // Skip if close_dt is null (position still open, not a completed round trip)
+      if (close_dt.is_null()) {
+        continue;
+      }
+
       // Convert timestamps to ms (we know they are timestamps from the
       // check above)
       auto open_ts = std::static_pointer_cast<arrow::TimestampScalar>(
           open_dt.value());
       auto close_ts = std::static_pointer_cast<arrow::TimestampScalar>(
           close_dt.value());
-      builder.addPoint(open_ts->value / 1000000,  // Convert ns to ms
-                       close_ts->value / 1000000, // Convert ns to ms
-                       i, long_.as_bool());
+
+      auto open_ms = open_ts->value / 1000000;  // Convert ns to ms
+      auto close_ms = close_ts->value / 1000000; // Convert ns to ms
+
+      // Skip if the range is invalid (open >= close or close is 0)
+      if (close_ms == 0 || open_ms >= close_ms) {
+        continue;
+      }
+
+      builder.addPoint(open_ms, close_ms, i, long_.as_bool());
     }
   }
 
@@ -111,14 +129,18 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
 
 epoch_proto::Chart TearSheetFactory::MakeProbProfitChart(
     epoch_frame::DataFrame const &trades) const {
-  epoch_tearsheet::LinesChartBuilder builder;
-  builder.setId("prob_profit_trade")
-      .setTitle("Probability of making a profitable decision")
-      .setCategory(epoch_folio::categories::RoundTrip)
-      .setYAxisLabel("Belief")
-      .setXAxisLabel("Probability")
-      .setXAxisType(epoch_proto::AxisLinear)
-      .setYAxisType(epoch_proto::AxisLinear);
+  epoch_proto::Chart chart;
+  auto* numeric_lines_def = chart.mutable_numeric_lines_def();
+  auto* chart_def = numeric_lines_def->mutable_chart_def();
+
+  chart_def->set_id("prob_profit_trade");
+  chart_def->set_title("Probability of making a profitable decision");
+  chart_def->set_category(epoch_folio::categories::RoundTrip);
+  chart_def->set_y_axis_label("Belief");
+  chart_def->set_x_axis_label("Probability");
+  chart_def->set_x_axis_type(epoch_proto::AxisLinear);
+  chart_def->set_y_axis_type(epoch_proto::AxisLinear);
+  chart_def->set_type(epoch_proto::WidgetNumericLines);
 
   constexpr double kMaxPoints = 500;
   auto x = linspace(0.0, 1.0, kMaxPoints);
@@ -128,7 +150,7 @@ epoch_proto::Chart TearSheetFactory::MakeProbProfitChart(
   const auto beta = (!profitable).sum().cast_double().as_double();
   if (alpha == 0.0 || beta == 0.0) {
     SPDLOG_WARN("No profitable trades found, skipping prob profit chart");
-    return builder.build();
+    return chart;
   }
 
   const boost::math::beta_distribution dist(alpha, beta);
@@ -141,26 +163,26 @@ epoch_proto::Chart TearSheetFactory::MakeProbProfitChart(
                    return y_;
                  });
 
-  epoch_tearsheet::LineBuilder line_builder;
+  epoch_tearsheet::NumericLineBuilder line_builder;
   for (size_t i = 0; i < x.size(); ++i) {
-    line_builder.addPoint(static_cast<int64_t>(x[i]), y[i]);
+    line_builder.addPoint(x[i], y[i]);
   }
   line_builder.setName("Probability");
-  builder.addLine(line_builder.build());
+  *numeric_lines_def->add_lines() = line_builder.build();
 
   epoch_proto::StraightLineDef straight_line1;
   straight_line1.set_title("2.5%");
   straight_line1.set_value(quantile(dist, 0.025) * 100.0);
   straight_line1.set_vertical(true);
-  builder.addStraightLine(straight_line1);
+  *numeric_lines_def->add_straight_lines() = straight_line1;
 
   epoch_proto::StraightLineDef straight_line2;
   straight_line2.set_title("97.5%");
   straight_line2.set_value(quantile(dist, 0.975) * 100.0);
   straight_line2.set_vertical(true);
-  builder.addStraightLine(straight_line2);
+  *numeric_lines_def->add_straight_lines() = straight_line2;
 
-  return builder.build();
+  return chart;
 }
 
 epoch_proto::Chart TearSheetFactory::MakeHoldingTimeChart(
