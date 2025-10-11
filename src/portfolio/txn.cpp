@@ -40,7 +40,7 @@ epoch_frame::DataFrame GetTransactionVolume(epoch_frame::DataFrame const &df) {
                   epoch_frame::FrameOrSeries{values.to_frame("txn_volume")}},
        .axis = epoch_frame::AxisType::Column});
 
-  auto normalized_index = df.index()->normalize()->as_chunked_array();
-  return table.set_index(normalized_index).group_by_agg(normalized_index).sum();
+  auto normalized_index = df.index()->normalize();
+  return table.set_index(normalized_index).group_by_agg(normalized_index->as_chunked_array()).sum();
 }
 } // namespace epoch_folio

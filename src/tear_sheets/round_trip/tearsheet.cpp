@@ -13,6 +13,7 @@
 #include <boost/math/distributions/beta.hpp>
 #include <epoch_frame/factory/index_factory.h>
 #include <epoch_frame/factory/series_factory.h>
+#include <epoch_dashboard/tearsheet/numeric_lines_chart_builder.h>
 
 using namespace epoch_core;
 using namespace epoch_frame;
@@ -129,19 +130,6 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
 
 epoch_proto::Chart TearSheetFactory::MakeProbProfitChart(
     epoch_frame::DataFrame const &trades) const {
-  epoch_proto::Chart chart;
-  auto* numeric_lines_def = chart.mutable_numeric_lines_def();
-  auto* chart_def = numeric_lines_def->mutable_chart_def();
-
-  chart_def->set_id("prob_profit_trade");
-  chart_def->set_title("Probability of making a profitable decision");
-  chart_def->set_category(epoch_folio::categories::RoundTrip);
-  chart_def->set_y_axis_label("Belief");
-  chart_def->set_x_axis_label("Probability");
-  chart_def->set_x_axis_type(epoch_proto::AxisLinear);
-  chart_def->set_y_axis_type(epoch_proto::AxisLinear);
-  chart_def->set_type(epoch_proto::WidgetNumericLines);
-
   constexpr double kMaxPoints = 500;
   auto x = linspace(0.0, 1.0, kMaxPoints);
   auto profitable = trades["pnl"] > Scalar{0.0};
@@ -150,7 +138,11 @@ epoch_proto::Chart TearSheetFactory::MakeProbProfitChart(
   const auto beta = (!profitable).sum().cast_double().as_double();
   if (alpha == 0.0 || beta == 0.0) {
     SPDLOG_WARN("No profitable trades found, skipping prob profit chart");
-    return chart;
+    epoch_tearsheet::NumericLinesChartBuilder builder;
+    builder.setId("prob_profit_trade")
+        .setTitle("Probability of making a profitable decision")
+        .setCategory(epoch_folio::categories::RoundTrip);
+    return builder.build();
   }
 
   const boost::math::beta_distribution dist(alpha, beta);
@@ -168,21 +160,29 @@ epoch_proto::Chart TearSheetFactory::MakeProbProfitChart(
     line_builder.addPoint(x[i], y[i]);
   }
   line_builder.setName("Probability");
-  *numeric_lines_def->add_lines() = line_builder.build();
 
   epoch_proto::StraightLineDef straight_line1;
   straight_line1.set_title("2.5%");
   straight_line1.set_value(quantile(dist, 0.025) * 100.0);
   straight_line1.set_vertical(true);
-  *numeric_lines_def->add_straight_lines() = straight_line1;
 
   epoch_proto::StraightLineDef straight_line2;
   straight_line2.set_title("97.5%");
   straight_line2.set_value(quantile(dist, 0.975) * 100.0);
   straight_line2.set_vertical(true);
-  *numeric_lines_def->add_straight_lines() = straight_line2;
 
-  return chart;
+  epoch_tearsheet::NumericLinesChartBuilder builder;
+  return builder.setId("prob_profit_trade")
+      .setTitle("Probability of making a profitable decision")
+      .setCategory(epoch_folio::categories::RoundTrip)
+      .setYAxisLabel("Belief")
+      .setXAxisLabel("Probability")
+      .setXAxisType(epoch_proto::AxisLinear)
+      .setYAxisType(epoch_proto::AxisLinear)
+      .addLine(line_builder.build())
+      .addStraightLine(straight_line1)
+      .addStraightLine(straight_line2)
+      .build();
 }
 
 epoch_proto::Chart TearSheetFactory::MakeHoldingTimeChart(
