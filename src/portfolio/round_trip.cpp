@@ -113,7 +113,7 @@ epoch_proto::Table GetSymbolsTable(epoch_frame::DataFrame const &round_trip,
 
   epoch_tearsheet::TableBuilder builder;
   builder.setType(epoch_proto::WidgetDataTable)
-      .setCategory(categories::RoundTrip)
+      .setCategory(categories::RoundTripPerformance)
       .setTitle("Returns by Symbol");
 
   // Add key column
@@ -263,7 +263,7 @@ GetRoundTripStats(epoch_frame::DataFrame const &round_trip) {
           const std::shared_ptr<arrow::Table> &data) {
         epoch_tearsheet::TableBuilder builder;
         builder.setType(epoch_proto::WidgetDataTable)
-            .setCategory(categories::RoundTrip)
+            .setCategory(categories::RoundTripPerformance)
             .setTitle(title);
 
         for (auto const &c : cols) {

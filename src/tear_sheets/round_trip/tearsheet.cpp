@@ -61,7 +61,7 @@ TearSheetFactory::MakeXRangeDef(epoch_frame::DataFrame const &trades) const {
   epoch_tearsheet::XRangeChartBuilder builder;
   builder.setId("xrange")
       .setTitle("Round trip lifetimes")
-      .setCategory(epoch_folio::categories::RoundTrip)
+      .setCategory(epoch_folio::categories::RoundTripAnalysis)
       .setYAxisType(epoch_proto::AxisCategory)
       .setYAxisLabel("Asset");
 
@@ -141,7 +141,7 @@ epoch_proto::Chart TearSheetFactory::MakeProbProfitChart(
     epoch_tearsheet::NumericLinesChartBuilder builder;
     builder.setId("prob_profit_trade")
         .setTitle("Probability of making a profitable decision")
-        .setCategory(epoch_folio::categories::RoundTrip);
+        .setCategory(epoch_folio::categories::RoundTripPerformance);
     return builder.build();
   }
 
@@ -174,7 +174,7 @@ epoch_proto::Chart TearSheetFactory::MakeProbProfitChart(
   epoch_tearsheet::NumericLinesChartBuilder builder;
   return builder.setId("prob_profit_trade")
       .setTitle("Probability of making a profitable decision")
-      .setCategory(epoch_folio::categories::RoundTrip)
+      .setCategory(epoch_folio::categories::RoundTripPerformance)
       .setYAxisLabel("Belief")
       .setXAxisLabel("Probability")
       .setXAxisType(epoch_proto::AxisLinear)
@@ -193,7 +193,7 @@ epoch_proto::Chart TearSheetFactory::MakeHoldingTimeChart(
   return epoch_tearsheet::HistogramChartBuilder()
       .setId("holding_time")
       .setTitle("Holding time in days")
-      .setCategory(epoch_folio::categories::RoundTrip)
+      .setCategory(epoch_folio::categories::RoundTripAnalysis)
       .fromSeries(data_series.cast(arrow::int64()))
       .build();
 }
@@ -203,7 +203,7 @@ epoch_proto::Chart TearSheetFactory::MakePnlPerRoundTripDollarsChart(
   return epoch_tearsheet::HistogramChartBuilder()
       .setId("pnl_per_round_trip")
       .setTitle("PnL per round trip in dollars")
-      .setCategory(epoch_folio::categories::RoundTrip)
+      .setCategory(epoch_folio::categories::RoundTripAnalysis)
       .fromSeries(trades["pnl"])
       .build();
 }
@@ -213,7 +213,7 @@ epoch_proto::Chart TearSheetFactory::MakeReturnsPerRoundTripDollarsChart(
   return epoch_tearsheet::HistogramChartBuilder()
       .setId("returns_per_round_trip")
       .setTitle("Returns per round trip in dollars")
-      .setCategory(epoch_folio::categories::RoundTrip)
+      .setCategory(epoch_folio::categories::RoundTripAnalysis)
       .fromSeries(trades["returns"] * Scalar{100.0})
       .build();
 }
@@ -354,7 +354,7 @@ epoch_proto::Chart TearSheetFactory::MakeProfitabilityPieChart(
   epoch_tearsheet::PieChartBuilder builder;
   builder.setId("profitability_pie")
       .setTitle("Profitability (PnL / PnL total)")
-      .setCategory(epoch_folio::categories::RoundTrip);
+      .setCategory(epoch_folio::categories::RoundTripPerformance);
 
   // Create pie data from the profit attribution series
   std::vector<epoch_proto::PieData> asset_data;

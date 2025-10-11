@@ -22,7 +22,8 @@ constexpr const char *RiskAnalysis = "Risk Analysis";
 constexpr const char *ReturnsDistribution = "Returns Distribution";
 constexpr const char *Positions = "Positions";
 constexpr const char *Transactions = "Transactions";
-constexpr const char *RoundTrip = "Round Trip";
+constexpr const char *RoundTripPerformance = "Round Trip Performance";
+constexpr const char *RoundTripAnalysis = "Round Trip Analysis";
 } // namespace categories
 
 class PortfolioTearSheetFactory {
