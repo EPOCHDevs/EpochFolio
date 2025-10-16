@@ -9,25 +9,31 @@
 #include <google/protobuf/util/json_util.h>
 #include <spdlog/spdlog.h>
 
-namespace glz {
-json_t to_json(const epoch_frame::Scalar &array) {
-  if (array.is_null()) {
-    return {};
-  }
+namespace glz
+{
+  generic to_json(const epoch_frame::Scalar &array)
+  {
+    if (array.is_null())
+    {
+      return {};
+    }
 
-  const auto type = array.type()->id();
-  if (is_numeric(type)) {
-    return array.cast_double().as_double();
-  }
+    const auto type = array.type()->id();
+    if (is_numeric(type))
+    {
+      return array.cast_double().as_double();
+    }
 
-  if (type == arrow::Type::BOOL) {
-    return array.as_bool();
+    if (type == arrow::Type::BOOL)
+    {
+      return array.as_bool();
+    }
+    return array.repr();
   }
-  return array.repr();
-}
 }; // namespace glz
 
-namespace epoch_folio {
+namespace epoch_folio
+{
   PortfolioTearSheetFactory::PortfolioTearSheetFactory(
       TearSheetDataOption const &options)
       : m_returns(options.isEquity ? options.equity.pct_change()
@@ -45,42 +51,58 @@ namespace epoch_folio {
                            options.sectorMapping) {}
 
   epoch_proto::TearSheet
-  PortfolioTearSheetFactory::MakeTearSheet(TearSheetOption const &options) const {
+  PortfolioTearSheetFactory::MakeTearSheet(TearSheetOption const &options) const
+  {
     epoch_tearsheet::DashboardBuilder builder;
 
-    try {
+    try
+    {
       m_returnsFactory.Make(options.turnoverDenominator, options.topKDrawDowns,
                             builder);
-    } catch (std::exception const &e) {
+    }
+    catch (std::exception const &e)
+    {
       SPDLOG_ERROR("Failed to create returns tearsheet: {}", e.what());
     }
 
-    try {
+    try
+    {
       m_positionsFactory.Make(options.topKPositions, builder);
-    } catch (std::exception const &e) {
+    }
+    catch (std::exception const &e)
+    {
       SPDLOG_ERROR("Failed to create positions tearsheet: {}", e.what());
     }
 
-    try {
+    try
+    {
       m_transactionsFactory.Make(options.turnoverDenominator,
                                  options.transactionBinMinutes,
                                  options.transactionTimezone, builder);
-    } catch (std::exception const &e) {
+    }
+    catch (std::exception const &e)
+    {
       SPDLOG_ERROR("Failed to create transactions tearsheet: {}", e.what());
     }
 
-    try {
+    try
+    {
       m_roundTripFactory.Make(builder);
-    } catch (std::exception const &e) {
+    }
+    catch (std::exception const &e)
+    {
       SPDLOG_ERROR("Failed to create round trip tearsheet: {}", e.what());
     }
 
     return builder.build();
   }
 
-  template <typename T> std::string write_protobuf_(const T &output) {
+  template <typename T>
+  std::string write_protobuf_(const T &output)
+  {
     std::string binary_data;
-    if (!output.SerializeToString(&binary_data)) {
+    if (!output.SerializeToString(&binary_data))
+    {
       SPDLOG_ERROR("Failed to serialize protobuf message to binary");
       return "";
     }
@@ -88,15 +110,18 @@ namespace epoch_folio {
   }
 
   template <typename T>
-  void write_protobuf_(const T &output, std::string const &file_path) {
+  void write_protobuf_(const T &output, std::string const &file_path)
+  {
     std::string binary_data;
-    if (!output.SerializeToString(&binary_data)) {
+    if (!output.SerializeToString(&binary_data))
+    {
       SPDLOG_ERROR("Failed to serialize protobuf message to binary");
       return;
     }
 
     std::ofstream file(file_path, std::ios::binary);
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
       SPDLOG_ERROR("Failed to open file for writing: {}", file_path);
       return;
     }
@@ -106,12 +131,14 @@ namespace epoch_folio {
     SPDLOG_INFO("Successfully wrote protobuf data to: {}", file_path);
   }
 
-  std::string write_protobuf(epoch_proto::TearSheet const &output) {
+  std::string write_protobuf(epoch_proto::TearSheet const &output)
+  {
     return write_protobuf_(output);
   }
 
   void write_protobuf(epoch_proto::TearSheet const &output,
-                      std::string const &file_path) {
+                      std::string const &file_path)
+  {
     write_protobuf_(output, file_path);
   }
 } // namespace epoch_folio
