@@ -10,7 +10,7 @@
 #include <spdlog/spdlog.h>
 
 namespace glz {
-json_t to_json(const epoch_frame::Scalar &array) {
+generic to_json(const epoch_frame::Scalar &array) {
   if (array.is_null()) {
     return {};
   }

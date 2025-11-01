@@ -69,7 +69,7 @@ else ()
 endif ()
 
 # Include the EpochCore dependency
-include(${PROJECT_SOURCE_DIR}/cmake/EpochMetadata.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/EpochFlow.cmake)
 
 set(EPOCH_FOLIO_LIBRARY_NAME "epoch_folio")
 add_library(epoch_folio "")
@@ -104,7 +104,7 @@ target_compile_options(epoch_folio PRIVATE -Wall -Wextra -Werror)
 add_subdirectory(src)
 
 find_package(Protobuf REQUIRED)
-target_link_libraries(epoch_folio PUBLIC epoch::metadata)
+target_link_libraries(epoch_folio PUBLIC epoch::flow)
 
 if (BUILD_TEST)
   add_subdirectory(test)

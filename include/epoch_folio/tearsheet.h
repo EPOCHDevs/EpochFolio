@@ -48,12 +48,12 @@ void write_protobuf(epoch_proto::TearSheet const &output,
 } // namespace epoch_folio
 
 namespace glz {
-json_t to_json(const epoch_frame::Scalar &array);
+generic to_json(const epoch_frame::Scalar &array);
 
 template <> struct to<JSON, arrow::TablePtr> {
   template <auto Opts>
   static void op(const arrow::TablePtr &table, auto &&...args) noexcept {
-    std::vector<json_t> json_obj;
+    std::vector<generic> json_obj;
     if (!table) {
       serialize<JSON>::op<Opts>(json_obj, args...);
       return;
@@ -67,7 +67,7 @@ template <> struct to<JSON, arrow::TablePtr> {
     auto row_range = std::views::iota(0, static_cast<int>(table->num_rows()));
 
     for (size_t row : row_range) {
-      json_t row_obj;
+      generic row_obj;
       for (size_t col : col_range) {
         const auto col_name = column_names[col];
         const auto scalar = columns[col]->GetScalar(row).MoveValueUnsafe();
@@ -82,7 +82,7 @@ template <> struct to<JSON, arrow::TablePtr> {
 template <> struct to<JSON, epoch_frame::Array> {
   template <auto Opts>
   static void op(const epoch_frame::Array &array, auto &&...args) noexcept {
-    std::vector<json_t> arr;
+    std::vector<generic> arr;
     arr.reserve(array.length());
 
     for (int64_t i = 0; i < array.length(); ++i) {
