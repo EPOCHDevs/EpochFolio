@@ -12,6 +12,7 @@
     "trompeloeil",
     "yaml-cpp",
     "tabulate",
+    "icu",
     "tbb",
     "protobuf",
     "spdlog",

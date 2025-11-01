@@ -13,89 +13,106 @@
 #include "tear_sheets/round_trip/tearsheet.h"
 #include "tear_sheets/transactions/tearsheet.h"
 
-namespace epoch_folio {
+namespace epoch_folio
+{
 
-// TearSheet category constants
-namespace categories {
-constexpr const char *StrategyBenchmark = "Strategy Benchmark";
-constexpr const char *RiskAnalysis = "Risk Analysis";
-constexpr const char *ReturnsDistribution = "Returns Distribution";
-constexpr const char *Positions = "Positions";
-constexpr const char *Transactions = "Transactions";
-constexpr const char *RoundTripPerformance = "Round Trip Performance";
-constexpr const char *RoundTripAnalysis = "Round Trip Analysis";
-} // namespace categories
+  // TearSheet category constants
+  namespace categories
+  {
+    constexpr const char *StrategyBenchmark = "Strategy Benchmark";
+    constexpr const char *RiskAnalysis = "Risk Analysis";
+    constexpr const char *ReturnsDistribution = "Returns Distribution";
+    constexpr const char *Positions = "Positions";
+    constexpr const char *Transactions = "Transactions";
+    constexpr const char *RoundTripPerformance = "Round Trip Performance";
+    constexpr const char *RoundTripAnalysis = "Round Trip Analysis";
+  } // namespace categories
 
-class PortfolioTearSheetFactory {
+  class PortfolioTearSheetFactory
+  {
 
-public:
-  explicit PortfolioTearSheetFactory(TearSheetDataOption const &options);
+  public:
+    explicit PortfolioTearSheetFactory(TearSheetDataOption const &options);
 
-  epoch_proto::TearSheet MakeTearSheet(TearSheetOption const &) const;
+    epoch_proto::TearSheet MakeTearSheet(TearSheetOption const &) const;
 
-private:
-  epoch_frame::Series m_returns;
-  epoch_frame::DataFrame m_positions;
-  returns::TearSheetFactory m_returnsFactory;
-  positions::TearSheetFactory m_positionsFactory;
-  txn::TearSheetFactory m_transactionsFactory;
-  round_trip::TearSheetFactory m_roundTripFactory;
-};
+  private:
+    epoch_frame::Series m_returns;
+    epoch_frame::DataFrame m_positions;
+    returns::TearSheetFactory m_returnsFactory;
+    positions::TearSheetFactory m_positionsFactory;
+    txn::TearSheetFactory m_transactionsFactory;
+    round_trip::TearSheetFactory m_roundTripFactory;
+  };
 
-std::string write_protobuf(epoch_proto::TearSheet const &output);
-void write_protobuf(epoch_proto::TearSheet const &output,
-                    std::string const &file_path);
+  std::string write_protobuf(epoch_proto::TearSheet const &output);
+  void write_protobuf(epoch_proto::TearSheet const &output,
+                      std::string const &file_path);
 } // namespace epoch_folio
 
-namespace glz {
-generic to_json(const epoch_frame::Scalar &array);
+namespace glz
+{
+  generic to_json(const epoch_frame::Scalar &array);
 
-template <> struct to<JSON, arrow::TablePtr> {
-  template <auto Opts>
-  static void op(const arrow::TablePtr &table, auto &&...args) noexcept {
-    std::vector<generic> json_obj;
-    if (!table) {
-      serialize<JSON>::op<Opts>(json_obj, args...);
-      return;
-    }
-
-    json_obj.reserve(table->num_rows());
-    const auto column_names = table->ColumnNames();
-    const auto columns = table->columns();
-
-    auto col_range = std::views::iota(0, static_cast<int>(columns.size()));
-    auto row_range = std::views::iota(0, static_cast<int>(table->num_rows()));
-
-    for (size_t row : row_range) {
-      generic row_obj;
-      for (size_t col : col_range) {
-        const auto col_name = column_names[col];
-        const auto scalar = columns[col]->GetScalar(row).MoveValueUnsafe();
-        row_obj[col_name] = to_json(epoch_frame::Scalar{scalar});
+  template <>
+  struct to<JSON, arrow::TablePtr>
+  {
+    template <auto Opts>
+    static void op(const arrow::TablePtr &table, auto &&...args) noexcept
+    {
+      std::vector<generic> json_obj;
+      if (!table)
+      {
+        serialize<JSON>::op<Opts>(json_obj, args...);
+        return;
       }
-      json_obj.emplace_back(std::move(row_obj));
+
+      json_obj.reserve(table->num_rows());
+      const auto column_names = table->ColumnNames();
+      const auto columns = table->columns();
+
+      auto col_range = std::views::iota(0, static_cast<int>(columns.size()));
+      auto row_range = std::views::iota(0, static_cast<int>(table->num_rows()));
+
+      for (size_t row : row_range)
+      {
+        generic row_obj;
+        for (size_t col : col_range)
+        {
+          const auto col_name = column_names[col];
+          const auto scalar = columns[col]->GetScalar(row).MoveValueUnsafe();
+          row_obj[col_name] = to_json(epoch_frame::Scalar{scalar});
+        }
+        json_obj.emplace_back(std::move(row_obj));
+      }
+      serialize<JSON>::op<Opts>(json_obj, args...);
     }
-    serialize<JSON>::op<Opts>(json_obj, args...);
-  }
-};
+  };
 
-template <> struct to<JSON, epoch_frame::Array> {
-  template <auto Opts>
-  static void op(const epoch_frame::Array &array, auto &&...args) noexcept {
-    std::vector<generic> arr;
-    arr.reserve(array.length());
+  template <>
+  struct to<JSON, epoch_frame::Array>
+  {
+    template <auto Opts>
+    static void op(const epoch_frame::Array &array, auto &&...args) noexcept
+    {
+      std::vector<generic> arr;
+      arr.reserve(array.length());
 
-    for (int64_t i = 0; i < array.length(); ++i) {
-      arr.emplace_back(to_json(array[i]));
+      for (int64_t i = 0; i < array.length(); ++i)
+      {
+        arr.emplace_back(to_json(array[i]));
+      }
+      serialize<JSON>::op<Opts>(arr, args...);
     }
-    serialize<JSON>::op<Opts>(arr, args...);
-  }
-};
+  };
 
-template <> struct to<JSON, epoch_frame::Scalar> {
-  template <auto Opts>
-  static void op(const epoch_frame::Scalar &scalar, auto &&...args) noexcept {
-    serialize<JSON>::op<Opts>(to_json(scalar), args...);
-  }
-};
+  template <>
+  struct to<JSON, epoch_frame::Scalar>
+  {
+    template <auto Opts>
+    static void op(const epoch_frame::Scalar &scalar, auto &&...args) noexcept
+    {
+      serialize<JSON>::op<Opts>(to_json(scalar), args...);
+    }
+  };
 } // namespace glz
