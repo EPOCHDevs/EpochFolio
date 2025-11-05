@@ -8,7 +8,7 @@ if(NOT COMMAND CPMAddPackage)
     include(${CMAKE_CURRENT_LIST_DIR}/CPM.cmake)
 endif()
 
-set(EPOCH_SCRIPT_REPOSITORY "https://github.com/EPOCHDevs/EpochScript.git" CACHE STRING "EpochScript repository URL")
+set(EPOCH_SCRIPT_REPOSITORY "${REPO_URL}/EPOCHDevs/EpochScript.git" CACHE STRING "EpochScript repository URL")
 set(EPOCH_SCRIPT_TAG "main" CACHE STRING "EpochScript Git tag to use")
 
 CPMAddPackage(
